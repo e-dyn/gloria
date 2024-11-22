@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "cassandra"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+numpy = "^1.23.5"
+pandas = "^2.2.3"
+pydantic = "^2.9.2"
+scipy = "^1.14.1"
+matplotlib = "^3.9.2"
+prophet = "^1.1.6"
+cmdstanpy = "^1.2.4"
+
+
+[tool.poetry.group.spyder.dependencies]
+pyqt5-qt5 = "<=5.15.2"
+pyqtwebengine-qt5 = "<=5.15.2"
+pyqt5 = "^5.15.10"
+spyder = "^5.5.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

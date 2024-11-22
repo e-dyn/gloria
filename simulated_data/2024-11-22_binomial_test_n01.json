@@ -1,0 +1,21 @@
+{
+    "model": "binomial",
+    "number of days": 200,
+    "sampling period": "1 d",
+    "included seasons": [
+        "monthly"
+    ],
+    "season modes": [
+        "additive"
+    ],
+    "changepoint density": 0.02,
+    "anomaly density": 0.01,
+    "anomaly strength": 0.5,
+    "number of anomalies": 2,
+    "number of changepoints": 8,
+    "y_min": 100,
+    "y_max": 200,
+    "population N": 1000,
+    "sigma observed": 2,
+    "filename": "2024-11-22_binomial_test_n01.csv"
+}

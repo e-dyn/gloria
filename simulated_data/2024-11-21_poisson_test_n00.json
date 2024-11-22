@@ -1,0 +1,20 @@
+{
+    "filename": "2024-11-21_poisson_test_n00.csv",
+    "model": "poisson",
+    "number of days": 365,
+    "sampling period": "1 d",
+    "included seasons": [
+        "weekly",
+        "quarterly",
+        "monthly"
+    ],
+    "changepoint density": 0.02,
+    "anomaly density": 0.01,
+    "anomaly strength": 2,
+    "number of anomalies": 3,
+    "number of changepoints": 6,
+    "y_min": 10,
+    "y_max": 50,
+    "population N": 1000,
+    "sigma observed": 2
+}
