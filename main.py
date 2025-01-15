@@ -7,18 +7,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Inhouse Packages
-from cassandra import Cassandra
-from cassandra.configuration import RunConfig
-from cassandra.utilities import cast_series_to_kind
+from gloria import Gloria
+from gloria.configuration import RunConfig
+from gloria.utilities import cast_series_to_kind
 
 
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
 # Note: this only works once per Session. After import Prophet, both imported 
-# CmdStanPy versions (Prophet and Cassandra) clash. Therefore, you will need
+# CmdStanPy versions (Prophet and Gloria) clash. Therefore, you will need
 # to restart your kernel
-COMPARE_TO_PROPHET = False
+COMPARE_TO_PROPHET = True
 
 SEASONALITIES = {
     'weekly': {
@@ -63,14 +63,14 @@ if __name__ == "__main__":
     df[metric_name] = cast_series_to_kind(df[metric_name], config.metric_config.dtype_kind)
         
     
-    cassandra_pars = {
+    gloria_pars = {
         **{k: v for k,v in config.data_config if k != "data_source"},
         **{k: v for k,v in config.metric_config if k != "dtype_kind"},
-        **{k: v for k,v in config.cassandra_config if k not in ["optimize_mode", "sample"]}
+        **{k: v for k,v in config.gloria_config if k not in ["optimize_mode", "sample"]}
     }
-    fit_pars = {k: v for k,v in config.cassandra_config if k in ["optimize_mode", "sample"]}
+    fit_pars = {k: v for k,v in config.gloria_config if k in ["optimize_mode", "sample"]}
 
-    model = Cassandra(**cassandra_pars)
+    model = Gloria(**gloria_pars)
     
     for name, props in SEASONALITIES.items():
         model.add_seasonality(name, **props)
@@ -118,6 +118,3 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
  
-    
-    
-    

@@ -1,1 +1,0 @@
-from cassandra.interface import Cassandra

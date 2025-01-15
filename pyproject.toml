@@ -1,8 +1,12 @@
 [tool.poetry]
-name = "cassandra"
+name = "gloria"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Benjamin Kambs <b.kambs@e-dynamics.de>",
+           "Patrik Wollgarten <p.wollgarten@e-dynamics.de>",
+           "Sami Chabani <s.chabani@e-dynamics.de>",
+           "Amir Hassannejad <a.hassanejad@e-dynamics.de>",
+           "Kawa Mohammad <k.mohammad@e-dynamics.de>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

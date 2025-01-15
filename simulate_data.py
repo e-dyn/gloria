@@ -21,9 +21,9 @@ import matplotlib.pyplot as plt
 from scipy.special  import expit, logit
 
 # Inhouse Packages
-from cassandra.regressors import Seasonality
-from cassandra.utilities import time_to_integer
-from cassandra.constants import _T_INT
+from gloria.regressors import Seasonality
+from gloria.utilities import time_to_integer
+from gloria.constants import _T_INT
 
 
 ### --- Global Constants Definitions --- ###

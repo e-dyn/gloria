@@ -6,18 +6,18 @@
     },
     "metric_config": {
         "metric_name": "y",
-        "model": "poisson",
+        "model": "binomial constant n",
         "dtype_kind": "u"
     },
-    "cassandra_config": {
-        "n_changepoints": 10,
+    "gloria_config": {
+        "n_changepoints": 0,
         "changepoint_range": 0.8,
         "seasonality_mode": "additive",
-        "seasonality_prior_scale": 10.0,
-        "changepoint_prior_scale": 0.002,
+        "seasonality_prior_scale": 50.0,
+        "changepoint_prior_scale": 0.05,
         "interval_width": 0.8,
         "uncertainty_samples": 1000,
-        "optimize_mode": "MAP",
-        "sample": true
+        "optimize_mode": "MLE",
+        "sample": false
     }
 }

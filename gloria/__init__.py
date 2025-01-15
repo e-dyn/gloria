@@ -1,0 +1,1 @@
+from gloria.interface import Gloria
