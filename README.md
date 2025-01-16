@@ -17,7 +17,8 @@ Official documentation can be found [here](https://pipx.pypa.io/stable/installat
 4. Restart the command prompt
 
 ### 2. Poetry
-This should be as simple as running `pipx install poetry` in your command prompt
+1. This should be as simple as running `pipx install poetry` in your command prompt
+2. For Mac-Users:run  `export PATH="$HOME/.local/bin:$PATH"`
 
 ### 3. Installing Gloria
 1. Create a local clone of the repository
@@ -27,5 +28,6 @@ This should be as simple as running `pipx install poetry` in your command prompt
     - Make sure both the installation path (most likely `C:\Users\<USERNAME>\AppData\Local\Programs\Python\Python310\`) and the subfolder `.\Scripts` are in your search path
 4. Create a virtual environment using `poetry env use <PATH/TO/PYTHON3.10>`
 5. Activate the virtual environment using `poetry shell`
+   (Newer versions of poetry need to install shell plugin beforehand: run `pipx inject poetry poetry-plugin-shell`
 6. Install Gloria using `poetry install`
     - If you wish to omit the installation of Spyder, use the flag `--without spyder`
