@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gloria"
 version = "0.1.0"
-description = ""
+description = "Gloria is a time series analysis and forecasting tool, loosely based on Facebooks Prophet(https://facebook.github.io/prophet/)."
 authors = ["Benjamin Kambs <b.kambs@e-dynamics.de>",
            "Patrik Wollgarten <p.wollgarten@e-dynamics.de>",
            "Sami Chabani <s.chabani@e-dynamics.de>",

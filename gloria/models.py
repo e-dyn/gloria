@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import Union, Literal, Any
 
 # Third Party
-from cmdstanpy import CmdStanModel, CmdStanMLE, CmdStanLaplace
+from cmdstanpy import (CmdStanModel, CmdStanMLE, CmdStanLaplace,
+                       set_cmdstan_path, install_cmdstan, rebuild_cmdstan)
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator
@@ -162,9 +163,9 @@ class ModelBackendBase(ABC):
     The model backend is in charge of passing data and model parameters to the
     stan code as well as distribution model dependent prediction
     """
+    CMDSTAN_VERSION = "2.36.0"
     
-    
-    def __init__(self: Self, model_name: str) -> None:
+    def __init__(self: Self, model_name: str, install = True) -> None:
         """
         Initialize the mode backend
 
@@ -174,6 +175,15 @@ class ModelBackendBase(ABC):
             Name of the model. Must match any of the keys in MODEL_MAP. This
             will be validated by the ModelBackend class
         """
+        # Set explicit local CmdStan path to avoid conflicts with other CmdStan
+        # installations
+        models_path = Path(__file__).parent / "stan_models"
+        cmdstan_path = models_path / f"cmdstan-{self.CMDSTAN_VERSION}"
+        # If not yet installed, install CmdStan with desired version
+        if not cmdstan_path.is_dir():
+            install_cmdstan(version = self.CMDSTAN_VERSION, 
+                            dir = str(models_path))
+        set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
         self.model = CmdStanModel(stan_file=self.stan_file)
         # Set the model name as attribute
