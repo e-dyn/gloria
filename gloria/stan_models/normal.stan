@@ -46,7 +46,7 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   vector[K] s_a;                // Indicator of additive features
   vector[K] s_m;                // Indicator of multiplicative features
-  real sigma_obs;
+  //real sigma_obs;
 }
 
 transformed data {
@@ -63,7 +63,7 @@ parameters {
   real m;                           // Trend offset
   vector[S] delta;                  // Trend rate adjustments
   vector[K] beta;                   // Slope for y
-  //real<lower=0> sigma_obs;   // Observation noise
+  real<lower=0> sigma_obs;   // Observation noise
 }
 
 transformed parameters {
@@ -76,7 +76,7 @@ model {
   k ~ normal(0, 5);
   m ~ normal(0, 5);
   delta ~ double_exponential(0, tau);
-  //sigma_obs_scaled ~ normal(0, 0.5);
+  sigma_obs ~ normal(0, 0.5);
   beta ~ normal(0, sigmas);
   
   // Likelihood

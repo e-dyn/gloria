@@ -11,12 +11,14 @@ from pathlib import Path
 import json
 
 # Third Party
+import numpy as np
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
-from typing import Literal
+from scipy.optimize import minimize
+from typing import Literal, Optional, Union
 
 # Inhouse Packages
-from gloria.models import MODEL_MAP
+from gloria.models import BinomialPopulation, MODEL_MAP
 
 
 ### --- Global Constants Definitions --- ###
@@ -24,6 +26,7 @@ from gloria.models import MODEL_MAP
 
 
 ### --- Class and Function Definitions --- ###
+
 
 
 class DataConfig(BaseModel):
@@ -36,6 +39,7 @@ class MetricConfig(BaseModel):
     metric_name: str
     model: Literal[tuple(MODEL_MAP.keys())]
     dtype_kind: Literal[tuple('biuf')]
+    augmentation_config: Optional[BinomialPopulation] = None
     
     @field_validator('dtype_kind')
     @classmethod

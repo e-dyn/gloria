@@ -8,7 +8,7 @@ TODO:
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from pathlib import Path
-from typing import Union, Literal, Any
+from typing import Union, Literal, Any, Optional
 
 # Third Party
 from cmdstanpy import (CmdStanModel, CmdStanMLE, CmdStanLaplace,
@@ -24,13 +24,37 @@ from typing_extensions import Self
 # Inhouse Packages
 
 
-
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
 
 
-### --- Class and Function Definitions --- ###
-
+### --- Class and Function Definitions --- ###       
+class BinomialPopulation(BaseModel):
+    """
+    Configuration parameters used by the augment_data method of the model
+    BinomialConstantN to determine the population size. For more info cf the
+    method docstring.
+    """
+    mode: Literal["constant", "factor", "scale"]
+    value: Union[int, float]
+    
+    @field_validator('value')
+    @classmethod
+    def validate_value(cls, value: int, info) -> int:
+        if info.data['mode'] == 'constant':
+            if not isinstance(value, int):
+                raise ValueError("In population mode 'constant' the population"
+                                 f" value (={value}) must be an integer.")
+        elif info.data['mode'] == 'factor':
+            if value < 1:
+                raise ValueError("In population mode 'factor' the population "
+                                 f"value (={value}) must be >= 1.")
+        elif info.data['mode'] == 'scale':
+            if (value >= 1) or (value <= 0):
+                raise ValueError("In population mode 'scale' the population "
+                                 f"value (={value}) must be 0 < value < 1.")
+        return value
+ 
 
 class ModelParams(BaseModel):
     """
@@ -194,7 +218,11 @@ class ModelBackendBase(ABC):
     
     
     @abstractmethod
-    def augment_data(self: Self, stan_data: ModelInputData) -> ModelInputData:
+    def augment_data(
+            self: Self,
+            stan_data: ModelInputData,
+            augmentation_config: Optional[BinomialPopulation] = None
+        ) -> ModelInputData:
         """
         Augment the input data for the stan model with model dependent data. 
 
@@ -202,6 +230,10 @@ class ModelBackendBase(ABC):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
 
         Raises
         ------
@@ -285,6 +317,7 @@ class ModelBackendBase(ABC):
             stan_data: ModelInputData,
             optimize_mode: Literal['MAP', 'MLE'] = 'MAP',
             sample: bool = True,
+            augmentation_config: Optional[BinomialPopulation] = None,
             **kwargs: dict[str, Any]
         ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
@@ -301,6 +334,10 @@ class ModelBackendBase(ABC):
         sample : bool, optional
             If True (default), the optimization is followed by a sampling over
             the Laplace approximation around the posterior mode.
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
         **kwargs : dict[str, Any]
             Additional arguments that are passed to the fit method
 
@@ -309,10 +346,11 @@ class ModelBackendBase(ABC):
         Union[CmdStanMLE, CmdStanLaplace]
             The fitted CmdStanModel object that holds the fitted parameters
         """
+
         jacobian = True if optimize_mode == 'MAP' else False
         # The input stan_data only include data that all models have in common
         # The augment_data method adds additional data that are model dependent
-        self.stan_data = self.augment_data(stan_data)
+        self.stan_data = self.augment_data(stan_data, augmentation_config)
         
         # Calculate initial parameters m, k, and delta
         self.stan_inits = self.calculate_initial_parameters()
@@ -335,6 +373,22 @@ class ModelBackendBase(ABC):
 
         else:
             self.stan_fit = optimized_model
+        
+        # Save relevant fit parameters in dictionary
+        self.fit_params = {
+            k: v for k,v in self.stan_fit.stan_variables().items() 
+            if k != 'trend'
+        }
+        
+        # In case of the normal model the data were normalized by the Stan 
+        # model. Therefore the optimized model parameters need to be scaled
+        # back
+        if self.model_name == 'normal':
+            y_min = stan_data.y.min()
+            y_max = stan_data.y.max()
+            for k, v in self.fit_params.items():
+                self.fit_params[k] *= y_max - y_min
+            self.fit_params['m'] += y_min
         
         return self.stan_fit
     
@@ -382,6 +436,9 @@ class ModelBackendBase(ABC):
             raise ValueError("Can't predict prior to fit.")
         
 
+        # Get optimized parameters (or their samples) from fit
+        params = self.fit_params
+        
         # Calculate lower and upper percentile level from interval_width
         lower_level = (1 - interval_width) / 2
         upper_level = lower_level + interval_width
@@ -391,10 +448,6 @@ class ModelBackendBase(ABC):
         # outside the loop
         trend_uncertainty = self.trend_uncertainty(t, interval_width, 
                                                    n_samples)
-        
-        # Get optimized parameters (or their samples) from fit
-        params = self.stan_fit.stan_variables()
-        
         
         # If the stan_fit object is a Laplace object, we have samples,
         # otherwise only a single optimized parameter
@@ -452,12 +505,12 @@ class ModelBackendBase(ABC):
         # quantiles
         quant_kwargs = dict()
         if self.model_name == 'normal':
-            # if isinstance(self.stan_fit, CmdStanLaplace):
-            #     sigma = np.array([p['sigma_obs'] for p in params]).mean()
-            #     quant_kwargs['sigma'] = sigma
-            # else:
-                # quant_kwargs['sigma'] = params['sigma_obs']
-            quant_kwargs['sigma'] = self.stan_data.sigma_obs
+            if isinstance(self.stan_fit, CmdStanLaplace):
+                sigma = np.array([p['sigma_obs'] for p in params]).mean()
+                quant_kwargs['sigma'] = sigma
+            else:
+                quant_kwargs['sigma'] = params['sigma_obs']
+            # quant_kwargs['sigma'] = params['sigma_obs']
         observed_lower = self.quant_func(lower_level, yhat-trend+trend_lower, **quant_kwargs)
         observed_upper = self.quant_func(upper_level, yhat-trend+trend_upper, **quant_kwargs)
         
@@ -474,7 +527,6 @@ class ModelBackendBase(ABC):
         })
         
         return result
-
     
 
     def predict_regression(
@@ -543,6 +595,7 @@ class ModelBackendBase(ABC):
         # Get changepoints from input data, note that therefore this method
         # only works for historical data
         changepoints_int = self.stan_data.t_change
+        
         
         m = pars['m']
         k = pars['k']
@@ -627,7 +680,7 @@ class ModelBackendBase(ABC):
             return upper, lower
         
         # Get the mean delta as Laplace distribution MLE
-        mean_delta = np.abs(self.stan_fit.delta).mean()
+        mean_delta = np.abs(self.fit_params['delta']).mean()
 
         # Separate into historic timestamps (zero uncertainty)
         t_history = t.loc[t <= self.stan_data.t.max()]
@@ -700,33 +753,69 @@ class BinomialConstantN(ModelBackendBase):
     quant_func = lambda self, level, yhat: binom.ppf(level, self.stan_data.N,
                                                      yhat / self.stan_data.N)
         
-    def augment_data(self: Self, stan_data: ModelInputData) -> ModelInputData:
+    def augment_data(
+            self: Self,
+            stan_data: ModelInputData,
+            augmentation_config: BinomialPopulation
+        ) -> ModelInputData:
         """
-        Augment the input data for the stan model with model dependent data. 
+        Augment the input data for the stan model with the population size used
+        for the binomial fit.
 
         Parameters
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
+        augmentation_config : BinomialPopulation
+            Contains configuration parameters 'mode' and 'value' used to
+            determine the population size. Three modes are supported:
+            1. 'constant': value equals the population size
+            2. 'factor': the population size is the maximum of y times value
+            3. 'scale': the population size is a value optimized such that the
+                data are distributed around the expectation value N*p with
+                p = value and N = population size
 
         Returns
         -------
         ModelInputData
             Updated stan_data
-
         """
-        # def distance_to_linear(f, y):
-        #     N = f * y.max()
-        #     p = y / N
-        #     return ((p - 0.5)**2).sum()
+
+        def distance_to_scale(f, y: np.ndarray) -> float:
+            """
+            This function yields the distance between desired scale and data 
+            normalized to a fixed population size N.
+            """
+            N = f * y_max
+            p = y / N
+            return ((p - value)**2).sum()
         
-        # res = minimize(
-        #     lambda f: distance_to_linear(f, stan_data.y),
-        #     x0 = 2,
-        #     bounds = [(1,None)]
-        # )
+        # Prepare data
+        y = stan_data.y
+        y_max = y.max()
+        mode = augmentation_config.mode
+        value = augmentation_config.value
+        # Determine population size depending on mode
+        if mode == 'constant':
+            if value < y_max:
+                raise ValueError("In population mode 'constant' the population "
+                                 f"value (={value}) must be smaller than y_max"
+                                 f" (={y_max})")
+            population = value
+        elif mode == 'factor':
+            population = int(np.ceil(y_max * value))
+        elif mode == 'scale':
+            # Minimize distance_to_scale() with respect to the factor f. f 
+            # determines the population size N via N = y_max * f.
+            res = minimize(
+                lambda f: distance_to_scale(f, y),
+                x0 = 1/value,
+                bounds = [(1,None)]
+            )
+            population = int(np.ceil(res.x[0] * y_max))
+        
         # Estimate a constant population size N for the binomial model
-        stan_data.N = int(4 * stan_data.y.max())#res.x[0]
+        stan_data.N = population
         return stan_data
     
     
@@ -771,9 +860,12 @@ class Normal(ModelBackendBase):
     quant_func = lambda self, level, yhat, sigma: norm.ppf(level, loc = yhat,
                                                            scale = sigma)            
         
-    
-    def augment_data(self: Self, stan_data: ModelInputData) -> ModelInputData:
-        # No modification needed for Normal model
+    def augment_data(
+            self: Self,
+            stan_data: ModelInputData,
+            augmentation_config: None
+        ) -> ModelInputData:
+        # Add observed noise 
         stan_data.sigma_obs = 1;
         return stan_data
     
@@ -794,7 +886,11 @@ class Poisson(ModelBackendBase):
     quant_func = lambda self, level, yhat: poisson.ppf(level, yhat)
         
     
-    def augment_data(self: Self, stan_data: ModelInputData) -> ModelInputData:
+    def augment_data(
+            self: Self,
+            stan_data: ModelInputData,
+            augmentation_config: None
+        ) -> ModelInputData:
         # No modification needed for Poisson model
         return stan_data
     

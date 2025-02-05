@@ -6,8 +6,12 @@
     },
     "metric_config": {
         "metric_name": "y",
-        "model": "binomial constant n",
-        "dtype_kind": "u"
+        "model": "poisson",
+        "dtype_kind": "u",
+        "augmentation_config": {
+            "mode": "scale",
+            "value": 0.5
+        }
     },
     "gloria_config": {
         "n_changepoints": 0,
@@ -18,6 +22,6 @@
         "interval_width": 0.8,
         "uncertainty_samples": 1000,
         "optimize_mode": "MLE",
-        "sample": false
+        "sample": true
     }
 }

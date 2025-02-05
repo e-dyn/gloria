@@ -12,13 +12,12 @@ from gloria.configuration import RunConfig
 from gloria.utilities import cast_series_to_kind
 
 
-
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
 # Note: this only works once per Session. After import Prophet, both imported 
 # CmdStanPy versions (Prophet and Gloria) clash. Therefore, you will need
 # to restart your kernel
-COMPARE_TO_PROPHET = True
+COMPARE_TO_PROPHET = False
 
 SEASONALITIES = {
     'weekly': {
@@ -65,10 +64,12 @@ if __name__ == "__main__":
     
     gloria_pars = {
         **{k: v for k,v in config.data_config if k != "data_source"},
-        **{k: v for k,v in config.metric_config if k != "dtype_kind"},
+        **{k: v for k,v in config.metric_config if k not in ["dtype_kind", "augmentation_config"]},
         **{k: v for k,v in config.gloria_config if k not in ["optimize_mode", "sample"]}
     }
     fit_pars = {k: v for k,v in config.gloria_config if k in ["optimize_mode", "sample"]}
+    
+    # print(config.metric_config.augmentation_config.dict())
 
     model = Gloria(**gloria_pars)
     
@@ -76,7 +77,11 @@ if __name__ == "__main__":
         model.add_seasonality(name, **props)
         
     t_gesamt = 0   
-    _, dt = model.fit(df, **fit_pars)
+    _, dt = model.fit(
+        df,
+        **fit_pars,
+        augmentation_config = config.metric_config.augmentation_config
+    )
     t_gesamt += dt
     new_timestamps = model.make_future_dataframe(periods = 40)
     result = model.predict(new_timestamps)
@@ -107,6 +112,8 @@ if __name__ == "__main__":
     ax.plot(df[timestamp_name], df[metric_name], 'o', label = 'data')
     ax.plot(result[timestamp_name], result['trend'], 'black', label = 'trend')
     ax.plot(result[timestamp_name], result['yhat'], 'red', label = 'fit')
+    ax.plot(result[timestamp_name], result['trend_upper'], 'black', label = 'trend_upper')
+    ax.plot(result[timestamp_name], result['trend_lower'], 'black', label = 'trend_lower')
     ax.fill_between(result[timestamp_name], result['observed_lower'], result['observed_upper'], color = 'gray', alpha=0.3, label = 'ci')
     
     if COMPARE_TO_PROPHET:
