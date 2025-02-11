@@ -6,7 +6,7 @@ TODO:
 ### --- Module Imports --- ###
 # Standard Library
 from pathlib import Path
-from typing import Literal, Optional, Any
+from typing import Literal, Optional, Any, Union
 from time import time
 
 # Third Party
@@ -16,13 +16,11 @@ from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 # Inhouse Packages
-from gloria.constants import _DELIM, _T_INT
+from gloria.constants import _DELIM, _T_INT, _DTYPE_KIND
 from gloria.models import ModelInputData, MODEL_MAP, ModelBackend
 from gloria.regressors import ExternalRegressor, Seasonality
 from gloria.utilities import time_to_integer
-
-### --- Global Constants Definitions --- ###
-
+import gloria.serialize as gs
 
 
 ### --- Class and Function Definitions --- ###
@@ -32,8 +30,8 @@ class Gloria(BaseModel):
     Parameters
     ----------
     model : Literal[tuple(MODEL_MAP.keys())]
-        The distribution model to be used. Can be any of 'poisson' or
-        'binomial constant n'
+        The distribution model to be used. Can be any of 'poisson', 
+        'binomial constant n' or 'normal'
     sampling_value : int
         Sampling frequency is defined by value and unit of corresponding
         sampling period, e.g. a sampling frequency of 0.5 Hz corresponds to
@@ -48,7 +46,7 @@ class Gloria(BaseModel):
         The name of the metric column as expected in the input data frame for
         for the fit-method. The default is 'y'.
     changepoints : pd.Series, optional
-        ist of dates at which to include potential changepoints. If not 
+        list of timestamps at which to include potential changepoints. If not 
         specified (default), potential changepoints are selected automatically.
     n_changepoints : int, optional
         Number of potential changepoints to include. Not used if input 
@@ -84,11 +82,11 @@ class Gloria(BaseModel):
         data. Settings this value to 0 will disable uncertainty estimation.
         Must be greater equal to 0, Default is 1000.
     """
-    model: Literal[tuple(MODEL_MAP.keys())]
+    model: Literal[tuple(MODEL_MAP.keys())] = 'normal'
     sampling_period: str = '1d'
     timestamp_name: str = 'ds'
     metric_name: str = 'y'
-    changepoints: pd.Series = Field(default = None)
+    changepoints: Optional[pd.Series] = Field(default = None)
     n_changepoints: int = Field(ge = 0, default = 25)
     changepoint_range: float = Field(gt = 0, lt = 1, default = 0.8)
     seasonality_mode: Literal['additive', 'multiplicative'] = 'additive'
@@ -130,10 +128,6 @@ class Gloria(BaseModel):
             self.n_changepoints = len(self.changepoints)
 
         # Used for converting the timestamp column to an int colum and back
-        # self.sampling_delta = pd.Timedelta(
-        #     value = self.sampling_value,
-        #     unit = self.sampling_unit
-        # )
         self.sampling_delta = pd.to_timedelta(self.sampling_period)
         
         # Load model backend with stan adapter and predict methods
@@ -187,7 +181,8 @@ class Gloria(BaseModel):
         reserved_names.extend([
             self.timestamp_name,
             self.metric_name,
-            _T_INT
+            _T_INT,
+            _DTYPE_KIND
         ])
         if name in reserved_names:
             raise ValueError(f"Name {name} is reserved.")
@@ -757,7 +752,7 @@ class Gloria(BaseModel):
         return self, t1-t0
     
     
-    def predict(self, timestamps: pd.DataFrame) -> pd.DataFrame:
+    def predict(self: Self, timestamps: pd.DataFrame) -> pd.DataFrame:
         """
         Predict using the fitted Gloria model.
 
@@ -798,7 +793,7 @@ class Gloria(BaseModel):
     
     
     def make_future_dataframe(
-            self,
+            self: Self,
             periods: int,
             include_history: bool = True
         ) -> pd.DataFrame:
@@ -844,6 +839,33 @@ class Gloria(BaseModel):
             ])
         
         return pd.DataFrame({self.timestamp_name: new_timestamps})
+    
+    
+    def model_to_dict(self: Self) -> dict[str, Any]:
+        return gs.model_to_dict(self)
+           
+         
+    def model_to_json(
+            self: Self,
+            filepath: Optional[Path] = None,
+            **kwargs
+        ) -> Union[str, None]:
+        return gs.model_to_json(self, filepath = filepath, **kwargs)
+    
+    
+    @staticmethod
+    def model_from_dict(model_dict: dict[str, Any]) -> Self:
+        return gs.model_from_dict(model_dict)
+    
+    
+    @staticmethod
+    def model_from_json(
+            model_json: Union[Path, str],
+            return_as: Literal['dict', 'model'] = 'model'
+        ) -> Union[dict[str, Any], Self]:
+        return gs.model_from_json(model_json, return_as)
+
+
 
 
 ### --- Main Script --- ###

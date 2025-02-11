@@ -76,7 +76,7 @@ class RunConfig(BaseModel):
     gloria_config: GloriaConfig
     
     def to_json(self, path: Path):
-        config_dict = self.dict()
+        config_dict = self.model_dump()
         with open(path, "w") as file: 
             json.dump(config_dict, file, indent = 4)
             

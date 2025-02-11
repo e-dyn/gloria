@@ -14,9 +14,6 @@ from gloria.utilities import cast_series_to_kind
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
-# Note: this only works once per Session. After import Prophet, both imported 
-# CmdStanPy versions (Prophet and Gloria) clash. Therefore, you will need
-# to restart your kernel
 COMPARE_TO_PROPHET = False
 
 SEASONALITIES = {
@@ -53,14 +50,16 @@ SEASONALITIES = {
 if __name__ == "__main__":
     basepath = Path(__file__).parent
     
+    
     config = RunConfig.load_json(basepath / f'run_configs/{CONFIG_FILE}.json')
+    
     
     timestamp_name = config.data_config.timestamp_name
     metric_name = config.metric_config.metric_name
     df = pd.read_csv(basepath / config.data_config.data_source)
     df[timestamp_name] = pd.to_datetime(df[timestamp_name])
     df[metric_name] = cast_series_to_kind(df[metric_name], config.metric_config.dtype_kind)
-        
+    
     
     gloria_pars = {
         **{k: v for k,v in config.data_config if k != "data_source"},
@@ -68,8 +67,7 @@ if __name__ == "__main__":
         **{k: v for k,v in config.gloria_config if k not in ["optimize_mode", "sample"]}
     }
     fit_pars = {k: v for k,v in config.gloria_config if k in ["optimize_mode", "sample"]}
-    
-    # print(config.metric_config.augmentation_config.dict())
+
 
     model = Gloria(**gloria_pars)
     

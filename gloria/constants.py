@@ -2,18 +2,7 @@
 Constant definitions used throughout the Gloria code
 """
 
-### --- Module Imports --- ###
-# Standard Library
-
-# Third Party
-
-# Inhouse Packages
-
 ### --- Global Constants Definitions --- ###
-
-
-
-### --- Class and Function Definitions --- ###
 
 # Conversion factors to seconds. The keys correspond to pd.Timedelta units
 _T_CONVERSION = {
@@ -29,3 +18,5 @@ _T_CONVERSION = {
 _DELIM = '__delim__'
 # Column name for the timestamp column converted to integer values
 _T_INT = 'ds_int'
+#
+_DTYPE_KIND = 'dtype_kind'

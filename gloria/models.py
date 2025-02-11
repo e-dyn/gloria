@@ -12,7 +12,7 @@ from typing import Union, Literal, Any, Optional
 
 # Third Party
 from cmdstanpy import (CmdStanModel, CmdStanMLE, CmdStanLaplace,
-                       set_cmdstan_path, install_cmdstan, rebuild_cmdstan)
+                       set_cmdstan_path, install_cmdstan)
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator
