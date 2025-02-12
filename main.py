@@ -15,6 +15,9 @@ from gloria.utilities import cast_series_to_kind
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
 COMPARE_TO_PROPHET = False
+# Note: predicting after deserialization currently only works when there is no
+# external regressor
+INCLUDE_SERIALIZATION_STEP = True
 
 SEASONALITIES = {
     'weekly': {
@@ -81,6 +84,16 @@ if __name__ == "__main__":
         augmentation_config = config.metric_config.augmentation_config
     )
     t_gesamt += dt
+    
+    # Demonstration of model serialization and deserialization work flow
+    if INCLUDE_SERIALIZATION_STEP:
+        # Save the model
+        model_path = basepath / 'models/test_model.json'
+        model_json = model.model_to_json(filepath = model_path)
+        # And load it
+        model = Gloria.model_from_json(model_json = model_path,
+                                       return_as = 'model')
+    
     new_timestamps = model.make_future_dataframe(periods = 40)
     result = model.predict(new_timestamps)
     mask = (

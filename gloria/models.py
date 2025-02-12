@@ -212,9 +212,13 @@ class ModelBackendBase(ABC):
         self.model = CmdStanModel(stan_file=self.stan_file)
         # Set the model name as attribute
         self.model_name = model_name
-        # The self.stan_data will be set during fitting to a valid
-        # ModelInputData object. For now they are initilialized to None
+        # The following attributes are evaluated and set during fitting. For
+        # the time being initialize them with None.
         self.stan_data = None
+        self.stan_inits = None
+        self.stan_fit = None
+        self.sample = None
+        self.fit_params = None
     
     
     @abstractmethod
@@ -370,9 +374,11 @@ class ModelBackendBase(ABC):
                 jacobian = jacobian,
                 **kwargs
             )
+            self.sample = True
 
         else:
             self.stan_fit = optimized_model
+            self.sample = False
         
         # Save relevant fit parameters in dictionary
         self.fit_params = {
@@ -449,9 +455,9 @@ class ModelBackendBase(ABC):
         trend_uncertainty = self.trend_uncertainty(t, interval_width, 
                                                    n_samples)
         
-        # If the stan_fit object is a Laplace object, we have samples,
-        # otherwise only a single optimized parameter
-        if isinstance(self.stan_fit, CmdStanLaplace):
+        # If we drew samples using the Laplace algorithm, self.sample is True
+        # In this case we are able to get yhat uppers and lowers.
+        if self.sample:
             # Change dictionary of lists to list of dictionaries for looping
             params = [dict(zip(params.keys(),t)) 
                       for t in zip(*params.values())]

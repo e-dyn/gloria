@@ -494,5 +494,6 @@ BACKEND_ATTRIBUTES = {
                   lambda x: ModelInputData(**set_dict(x))),
     'stan_inits': (lambda x: get_dict(x.model_dump()),
                    lambda x: ModelParams(**set_dict(x))),
-    'fit_params': (get_dict, set_dict)
+    'fit_params': (get_dict, set_dict),
+    'sample': (ident, ident)
 }
