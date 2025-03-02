@@ -13,7 +13,7 @@ from gloria.utilities import cast_series_to_kind
 
 
 ### --- Global Constants Definitions --- ###
-CONFIG_FILE = "run_config"
+CONFIG_FILE = "run_config_browser_data"
 COMPARE_TO_PROPHET = False
 # Note: predicting after deserialization currently only works when there is no
 # external regressor
@@ -26,24 +26,6 @@ SEASONALITIES = {
         'prior_scale': 0.1,
         'mode': 'additive'
     },
-    'monthly': {
-        'period': f'{365.25/12}d',
-        'fourier_order': 3,
-        'prior_scale': 0.1,
-        'mode': 'additive'
-    },
-    'quarterly': {
-        'period': f'{365.25/4}d',
-        'fourier_order': 3,
-        'prior_scale': 0.1,
-        'mode': 'additive'
-    },
-    'yearly': {
-        'period': '365.25d',
-        'fourier_order': 10,
-        'prior_scale': 0.1,
-        'mode': 'additive'
-    }
 }
 
 ### --- Class and Function Definitions --- ###
@@ -51,7 +33,7 @@ SEASONALITIES = {
     
 ### --- Main Script --- ###
 if __name__ == "__main__":
-    basepath = Path(__file__).parent
+    basepath = Path(__file__).parent.parent
     
     
     config = RunConfig.load_json(basepath / f'run_configs/{CONFIG_FILE}.json')
@@ -76,8 +58,26 @@ if __name__ == "__main__":
     
     for name, props in SEASONALITIES.items():
         model.add_seasonality(name, **props)
+    
+    # Add anomaly column as external regressor. Basically as if we knew where 
+    # anomalies will appear.    
+    t_list = ['2024-03-11', '2024-09-13']
+    t_list = [pd.Timestamp(t) for t in t_list]
+    
+    model.add_event(
+        name = 'browser_switch',
+        prior_scale = 10,
+        mode = 'multiplicative',
+        regressor_type = 'IntermittentEvent',
+        event = {
+            'event_type': 'SuperGaussian',
+            'sigma': '11d',
+            'order': 2.5
+        },
+        t_list = t_list
+    )
         
-    t_gesamt = 0   
+    t_gesamt = 0
     _, dt = model.fit(
         df,
         **fit_pars,
@@ -88,14 +88,14 @@ if __name__ == "__main__":
     # Demonstration of model serialization and deserialization work flow
     if INCLUDE_SERIALIZATION_STEP:
         # Save the model
-        model_path = basepath / 'models/test_model.json'
-        model_json = model.model_to_json(filepath = model_path)
+        model_path = basepath / 'models/test_model_browser.json'
+        model_json = model.to_json(filepath = model_path, indent = 2)
         # And load it
-        model = Gloria.model_from_json(model_json = model_path,
-                                       return_as = 'model')
+        model = Gloria.from_json(model_json = model_path,
+                                 return_as = 'model')
     
-    new_timestamps = model.make_future_dataframe(periods = 40)
-    result = model.predict(new_timestamps)
+    data = model.make_future_dataframe(periods = 40)
+    result = model.predict(data)
     mask = (
         (result[timestamp_name] - result[timestamp_name].min()) / pd.Timedelta(config.data_config.sampling_period)
     ).apply(float.is_integer)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
             model_prophet.add_seasonality(name, **props)
         df_prophet = df.rename(columns={timestamp_name: "ds", metric_name: "y"})
         model_prophet.fit(df_prophet)
-        result_prophet = model_prophet.predict(new_timestamps)
+        result_prophet = model_prophet.predict(data)
         result_prophet = result_prophet[mask]
             
     
@@ -127,6 +127,7 @@ if __name__ == "__main__":
     ax.plot(result[timestamp_name], result['trend_lower'], 'black', label = 'trend_lower')
     ax.fill_between(result[timestamp_name], result['observed_lower'], result['observed_upper'], color = 'gray', alpha=0.3, label = 'ci')
     
+    
     if COMPARE_TO_PROPHET:
         ax.plot(result_prophet[timestamp_name], result_prophet['trend'], 'green', linestyle = '--', label = 'trend prophet')
         ax.plot(result_prophet[timestamp_name], result_prophet['yhat'], 'green', linestyle = '--', label = 'fit prophet')
@@ -135,4 +136,4 @@ if __name__ == "__main__":
     
     plt.legend()
     plt.show()
- 
+    

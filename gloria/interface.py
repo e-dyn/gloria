@@ -1,6 +1,47 @@
 """
 TODO:
     - implement plot functions
+    - docstring for the module
+    - Test what happens if Seasonality/External/Event Regressor is added 
+      multiple times. Will it be overwritten or is there another regressor with
+      the same name. It should be overwritten
+    - As convenience function implement __repr__/__str__? We could even 
+      implement __add__ to be able to write model + Seasonality, instead of
+      m.add_seasonality() or other regressors...
+    - Should regressors really be overwritten by default? Gloria handles it
+      that way, because Prophet does, but shouldn't we provide a "overwrite"
+      flag? Otherwise a note in the documentation is helpful
+    - During preprocessing give priority to features manually added features
+      over features added via configurators
+    - remove timing from fitting procedure
+    - There was a comment that n_changepoints = 0 or 1 are not handled
+      correctly during set_changepoints. Can this be reproduced?
+Global TODOs
+    - Check docstrings for errors (function signatures or parameter defaults 
+                                   may have changed over time)
+    - Check type hints
+    - We will support at least down to Python 3.9, which didn't have " | " as
+      alias for Union[a,b]. Therefor replace the pipe in all Type Hints with
+      Unions
+    - Remove if __name__ == '__main__' from all modules
+    - Add Disclaimer to all modules, copyright
+    - Replace Self by actual class at least in docstring. Is replacement in
+      type hints allowed?
+    - global constants for default values of prior_scale and mode (use those
+      here and for protocols)
+    - How do we want to serve the API? Currently imports are a bit complicated
+      with "from gloria.x.y import A". This can be simplified to "from gloria 
+      import A". Look e.g. how pandas is doing it: the package structure can
+      be arbitrary, you only have to create a central centry api.py that 
+      gathers all functions and classes and then import them in __init__.py of
+      Gloria. Or you skip the api.py step and directly import everything to
+      __init__.py
+    - Currently, many places Timedeltas are just accepted as string. It would
+      be more natural if they are also accepted as pd.Timedelta
+For Documentation
+    - Summarize differences in features and API between Gloria and Prophet. For
+      missing feature, describe workarounds. For additional features, show 
+      applications.
 """
 
 ### --- Module Imports --- ###
@@ -16,11 +57,15 @@ from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 # Inhouse Packages
-from gloria.constants import _DELIM, _T_INT, _DTYPE_KIND
+from gloria.constants import (_DELIM, _T_INT, _DTYPE_KIND, 
+                              _EVENT_PRIOR_SCALE, _EVENT_MODE,
+                              _SEASONALITY_PRIOR_SCALE, _SEASONALITY_MODE)
+from gloria.events import Event
 from gloria.models import ModelInputData, MODEL_MAP, ModelBackend
-from gloria.regressors import ExternalRegressor, Seasonality
+from gloria.regressors import ExternalRegressor, Seasonality, Regressor
 from gloria.utilities import time_to_integer
 import gloria.serialize as gs
+from gloria.protocols.protocol_base import Protocol
 
 
 ### --- Class and Function Definitions --- ###
@@ -32,13 +77,9 @@ class Gloria(BaseModel):
     model : Literal[tuple(MODEL_MAP.keys())]
         The distribution model to be used. Can be any of 'poisson', 
         'binomial constant n' or 'normal'
-    sampling_value : int
-        Sampling frequency is defined by value and unit of corresponding
-        sampling period, e.g. a sampling frequency of 0.5 Hz corresponds to
-        a sampling period of 2 seconds [0.5 Hz = 1/(2 s)], leading to 
-        sampling_value = 2 and sampling_unit = s.
-    sampling_unit : Literal[tuple(_T_CONVERSION.keys())]
-        See definition of sampling value. Must be a valid unit for pd.Timedelta
+    sampling_period : pd.Timedelta | str
+        Spacing between two adjacent samples either as pandas Timedelta or an
+        equivalent string
     timestamp_name : str, optional
         The name of the timestamp column as expected in the input data frame
         for the fit-method. The default is 'ds'.
@@ -66,7 +107,16 @@ class Gloria(BaseModel):
         Parameter modulating the strength of the seasonality model. Larger 
         values allow the model to fit larger seasonal fluctuations, smaller
         values dampen the seasonality. Can be specified for individual
-        seasonalities using add_seasonality. 
+        seasonalities using add_seasonality.
+    event_mode : Literal['additive', 'multiplicative'], optional
+        Whether event components are treated as additive or multiplicative
+        features by default. Can be overwritten if a mode is explicitly
+        provided to the regressor. Default is 'additive'.
+    event_prior_scale : float, optional
+        Parameter modulating the strength of additional event regressors. 
+        Larger values allow the model to fit larger event impact, smaller
+        values dampen the event impact. Can be specified for individual
+        events using add_event. 
     changepoint_prior_scale : float, optional
         Parameter modulating the flexibility of the automatic changepoint 
         selection. Large values will allow many changepoints, small values will 
@@ -83,14 +133,17 @@ class Gloria(BaseModel):
         Must be greater equal to 0, Default is 1000.
     """
     model: Literal[tuple(MODEL_MAP.keys())] = 'normal'
-    sampling_period: str = '1d'
+    sampling_period: pd.Timedelta | str = '1d'
     timestamp_name: str = 'ds'
     metric_name: str = 'y'
     changepoints: Optional[pd.Series] = Field(default = None)
     n_changepoints: int = Field(ge = 0, default = 25)
     changepoint_range: float = Field(gt = 0, lt = 1, default = 0.8)
-    seasonality_mode: Literal['additive', 'multiplicative'] = 'additive'
-    seasonality_prior_scale: float = Field(gt = 0, default = 10.0)
+    seasonality_mode: Literal['additive', 'multiplicative'] = _SEASONALITY_MODE
+    seasonality_prior_scale: float = Field(gt = 0,
+                                           default = _SEASONALITY_PRIOR_SCALE)
+    event_mode: Literal['additive', 'multiplicative'] = _EVENT_MODE
+    event_prior_scale: float = Field(gt = 0, default = _EVENT_PRIOR_SCALE)
     changepoint_prior_scale: float = Field(gt = 0, default = 0.05)
     interval_width: float = Field(gt = 0, lt = 1, default = 0.8)
     uncertainty_samples: int = Field(ge = 0, default = 1000)
@@ -127,26 +180,30 @@ class Gloria(BaseModel):
             )
             self.n_changepoints = len(self.changepoints)
 
-        # Used for converting the timestamp column to an int colum and back
-        self.sampling_delta = pd.to_timedelta(self.sampling_period)
+        # Sampling_period is used for converting the timestamp column to an int
+        # colum and back
+        self.sampling_period = pd.Timedelta(self.sampling_period)
         
         # Load model backend with stan adapter and predict methods
         self.model_backend = ModelBackend(model = self.model)
         
         # Set during fitting or by other methods
-        self.external_regressors = []
+        self.external_regressors = dict()
         self.first_timestamp = None
         self.history = None
         self.modes = dict()
         self.prior_scales = dict()
-        self.seasonalities = []
+        self.seasonalities = dict()
+        self.events = dict()
         self.X = pd.DataFrame()
+        self.protocols = []
         
         
     def validate_column_name(
             self: Self,
             name: str,
             check_seasonalities: bool = True,
+            check_events: bool = True,
             check_regressors: bool = True
         ) -> None:
         """
@@ -158,15 +215,21 @@ class Gloria(BaseModel):
             The name to validate.
         check_seasonalities : bool, optional
             Check if name already used for seasonality. The default is True.
+        check_events : bool, optional
+            Check if name already used as an event. The default is True.
         check_regressors : bool, optional
             Check if name already used for regressor The default is True.
 
         Raises
         ------
+        TypeError
+            If the passed name is not a string
         ValueError
             Raised in case the name is forbidden.
         """
 
+        if not isinstance(name, str):
+            raise TypeError("Name must be a string")
         # The _DELIM constant is used for constructing intermediate column
         # names, hence it's not allowed to be used within given names
         if _DELIM in name:
@@ -187,13 +250,29 @@ class Gloria(BaseModel):
         if name in reserved_names:
             raise ValueError(f"Name {name} is reserved.")
             
-        if (check_seasonalities 
-            and name in [s.name for s in self.seasonalities]):
+        if check_seasonalities and name in self.seasonalities:
             raise ValueError(f"Name {name} already used for a seasonality.")
-        if (check_regressors 
-            and name in [r.name for r in self.external_regressors]):
+        if check_events and name in self.events:
+            raise ValueError(f"Name {name} already used for an event.")
+        if check_regressors and name in self.external_regressors:
             raise ValueError(f"Name {name} already used for a regressor.")
+
+
+    def add_protocol(
+            self: Self,
+            protocol: Protocol
+        ) -> Self:
+        if self.model_backend.fit_params is not None:
+            raise Exception(
+                "Configurators must be added prior to model fitting."
+            )
             
+        if not isinstance(protocol, Protocol):
+            raise TypeError("The protocol must be of type 'Protocol'"
+                            f", but is {type(protocol)}.")
+            
+        self.protocols.append(protocol)
+
 
     def add_external_regressor(
             self: Self,
@@ -230,14 +309,15 @@ class Gloria(BaseModel):
         -------
         Self
             Updated Gloria object
-        """        
-        if self.history is not None:
+        """
+        if self.model_backend.fit_params is not None:
             raise Exception(
                 "Regressors must be added prior to model fitting."
             )
         # Check that regressor name can be used. An error is raised if not
         self.validate_column_name(name, check_regressors = False)
         # Validate and set prior_scale and mode
+        prior_scale = float(prior_scale)
         if prior_scale <= 0:
             raise ValueError('Prior scale must be > 0')
         if mode is None:
@@ -246,11 +326,11 @@ class Gloria(BaseModel):
             raise ValueError("Mode must be 'additive' or 'multiplicative'")
         
         # Create Regressor and add it to the external regressor list
-        self.external_regressors.append(ExternalRegressor(
+        self.external_regressors[name] = ExternalRegressor(
             name = name,
             prior_scale = prior_scale,
             mode = mode
-        ))
+        )
         return self
 
     
@@ -296,8 +376,7 @@ class Gloria(BaseModel):
         Self
             Updated Gloria object
         """
-
-        if self.history is not None:
+        if self.model_backend.fit_params is not None:
             raise Exception(
                 "Seasonalities must be added prior to model fitting."
             )
@@ -306,10 +385,9 @@ class Gloria(BaseModel):
         
         # Validate and set prior_scale, mode, and fourier_order
         if prior_scale is None:
-            ps = self.seasonality_prior_scale
-        else:
-            ps = float(prior_scale)
-        if ps <= 0:
+            prior_scale = self.seasonality_prior_scale
+        prior_scale = float(prior_scale)
+        if prior_scale <= 0:
             raise ValueError("Prior scale must be > 0")
         if (fourier_order <= 0) or (not isinstance(fourier_order, int)):
             raise ValueError('Fourier Order must be an integer > 0')
@@ -320,13 +398,97 @@ class Gloria(BaseModel):
         
         # Create seasonality regressor and add it to the seasonality regressor
         # list
-        self.seasonalities.append(Seasonality(
+        self.seasonalities[name] = Seasonality(
             name = name,
-            period = pd.to_timedelta(period) / self.sampling_delta,
+            period = pd.to_timedelta(period) / self.sampling_period,
             fourier_order = fourier_order,
             prior_scale = prior_scale,
             mode = mode
-        ))
+        )
+        return self
+    
+    
+    def add_event(
+            self: Self,
+            name: str,
+            prior_scale: float,
+            regressor_type: str,
+            event: Union[Event, dict[str, Any]],
+            mode: Optional[Literal['additive', 'multiplicative']] = None,
+            **regressor_kwargs: dict[str, Any]
+        ) -> Self:
+        """
+        Add an event to be used for fitting and predicting.
+
+        Parameters
+        ----------
+        name : str
+            name of the event.
+        prior_scale : float
+            The regression coefficient is given a prior with the specified 
+            scale parameter. Decreasing the prior scale will add additional 
+            regularization.
+        regressor_type : str
+            Type of the underlying event regressor.
+        event : Union[Event, dict[str, Any]]
+            The base event used by the event regressor.
+        mode : Optional[Literal['additive', 'multiplicative']], optional
+            Whether regressor is treated as additive or multiplicative
+            feature. If None is provided (default), self.event_mode is used.
+        **regressor_kwargs : dict[str, Any]
+            Additional keyword arguments necessary to create the event
+            regressor.
+
+        Raises
+        ------
+        Exception
+            Raised in case the method is called on a fitted Gloria model.
+        ValueError
+            Raised in case of invalid prior scales or event modes.
+
+        Returns
+        -------
+        Gloria
+            The Gloria model updated with the new event
+
+        """
+        
+        if self.model_backend.fit_params is not None:
+            raise Exception(
+                "Event must be added prior to model fitting."
+            )
+        
+        # Check that event name can be used. An error is raised if not
+        self.validate_column_name(name, check_events = False)
+        
+        # Validate and set prior_scale, mode, and fourier_order
+        if prior_scale is None:
+            prior_scale = self.event_prior_scale
+        prior_scale = float(prior_scale)
+        if prior_scale <= 0:
+            raise ValueError("Prior scale must be > 0")
+        if mode is None:
+            mode = self.event_mode
+        if mode not in ['additive', 'multiplicative']:
+            raise ValueError('mode must be "additive" or "multiplicative"')
+        
+        # As the event regressor is built from a dictionary, convert the event
+        # to a dictionary in case it was an Event instance.
+        if isinstance(event, Event):
+            event = event.to_dict()
+        
+        # Build the regressor dictionary
+        regressor_dict = {
+            'name': name,
+            'prior_scale': prior_scale,
+            'mode': mode,
+            'regressor_type': regressor_type,
+            'event': event,
+            **regressor_kwargs
+        }        
+          
+        # Build the event regressor and add it to the model
+        self.events[name] = Regressor.from_dict(regressor_dict)
         return self
 
 
@@ -362,7 +524,7 @@ class Gloria(BaseModel):
                 f"Timestamp column '{self.timestamp_name}' is missing from"
                 " DataFrame."
             )
-        if df.index.name == 'ds':
+        if df.index.name == self.timestamp_name:
             raise KeyError(
                 f"Timestamp '{self.timestamp_name}' is set as index but"
                 " expected to be a column"
@@ -386,20 +548,19 @@ class Gloria(BaseModel):
             raise ValueError(
                 f"Timestamp column '{self.timestamp_name}' is not sorted."
             )
-        
         # Check that timestamps lie on the expected grid. Note that no error
         # will be raised as long as the data lie on multiples of the expected
         # grid, eg. it is accepted, if daily sampling is expected, but the data
         # are sampled every other day.
         sampling_is_valid = (
-            (time - time.min()) / self.sampling_delta
+            (time - time.min()) / self.sampling_period
         ).apply(float.is_integer).all()
         if not sampling_is_valid:
             raise ValueError(
                 f"Timestamp column '{self.timestamp_name}' is not sampled with"
                 f" expected frequency of 1 / ({self.sampling_value}"
                 f" {self.sampling_unit})"
-            )
+            )       
         
         # Metric validation
         if self.metric_name not in df:
@@ -421,8 +582,8 @@ class Gloria(BaseModel):
             )
 
         # Regressor validation
-        regressor_names = [r.name for r in self.external_regressors]
-        for name in regressor_names:
+        
+        for name in self.external_regressors:
             if name not in df:
                 raise KeyError(
                     f"Regressor column '{name}' is missing from DataFrame."
@@ -431,18 +592,16 @@ class Gloria(BaseModel):
                 raise TypeError(f"Regressor column '{name}' is non-numeric.")
             if df[name].isnull().any():
                 raise ValueError(f"Regressor column '{name}' contains NaN.")
-                
+         
         return df.loc[:,[
             self.timestamp_name,
             self.metric_name,
-            *regressor_names
+            *self.external_regressors.keys()
         ]].copy()
 
     
     def set_changepoints(self: Self) -> Self:
         """
-        !!! n_changepoints = 0 and 1 is not yet handled correctly !!!
-        
         Sets changepoints
 
         Sets changepoints to the dates and corresponding integer values of
@@ -503,7 +662,7 @@ class Gloria(BaseModel):
             self.changepoints_int = time_to_integer(
                 self.changepoints,
                 self.first_timestamp,
-                self.sampling_delta
+                self.sampling_period
             )
             self.changepoints_int = pd.Series(
                 self.changepoints_int,
@@ -543,17 +702,17 @@ class Gloria(BaseModel):
         time_as_int = time_to_integer(
             time,
             self.first_timestamp,
-            self.sampling_delta
+            self.sampling_period
         )
         history[_T_INT] = time_as_int
         
         return history
     
     
-    def make_all_features_given_time(
+    def make_all_features(
             self: Self,
-            t_int: pd.Series
-        ) -> tuple[pd.DataFrame, dict[str,float], dict[str,str]]:
+            data: Optional[pd.DataFrame] = None
+        ) -> tuple[pd.DataFrame, dict[str,float], dict[str,str]]:        
         """
         Creates the feature matrix X containing all regressors used in the fit
         and for prediction. Also returns prior scales and modes for all
@@ -561,9 +720,11 @@ class Gloria(BaseModel):
 
         Parameters
         ----------
-        t_int : pd.Series
-            An integer array corresponding to the timestamps at which the
-            features are to be evaluated
+        data : Optional[pd.DataFrame], optional
+            Input dataframe. It must contain at least a column with integer
+            timestamps (for column name cf. to _T_INT constant) as well as
+            the external regressor columns associated with the model. Default
+            of data is None, in which case the model history will be used.
 
         Returns
         -------
@@ -576,22 +737,32 @@ class Gloria(BaseModel):
             A dictionary mapping feature -> mode
 
         """
+        # If not data were passed in, assume history as data. This is the case
+        # if called during preprocessing
+        if data is None:
+            data = self.history
+        
         # Features are either seasonalities or external regressors. Both have
         # a make_feature() method. Therefore stitch all features together and
         # subsequently call the methods in a single loop
         
         # 1. Seasonalities
         make_features = [
-            lambda s=s: s.make_feature(t_int) 
-            for s in self.seasonalities
+            lambda s=s: s.make_feature(data[_T_INT]) 
+            for s in self.seasonalities.values()
         ]
         # 2. External Regressors
         make_features.extend([
             lambda er=er: er.make_feature(
-                t_int,
-                self.history[er.name]
+                data[_T_INT],
+                data[er.name]
             )
-            for er in self.external_regressors
+            for er in self.external_regressors.values()
+        ])
+        # 3. Event Regressors
+        make_features.extend([
+            lambda event=event: event.make_feature(data[self.timestamp_name])
+            for event in self.events.values()
         ])
     
         # Make the features and save all feature matrices along with prior
@@ -612,37 +783,6 @@ class Gloria(BaseModel):
             X = pd.DataFrame()
         
         return X, prior_scales, modes
-    
-    def make_all_features(self: Self) -> Self:
-        """
-        Creates the feature matrix X containing all regressors used in the fit
-        and for prediction. Also returns prior scales and modes for all
-        features.
-        
-        The difference to self.make_all_features_given_time() is that this
-        method is used explicitly for fitting and hence takes the timestamps
-        of the historical data.
-
-        Raises
-        ------
-        Exception
-            If anyone tries to call the method prior to the fit
-
-        Returns
-        -------
-        Self
-            Updated Gloria object
-        """
-        # Mostly because timestamp column must have been converted using
-        # time_to_integer
-        if self.history is None:
-            raise Exception('make_all_features() cannot be called directly.')
-        
-        self.X, self.prior_scales, self.modes = (
-            self.make_all_features_given_time(self.history[_T_INT])
-        )
-           
-        return self
     
     
     def preprocess(
@@ -671,9 +811,21 @@ class Gloria(BaseModel):
         self.history.sort_values(by = self.timestamp_name, inplace = True)
         # Add a colum with mapping the timestamps to integer values
         self.history = self.time_to_integer(self.history)
+        
+        # Execute protocols to further set up the model
+        for protocol in self.protocols:
+            protocol.set_events(
+                model = self,
+                timestamps = self.history[self.timestamp_name]
+            )
+            protocol.set_seasonalities(
+                model = self,
+                timestamps = self.history[self.timestamp_name]
+            )
+        
         # Create The feature matrix of all seasonal and external regressor
         # components
-        self.make_all_features()
+        self.X, self.prior_scales, self.modes = self.make_all_features()
         
         # Set changepoints according to changepoint parameters set by user
         self.set_changepoints()
@@ -733,12 +885,11 @@ class Gloria(BaseModel):
         Self
             Updated Gloria object
         """
-        if self.history is not None:
+        if self.model_backend.fit_params is not None:
             raise Exception('Gloria object can only be fit once. '
                             'Instantiate a new object.')
         
         input_data = self.preprocess(data)
-        
         
         t0 = time()
         self.model_backend.fit(
@@ -752,14 +903,16 @@ class Gloria(BaseModel):
         return self, t1-t0
     
     
-    def predict(self: Self, timestamps: pd.DataFrame) -> pd.DataFrame:
+    def predict(self: Self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Predict using the fitted Gloria model.
 
         Parameters
         ----------
-        timestamps : pd.Series
-            A Series containing the timestamps for the prediction
+        data : pd.DataFrame
+            Input dataframe. It must contain at least a timestamp column named 
+            according to the models timestamp_name as well as the external 
+            regressor columns associated with the model.
 
         Returns
         -------
@@ -769,25 +922,27 @@ class Gloria(BaseModel):
         """
         # First convert to integer timestamps with respect to first timestamp
         # and sampling_delta of training data
-        timestamps_int = time_to_integer(
-            timestamps[self.timestamp_name],
+        data = data.copy()
+        data[_T_INT] = time_to_integer(
+            data[self.timestamp_name],
             self.first_timestamp,
-            self.sampling_delta
+            self.sampling_period
         )
         
         # Create the regressor matrix at desired timestamps
-        X, _, _ = self.make_all_features_given_time(timestamps_int)
+        X, _, _ = self.make_all_features(data)
         
         # Call the prediction method of the model backend
         prediction = self.model_backend.predict(
-            timestamps_int,
+            data[_T_INT],
             X,
             self.interval_width,
             self.uncertainty_samples,
         )
         
         # Insert timestamp into result
-        prediction.insert(0, self.timestamp_name, timestamps.values)
+        prediction.insert(0, self.timestamp_name,
+                          data[self.timestamp_name].values)
         
         return prediction
     
@@ -826,9 +981,9 @@ class Gloria(BaseModel):
         
         # Create series of timestamps extending forward from the training data
         new_timestamps = pd.Series(pd.date_range(
-            start = self.last_timestamp + self.sampling_delta,
+            start = self.last_timestamp + self.sampling_period,
             periods = periods,
-            freq = self.sampling_delta
+            freq = self.sampling_period
         ))
         
         # If desired attach training timestamps at the beginning
@@ -838,14 +993,15 @@ class Gloria(BaseModel):
                 new_timestamps
             ])
         
-        return pd.DataFrame({self.timestamp_name: new_timestamps})
+        return (pd.DataFrame({self.timestamp_name: new_timestamps})
+                .reset_index(drop = True))
     
     
-    def model_to_dict(self: Self) -> dict[str, Any]:
+    def to_dict(self: Self) -> dict[str, Any]:
         return gs.model_to_dict(self)
            
          
-    def model_to_json(
+    def to_json(
             self: Self,
             filepath: Optional[Path] = None,
             **kwargs
@@ -854,20 +1010,13 @@ class Gloria(BaseModel):
     
     
     @staticmethod
-    def model_from_dict(model_dict: dict[str, Any]) -> Self:
+    def from_dict(model_dict: dict[str, Any]) -> Self:
         return gs.model_from_dict(model_dict)
     
     
     @staticmethod
-    def model_from_json(
+    def from_json(
             model_json: Union[Path, str],
             return_as: Literal['dict', 'model'] = 'model'
         ) -> Union[dict[str, Any], Self]:
         return gs.model_from_json(model_json, return_as)
-
-
-
-
-### --- Main Script --- ###
-if __name__ == "__main__":
-    basepath = Path(__file__).parent

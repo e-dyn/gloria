@@ -1,12 +1,12 @@
 {
     "data_config": {
-        "data_source": "data/simulated/2025-02-19_binomial_test_n02.csv",
+        "data_source": "data/real/browserversiondf.csv",
         "sampling_period": "1d",
-        "timestamp_name": "ds"
+        "timestamp_name": "Date"
     },
     "metric_config": {
-        "metric_name": "y",
-        "model": "binomial constant n",
+        "metric_name": "Visits",
+        "model": "poisson",
         "dtype_kind": "u",
         "augmentation_config": {
             "mode": "constant",
@@ -14,11 +14,10 @@
         }
     },
     "gloria_config": {
-        "n_changepoints": 10,
+        "n_changepoints": 25,
         "changepoint_range": 0.8,
         "seasonality_mode": "additive",
-        "seasonality_prior_scale": 10.0,
-        "event_prior_scale": 10,
+        "seasonality_prior_scale": 50.0,
         "changepoint_prior_scale": 0.05,
         "interval_width": 0.8,
         "uncertainty_samples": 1000,

@@ -1,5 +1,8 @@
 """
 Constant definitions used throughout the Gloria code
+
+TODO:
+    - Bring some order into the constants
 """
 
 ### --- Global Constants Definitions --- ###
@@ -18,5 +21,16 @@ _T_CONVERSION = {
 _DELIM = '__delim__'
 # Column name for the timestamp column converted to integer values
 _T_INT = 'ds_int'
-#
+# Key to be used for pandas series dtype.kind while serializing Gloria models
 _DTYPE_KIND = 'dtype_kind'
+# Column name for holidays within the self generated holiday dataframes
+_HOLIDAY = 'holiday'
+
+# Default settings
+_EVENT_PRIOR_SCALE = 10
+_EVENT_MODE = 'additive'
+_SEASONALITY_PRIOR_SCALE = 10
+_SEASONALITY_MODE = 'additive'
+
+# Cmdstan Version to use for the Gloria model backend
+_CMDSTAN_VERSION = "2.36.0"

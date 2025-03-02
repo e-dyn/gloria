@@ -21,8 +21,9 @@ if TYPE_CHECKING:
     from gloria import Gloria
 from gloria.constants import _DTYPE_KIND
 from gloria.models import ModelInputData, ModelBackend, ModelParams, MODEL_MAP
-from gloria.regressors import ExternalRegressor, Seasonality
+from gloria.regressors import Regressor
 from gloria.utilities import cast_series_to_kind
+from gloria.protocols.protocol_base import Protocol
 
 
 ### --- Class and Function Definitions --- ###
@@ -130,49 +131,90 @@ def set_pddataframe(dict_in: dict[str, Any]) -> pd.DataFrame:
     return data_out
 
 
-def get_seasonalities(data_in: list[Seasonality]) -> list[dict[str, Any]]:
+def get_regressors(data_in: dict[str, Regressor]) -> list[dict[str, Any]]:
     """
-    Converts a list of Seasonality objects to a dictionary of json-serializable
-    data types.
+    Converts a dictionary of Regressor objects to a dictionary of json-
+    serializable data types.
 
     Parameters
     ----------
-    data_in : list[Seasonality]
-        List of Seasonality objects to be converted to dictionary
+    data_in : dict[str, Regressor]
+        List of Regressor objects to be converted to dictionary
 
     Returns
     -------
     list_out : list[dict[str, Any]]
         JSON serializable dictionary containing data of the input list.
     """
-    list_out = [season.model_dump() for season in data_in]
+    list_out = [regressor.to_dict() for regressor in data_in.values()]
     return list_out
        
 
-def set_seasonalities(
+def set_regressors(
         list_in: list[dict[str, Any]]
-    ) -> list[Seasonality]:
+    ) -> dict[str, Regressor]:
     """
-    Takes a list of dictionaries as returned by get_seasonalities() and 
-    restores the original list of Seasonality objects    
+    Takes a list of dictionaries as returned by get_regressors() and 
+    restores the original dictionary of Regressor objects    
 
     Parameters
     ----------
     list_in : list[dict[str, Any]]
-        list of dictionaries containing the Seasonality object data
+        list of dictionaries containing the Regressor object data
 
     Returns
     -------
-    data_out : list[Seasonality]
-        Input data converted to list of Seasonality objects
+    data_out : dict[str, Regressor]
+        Input data converted to list of Regressor objects
     """
-    data_out = [Seasonality(
-        name = season['name'],
-        period = season['period'],
-        fourier_order = season['fourier_order'],
-        prior_scale = season['prior_scale'],
-        mode = season['mode']
-    ) for season in list_in]
+    data_out = {
+        regressor['name']: Regressor.from_dict(regressor) 
+        for regressor in list_in
+    }
+    
+    return data_out
+
+
+def get_protocols(data_in: list[Protocol]) -> list[dict[str, Any]]:
+    """
+    Converts a list of Protocol objects to a dictionary of json-serializable
+    data types.
+
+    Parameters
+    ----------
+    data_in : list[Regressor]
+        List of Protocol objects to be converted to dictionary
+
+    Returns
+    -------
+    list_out : list[dict[str, Any]]
+        JSON serializable dictionary containing data of the input list.
+    """
+    list_out = [protocol.to_dict() for protocol in data_in]
+    return list_out
+       
+
+def set_protocols(
+        list_in: list[dict[str, Any]]
+    ) -> list[Protocol]:
+    """
+    Takes a list of dictionaries as returned by get_protocols() and 
+    restores the original list of Protocol objects    
+
+    Parameters
+    ----------
+    list_in : list[dict[str, Any]]
+        list of dictionaries containing the Protocol object data
+
+    Returns
+    -------
+    data_out : list[Protocol]
+        Input data converted to list of Protocol objects
+    """
+    data_out = [
+        Protocol.from_dict(protocol)
+        for protocol in list_in
+    ]
     
     return data_out
 
@@ -457,7 +499,6 @@ def model_from_json(
 # ie. they are json-serializable without further processing
 SIMPLE_ATTRIBUTES = [
     'model',
-    'sampling_period',
     'timestamp_name',
     'metric_name',
     'n_changepoints',
@@ -480,12 +521,14 @@ GLORIA_ATTRIBUTES = {
     'changepoints_int': (get_pdseries, set_pdseries),
     'first_timestamp': (str, pd.Timestamp),
     'last_timestamp': (str, pd.Timestamp),
+    'sampling_period': (str, pd.Timedelta),
     'history': (get_pddataframe, set_pddataframe),
     'X': (get_pddataframe, set_pddataframe),
-    'seasonalities': (get_seasonalities, set_seasonalities),
+    'seasonalities': (get_regressors, set_regressors),
+    'protocols': (get_protocols, set_protocols),
     'model_backend': (get_backend, set_backend),
-    'external_regressors': (lambda x: [er.model_dump() for er in x],
-                            lambda x: [ExternalRegressor(**er) for er in x])
+    'external_regressors': (get_regressors, set_regressors),
+    'events': (get_regressors, set_regressors)
 }
 
 # Same as Gloria attributes, only for the nested model_backend object
@@ -493,7 +536,7 @@ BACKEND_ATTRIBUTES = {
     'stan_data': (lambda x: get_dict(x.model_dump()),
                   lambda x: ModelInputData(**set_dict(x))),
     'stan_inits': (lambda x: get_dict(x.model_dump()),
-                   lambda x: ModelParams(**set_dict(x))),
+                    lambda x: ModelParams(**set_dict(x))),
     'fit_params': (get_dict, set_dict),
     'sample': (ident, ident)
 }

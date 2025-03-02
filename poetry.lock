@@ -981,13 +981,13 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "holidays"
-version = "0.64"
+version = "0.66"
 description = "Open World Holidays Framework"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "holidays-0.64-py3-none-any.whl", hash = "sha256:df5bd6efce61f2eafe235bddc847d4a9a3adeff0270711516588aeeef4ba98b7"},
-    {file = "holidays-0.64.tar.gz", hash = "sha256:c9ebd1b0391700cadeb4fab88274833ee7f1f355966e0486068ec0816122d26a"},
+    {file = "holidays-0.66-py3-none-any.whl", hash = "sha256:76a84de3496e21fd67eff69a9c0be07fc689b75b62945c157498748f43be31ab"},
+    {file = "holidays-0.66.tar.gz", hash = "sha256:b7d5168c86c0dfeb7f9ffdfea62514e2ced91ce46bed4513bc147b40322d1aa5"},
 ]
 
 [package.dependencies]
@@ -4313,4 +4313,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "3d38e883610d161ce8dfea1108e4a2343ae3ebc53e63e251e83588186e03131f"
+content-hash = "3b0ce74f0afa5f1d5787f5146dfc2d4c5f6c3048adbf0e05b5ac02f6ef6e17c0"

@@ -1,6 +1,13 @@
 """
 TODO:
-    - Control the modes with which N is chosen in binomial constant N
+    - Docstring for the module
+    - Appropriate regressor scaling. Idea: (1) the piece-wise-linear estimation
+      in calculate_initial_parameters also returns the residuals
+        res = y_scaled - trend
+      (2) Find the scale of the residuals, eg. their standard deviation
+      (3) Set regressor scales to the residual scale
+      Also consider this in conjunction with estimating initial values for all
+      beta. And probably reconsider reparametrizing the Stan-models.
 """
 
 ### --- Module Imports --- ###
@@ -22,7 +29,7 @@ from scipy.optimize import minimize
 from typing_extensions import Self
 
 # Inhouse Packages
-
+from gloria.constants import _CMDSTAN_VERSION
 
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
@@ -187,7 +194,7 @@ class ModelBackendBase(ABC):
     The model backend is in charge of passing data and model parameters to the
     stan code as well as distribution model dependent prediction
     """
-    CMDSTAN_VERSION = "2.36.0"
+    
     
     def __init__(self: Self, model_name: str, install = True) -> None:
         """
@@ -202,7 +209,7 @@ class ModelBackendBase(ABC):
         # Set explicit local CmdStan path to avoid conflicts with other CmdStan
         # installations
         models_path = Path(__file__).parent / "stan_models"
-        cmdstan_path = models_path / f"cmdstan-{self.CMDSTAN_VERSION}"
+        cmdstan_path = models_path / f"cmdstan-{_CMDSTAN_VERSION}"
         # If not yet installed, install CmdStan with desired version
         if not cmdstan_path.is_dir():
             install_cmdstan(version = self.CMDSTAN_VERSION, 
@@ -323,7 +330,7 @@ class ModelBackendBase(ABC):
             sample: bool = True,
             augmentation_config: Optional[BinomialPopulation] = None,
             **kwargs: dict[str, Any]
-        ) -> Union[CmdStanMLE, CmdStanLaplace]:
+        ) -> CmdStanMLE | CmdStanLaplace:
         """
         Calculates initial parameters and fits the model to the input data.
 
@@ -347,11 +354,23 @@ class ModelBackendBase(ABC):
 
         Returns
         -------
-        Union[CmdStanMLE, CmdStanLaplace]
+        CmdStanMLE | CmdStanLaplace
             The fitted CmdStanModel object that holds the fitted parameters
         """
 
         jacobian = True if optimize_mode == 'MAP' else False
+        
+        # Scale regressors. The idea is to give each regressor a similar
+        # impact on the model, hence the normalization to its own root sum of
+        # squares. The additional normalization of the factor with respect to
+        # its median ensures that most regressors won't be rescaled but only
+        # the too weak or too strong.
+        factor = np.sqrt((stan_data.X**2).sum(axis = 0))
+
+        factor /= np.median(factor)
+        
+        stan_data.X = stan_data.X / factor
+        
         # The input stan_data only include data that all models have in common
         # The augment_data method adds additional data that are model dependent
         self.stan_data = self.augment_data(stan_data, augmentation_config)
@@ -385,6 +404,9 @@ class ModelBackendBase(ABC):
             k: v for k,v in self.stan_fit.stan_variables().items() 
             if k != 'trend'
         }
+        # Scale back both regressors and fit parameters
+        self.stan_data.X *= factor
+        self.fit_params['beta'] /= factor
         
         # In case of the normal model the data were normalized by the Stan 
         # model. Therefore the optimized model parameters need to be scaled
@@ -438,7 +460,7 @@ class ModelBackendBase(ABC):
                   values
         """
         
-        if self.stan_data is None:
+        if self.fit_params is None:
             raise ValueError("Can't predict prior to fit.")
         
 
@@ -483,8 +505,8 @@ class ModelBackendBase(ABC):
                                              axis=0)
             trend_arg = trend_args.mean(axis = 0)
             
-            # For the actual predictions, plug the arguments to the link function
-            # and the yhat function
+            # For the actual predictions, plug the arguments to the link
+            # function and the yhat function
             yhat = self.yhat_func(self.link_func(yhat_arg))
             yhat_lower = self.yhat_func(self.link_func(
                 yhat_lower_arg+trend_uncertainty.lower
@@ -517,8 +539,10 @@ class ModelBackendBase(ABC):
             else:
                 quant_kwargs['sigma'] = params['sigma_obs']
             # quant_kwargs['sigma'] = params['sigma_obs']
-        observed_lower = self.quant_func(lower_level, yhat-trend+trend_lower, **quant_kwargs)
-        observed_upper = self.quant_func(upper_level, yhat-trend+trend_upper, **quant_kwargs)
+        observed_lower = self.quant_func(lower_level, yhat-trend+trend_lower,
+                                         **quant_kwargs)
+        observed_upper = self.quant_func(upper_level, yhat-trend+trend_upper,
+                                         **quant_kwargs)
         
         # Reconstruct 
         result = pd.DataFrame({
@@ -804,9 +828,9 @@ class BinomialConstantN(ModelBackendBase):
         # Determine population size depending on mode
         if mode == 'constant':
             if value < y_max:
-                raise ValueError("In population mode 'constant' the population "
-                                 f"value (={value}) must be smaller than y_max"
-                                 f" (={y_max})")
+                raise ValueError("In population mode 'constant' the population"
+                                 f" value (={value}) must be smaller than "
+                                 f"y_max (={y_max})")
             population = value
         elif mode == 'factor':
             population = int(np.ceil(y_max * value))
@@ -840,7 +864,7 @@ class BinomialConstantN(ModelBackendBase):
         ModelParams
             Contains the estimations
         """
-        y_scaled = np.where(self.stan_data.y <= 0, 1e-10, self.stan_data.y)
+        y_scaled = np.where(self.stan_data.y == 0, 1e-10, self.stan_data.y)
         y_scaled = logit(y_scaled / self.stan_data.N)
         
         ini_params = super().calculate_initial_parameters(y_scaled)
@@ -902,7 +926,7 @@ class Poisson(ModelBackendBase):
     
     
     def calculate_initial_parameters(self: Self) -> ModelParams:
-        y_scaled = np.where(self.stan_data.y <= 0, 1e-10, self.stan_data.y)
+        y_scaled = np.where(self.stan_data.y == 0, 1e-10, self.stan_data.y)
         y_scaled = np.log(y_scaled)
         
         ini_params = super().calculate_initial_parameters(y_scaled)

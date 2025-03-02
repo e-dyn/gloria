@@ -18,6 +18,7 @@ scipy = "^1.14.1"
 matplotlib = "^3.9.2"
 prophet = "^1.1.6"
 cmdstanpy = "^1.2.4"
+holidays = "^0.66"
 
 
 [tool.poetry.group.spyder.dependencies]

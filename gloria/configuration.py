@@ -7,26 +7,25 @@ Created on Thu Nov 21 08:37:43 2024
 
 ### --- Module Imports --- ###
 # Standard Library
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Literal, Optional
 
 # Third Party
-import numpy as np
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
-from scipy.optimize import minimize
-from typing import Literal, Optional, Union
+
 
 # Inhouse Packages
+from gloria.constants import (_EVENT_PRIOR_SCALE, _EVENT_MODE,
+                              _SEASONALITY_PRIOR_SCALE, _SEASONALITY_MODE)
 from gloria.models import BinomialPopulation, MODEL_MAP
 
 
 ### --- Global Constants Definitions --- ###
 
 
-
 ### --- Class and Function Definitions --- ###
-
 
 
 class DataConfig(BaseModel):
@@ -61,8 +60,13 @@ class MetricConfig(BaseModel):
 class GloriaConfig(BaseModel):
     n_changepoints: int = Field(ge = 0, default = 25)
     changepoint_range: float = Field(gt = 0, lt = 1, default = 0.8)
-    seasonality_mode: Literal['additive', 'multiplicative'] = 'additive'
-    seasonality_prior_scale: float = Field(gt = 0, default = 10.0)
+    seasonality_mode: Literal['additive', 'multiplicative'] = _SEASONALITY_MODE
+    seasonality_prior_scale: float = Field(
+        gt = 0,
+        default = _SEASONALITY_PRIOR_SCALE
+    )
+    event_mode: Literal['additive', 'multiplicative'] = _EVENT_MODE
+    event_prior_scale: float = Field(gt = 0, default = _EVENT_PRIOR_SCALE)
     changepoint_prior_scale: float = Field(gt = 0, default = 0.05)
     interval_width: float = Field(gt = 0, lt = 1, default = 0.8)
     uncertainty_samples: int = Field(ge = 0, default = 1000)

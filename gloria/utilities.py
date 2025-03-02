@@ -1,4 +1,6 @@
 """
+TODO
+ - Docstring for the module
 """
 
 ### --- Module Imports --- ###
@@ -62,6 +64,11 @@ def time_to_integer(
         time_as_int = int(time_as_float)
     
     return time_as_int
+
+
+def infer_sampling_period(timestamps: pd.Series, q = 0.5) -> pd.Timedelta:
+    return timestamps.diff().quantile(q)
+    
 
 def cast_series_to_kind(series: pd.Series, kind: Literal[tuple('biuf')]) -> pd.Series:
     """

@@ -24,11 +24,12 @@ from scipy.special  import expit, logit
 from gloria.regressors import Seasonality
 from gloria.utilities import time_to_integer
 from gloria.constants import _T_INT
+from gloria.regressors import (Regressor, EVENT_REGRESSORS)
 
 
 ### --- Global Constants Definitions --- ###
-START = pd.Timestamp('01.01.2020')
-N_DAYS = 200
+START = pd.Timestamp('20.12.2020')
+N_DAYS = 400
 FREQ = '1 d'
 T_NAME = 'ds'
 METRIC_NAME = 'y'
@@ -36,15 +37,17 @@ SUFFIX = 'test'
 OUTPUT_DIR = 'simulated_data'
 CHANGEPOINT_DENSITY = 0.02
 ANOMALY_DENSITY = 0.01
-ANOMALY_STRENGTH = 0.5
+ANOMALY_STRENGTH = 0.1
 SAVE_FIGURE = True
+ADD_CHRISTMAS = True
 
 MODEL = 'binomial'
-Y_MIN = 100
-Y_MAX = 200
+Y_MIN = 300
+Y_MAX = 500
 N = 1000
 SIGMA = 2
-SEASON_TO_TREND = 7
+SEASON_TO_TREND = 10
+HOLIDAY_TO_SEASONS = 10
 
 
 ### --- Class and Function Definitions --- ###
@@ -54,18 +57,18 @@ SEASONALITIES = {
         'period': '7d',
         'fourier_order': 1
     },
-    'quarterly': {
-        'period': f'{365.25/4}d',
-        'fourier_order': 3
-    },
+    # 'quarterly': {
+    #     'period': f'{365.25/4}d',
+    #     'fourier_order': 3
+    # },
     'monthly': {
         'period': f'{365.25/12}d',
-        'fourier_order': 3
+        'fourier_order': 1
     },
-    'yearly': {
-        'period': '365.25d',
-        'fourier_order': 10
-    },
+    # 'yearly': {
+    #     'period': '365.25d',
+    #     'fourier_order': 10
+    # },
 }
 
 if Y_MAX <= Y_MIN:
@@ -129,6 +132,7 @@ class Simulator(BaseModel):
         
         # Set later on
         self.seasonalities = []
+        self.events = []
         self.X = pd.DataFrame()
         self.modes = dict()
         self.pars = dict()
@@ -158,6 +162,50 @@ class Simulator(BaseModel):
         ))
         return self
     
+    def add_event(
+            self: Self,
+            name: str,
+            prior_scale: float,
+            regressor_type: str,
+            event: dict[str, Any],
+            mode: Optional[Literal['additive', 'multiplicative']] = None,
+            **regressor_kwargs: dict[str, Any]
+        ) -> Self:
+        
+        
+        # Validate and set prior_scale, mode, and fourier_order
+        if prior_scale is None:
+            prior_scale = self.event_prior_scale
+        prior_scale = float(prior_scale)
+        if prior_scale <= 0:
+            raise ValueError("Prior scale must be > 0")
+        if mode is None:
+            mode = self.event_mode
+        if mode not in ['additive', 'multiplicative']:
+            raise ValueError('mode must be "additive" or "multiplicative"')
+        
+        if regressor_type not in EVENT_REGRESSORS:
+            raise TypeError(f"The passed regressor type '{regressor_type}' is"
+                            " not a registered event regressor.")
+        
+        if not isinstance(event, dict):
+            raise TypeError("Input 'event' must be a dictionary containing"
+                            " base event parameters.")
+            
+        if 'event_type' not in event:
+            raise KeyError("Event Type is not specified in event dictionary.")
+
+        regressor_dict = {
+            'name': name,
+            'prior_scale': prior_scale,
+            'mode': mode,
+            'regressor_type': regressor_type,
+            'event': event,
+            **regressor_kwargs
+        }
+        self.events.append(Regressor.from_dict(regressor_dict))
+        return self
+    
     def make_all_features_given_time(
             self: Self,
             t_int: pd.Series
@@ -168,6 +216,13 @@ class Simulator(BaseModel):
             lambda s=s: s.make_feature(t_int) 
             for s in self.seasonalities
         ]
+        
+        # 3. Event Regressors
+        make_features.extend([
+            lambda event=event: event.make_feature(self.t)
+            for event in self.events
+        ])
+        
 
         # Make the features and save all feature matrices along with prior
         # scales and modes.
@@ -246,6 +301,7 @@ class Simulator(BaseModel):
         self.first_timestamp = t.min()
         self.last_timestamp = t.max()
         self.t_int = time_to_integer(t, t.min(), self.sampling_delta)
+        self.t = t
         self.X, _, self.modes = self.make_all_features_given_time(self.t_int)
         self.K = self.X.shape[1]
         mode_values = np.array(list(self.modes.values()))
@@ -272,6 +328,11 @@ class Simulator(BaseModel):
         
         
         self.pars['beta'] = np.random.random(self.K)*SEASON_TO_TREND
+        is_holiday = pd.Series(self.X.columns).str.contains('Holiday')
+        is_holiday *= HOLIDAY_TO_SEASONS - 1
+        is_holiday += 1
+        self.pars['beta'] *= is_holiday.values
+        
         if self.K == 0:
             arg = trend_arg
         else:
@@ -325,8 +386,20 @@ if __name__ == "__main__":
         
         seasons = np.random.choice(np.array(list(SEASONALITIES.keys())), np.random.randint(low = 1, high = len(SEASONALITIES)+1), replace = False)
         for name in seasons:
-            mode = np.random.choice(['additive', 'multiplicative'])
+            mode = 'additive'#np.random.choice(['additive', 'multiplicative'])
             model.add_seasonality(name, **SEASONALITIES[name], mode = str(mode))
+        
+        
+        if ADD_CHRISTMAS:
+            model.add_event(
+                name = 'Christmas Day',
+                prior_scale = 10,
+                mode = 'additive',
+                regressor_type = 'Holiday',
+                event = {'event_type': 'Gaussian', 'sigma': '3 d'},
+                country = 'DE'
+            )
+            
         df = model.simulate(time)
         
         season_modes = {s.name: s.mode for s in model.seasonalities}
