@@ -1,15 +1,17 @@
 """
+Definition of the protocol interface
+
 TODO:
-    - Should their methods be executed after deserializing a model? Probably 
+    - Should their methods be executed after deserializing a model? Probably
       not, as the actions of a protocol are already part of the model's
-      state when it is being serialized (protocol acts during fit, but 
+      state when it is being serialized (protocol acts during fit, but
       a model can only be serialized after the fit.)
 """
 
 ### --- Module Imports --- ###
 # Standard Library
 from abc import ABC, abstractmethod
-from typing import Type, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Type
 
 # Third Party
 import pandas as pd
@@ -18,34 +20,34 @@ from typing_extensions import Self
 
 # Inhouse Packages
 if TYPE_CHECKING:
+    # Gloria
     from gloria import Gloria
 
 ### --- Global Constants Definitions --- ###
 
 
-
 ### --- Class and Function Definitions --- ###
+
 
 class Protocol(ABC, BaseModel):
     """
     Protocols can be added to Gloria models in order to configure them based
     on the type of data that the model is supposed to fit.
-    
+
     This abstract base class defines the Protocol interface and some basic
     functionalities
     """
+
     class Config:
-        arbitrary_types_allowed=True
-    
-    
+        arbitrary_types_allowed = True
+
     @property
     def _protocol_type(self: Self) -> str:
         """
         Returns name of the protocol class.
         """
         return type(self).__name__
-    
-    
+
     def to_dict(self: Self) -> dict[str, Any]:
         """
         Converts the Protocol to a serializable dictionary.
@@ -56,18 +58,25 @@ class Protocol(ABC, BaseModel):
             Dictionary containing only the protocol type. Keys corresponding to
             other model fields will be added by the subclasses.
         """
-        
+
         # Add protocol_type holding the regressor class name.
-        protocol_dict = {'protocol_type': self._protocol_type}
-        
+        protocol_dict = {"protocol_type": self._protocol_type}
+
         return protocol_dict
-    
-    
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls: Type[Self], protocol_dict: dict[str, Any]) -> Self:
+        """
+        Forward declaration of class method for static type checking.
+        See details in protocol_from_dict().
+        """
+        pass
+
     @classmethod
     def check_for_missing_keys(
-            cls: Type[Self],
-            protocol_dict: dict[str, Any]
-        ) -> None:
+        cls: Type[Self], protocol_dict: dict[str, Any]
+    ) -> None:
         """
         Confirms that all required fields for the requested protocol type are
         found in the protocol dictionary.
@@ -88,21 +97,27 @@ class Protocol(ABC, BaseModel):
         """
         # Use sets to find the difference between protocol model fields and
         # passed dictionary keys
-        required_fields = {name for name, info in cls.model_fields.items()
-                           if info.is_required()}
+        required_fields = {
+            name
+            for name, info in cls.model_fields.items()
+            if info.is_required()
+        }
         missing_keys = required_fields - set(protocol_dict.keys())
         # If any is missing, raise an error.
         if missing_keys:
-            missing_keys = ', '.join([f"'{key}'" for key in missing_keys])
-            raise KeyError(f"Key(s) {missing_keys} required for protocols"
-                           f" of type {cls.__name__} but not found in "
-                           "protocol dictionary.")
-    
-    
+            missing_keys_str = ", ".join([f"'{key}'" for key in missing_keys])
+            raise KeyError(
+                f"Key(s) {missing_keys_str} required for protocols"
+                f" of type {cls.__name__} but not found in "
+                "protocol dictionary."
+            )
+
     @abstractmethod
-    def set_seasonalities(self, model: 'Gloria', timestamps: pd.Series) -> None:
+    def set_seasonalities(
+        self, model: "Gloria", timestamps: pd.Series
+    ) -> Self:
         """
-        Determines valid seasonalities according to protocol and input 
+        Determines valid seasonalities according to protocol and input
         timestamps and adds them to the model.
 
         Parameters
@@ -116,12 +131,12 @@ class Protocol(ABC, BaseModel):
         -------
         None
         """
-        return None
-        
+        return self
+
     @abstractmethod
-    def set_events(self, model: 'Gloria', timestamps: pd.Series) -> None:
+    def set_events(self, model: "Gloria", timestamps: pd.Series) -> Self:
         """
-        Determines valid events according to protocol and input timestamps and 
+        Determines valid events according to protocol and input timestamps and
         adds them to the model.
 
         Parameters
@@ -135,14 +150,14 @@ class Protocol(ABC, BaseModel):
         -------
         None
         """
-        return None
+        return self
 
-        
-def get_protocol_map() -> dict[str, Protocol]:
+
+def get_protocol_map() -> dict[str, Type[Protocol]]:
     """
     Returns a dictionary mapping protocol names as strings to actual classes.
     Creating of this map is encapsulated as function to avoid circular imports
-    of the protocol modules.
+    of the protocol modules and a number of linting errors.
 
     Returns
     -------
@@ -150,21 +165,19 @@ def get_protocol_map() -> dict[str, Protocol]:
         A map 'protocol name' -> 'protocol class'
 
     """
-    # Before creating the protocol map, import protocols that have been defined in
-    # other modules
+    # Before creating the protocol map, import protocols that have been defined
+    # in other modules
+    # Gloria
     from gloria.protocols.calendric import CalendricData
-    
+
     # Create the map
-    protocol_map = {
-        'CalendricData': CalendricData
-    }
+    protocol_map: dict[str, Type[Protocol]] = {"CalendricData": CalendricData}
     return protocol_map
-    
+
 
 def protocol_from_dict(
-        cls: Type[Self],
-        protocol_dict: dict[str, Any]
-    ) -> Protocol:
+    cls: Type[Protocol], protocol_dict: dict[str, Any]
+) -> Protocol:
     """
     Identifies the appropriate protocol type calls its from_dict() method
 
@@ -187,20 +200,21 @@ def protocol_from_dict(
     PROTOCOL_MAP = get_protocol_map()
     protocol_dict = protocol_dict.copy()
     # Get the protocol type
-    if 'protocol_type' not in protocol_dict:
-        raise KeyError("The input dictionary must have the key"
-                       " 'protocol_type'")
-    protocol_type = protocol_dict.pop('protocol_type')
+    if "protocol_type" not in protocol_dict:
+        raise KeyError(
+            "The input dictionary must have the key" " 'protocol_type'"
+        )
+    protocol_type = protocol_dict.pop("protocol_type")
     # Check that the protocol type exists
     if protocol_type not in PROTOCOL_MAP:
-        raise NotImplementedError(f"Protocol Type {protocol_type} does not"
-                                  " exist.")
+        raise NotImplementedError(
+            f"Protocol Type {protocol_type} does not" " exist."
+        )
     # Call the from_dict() method of the correct regressor
     return PROTOCOL_MAP[protocol_type].from_dict(protocol_dict)
+
 
 # Add protocol_from_dict() as class method to the Protocol base class, so
 # it can always called as Protocol.from_dict(protocol_dict) with any
 # dictionary as long as it contains the protocol_type field.
-Protocol.from_dict = classmethod(protocol_from_dict)
-
-    
+Protocol.from_dict = classmethod(protocol_from_dict)  # type: ignore

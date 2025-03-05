@@ -1,33 +1,92 @@
-[tool.poetry]
+[project]
 name = "gloria"
 version = "0.1.0"
-description = "Gloria is a time series analysis and forecasting tool, loosely based on Facebooks Prophet(https://facebook.github.io/prophet/)."
-authors = ["Benjamin Kambs <b.kambs@e-dynamics.de>",
-           "Patrik Wollgarten <p.wollgarten@e-dynamics.de>",
-           "Sami Chabani <s.chabani@e-dynamics.de>",
-           "Amir Hassannejad <a.hassanejad@e-dynamics.de>",
-           "Kawa Mohammad <k.mohammad@e-dynamics.de>"]
+description = "Gloria fosters a new vision of Prophet's time series forecasting."
+authors = [
+    {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
+    {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"}
+]
 readme = "README.md"
+requires-python = ">=3.9,<4.0"
+dependencies = [
+    "pandas (>=2.2.3,<3.0.0)",
+    "numpy (<=2.0.2)",
+    "pydantic (>=2.10.6,<3.0.0)",
+    "scipy (<=1.13.1)",
+    "matplotlib (<=3.9.4)",
+    "cmdstanpy (>=1.2.5,<2.0.0)",
+    "holidays (>=0.67,<0.68)"
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.11"
-numpy = "^1.23.5"
-pandas = "^2.2.3"
-pydantic = "^2.9.2"
-scipy = "^1.14.1"
-matplotlib = "^3.9.2"
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
 prophet = "^1.1.6"
-cmdstanpy = "^1.2.4"
-holidays = "^0.66"
+pre-commit = "^4.1.0"
+ruff = "^0.9.9"
+isort = "^6.0.1"
+mypy = "^1.15.0"
+pandas-stubs = "<=2.2.2"
 
 
 [tool.poetry.group.spyder.dependencies]
 pyqt5-qt5 = "<=5.15.2"
 pyqtwebengine-qt5 = "<=5.15.2"
-pyqt5 = "^5.15.10"
-spyder = "^5.5.4"
+pyqt5 = "^5.15.11"
+spyder = "5.5.4"
 
+[tool.black]
+line-length = 79
+
+[tool.ruff]
+line-length = 79
+target-version = "py39"
+extend-exclude = ["scripts", "stashed_stuff"]
+
+[tool.ruff.lint]
+extend-select = [
+    # pyflakes
+    "F",
+    # pycodestyle
+    "E", "W",
+    # flake8-bugbear
+    "B",
+    # perflint
+    "PERF",
+    # flake8-bandit
+    "S",
+    # flynt
+    "FLY",
+    # ruff-specific rules
+    "RUF"
+]
+
+ignore = [
+    # unsorted __all__
+    "RUF022"
+]
+
+[tool.isort]
+profile = "black"
+sections = ["STDLIB", "THIRDPARTY", "FIRSTPARTY"]
+import_heading_stdlib = "Standard Library"
+import_heading_thirdparty = "Third Party"
+import_heading_firstparty = "Gloria"
+known_first_party = ["gloria"]
+skip = "gloria/stan_models/"
+
+[tool.mypy]
+ignore_missing_imports = true
+exclude = [
+    "gloria/stan_models/.*",
+    "scripts/.*",
+    "stashed_stuff/.*"
+]
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

@@ -1,28 +1,51 @@
+"""
+Define public API by import all functions and classes exposed to the end-user
+"""
+
 # Gloria
-from gloria.api import (
-    BoxCar,
-    CalendricData,
+# Configuration
+from gloria.configuration import (
     DataConfig,
-    ExternalRegressor,
-    Gaussian,
-    Gloria,
     GloriaConfig,
-    Holiday,
-    IntermittentEvent,
     MetricConfig,
-    PeriodicEvent,
     RunConfig,
+)
+
+# Events
+from gloria.events import BoxCar, Gaussian, SuperGaussian
+
+# Gloria forecaster
+from gloria.interface import Gloria
+
+# Protocols: Calendric Data
+from gloria.protocols.calendric import (
+    CalendricData,
+    Holiday,
+    get_holidays,
+    make_holiday_dataframe,
+)
+
+# Regressors
+from gloria.regressors import (
+    ExternalRegressor,
+    IntermittentEvent,
+    PeriodicEvent,
     Seasonality,
     SingleEvent,
-    SuperGaussian,
-    cast_series_to_kind,
-    get_holidays,
-    infer_sampling_period,
-    make_holiday_dataframe,
+)
+
+# Serialization
+from gloria.serialize import (
     model_from_dict,
     model_from_json,
     model_to_dict,
     model_to_json,
+)
+
+# Utilities
+from gloria.utilities import (
+    cast_series_to_kind,
+    infer_sampling_period,
     time_to_integer,
 )
 
@@ -52,5 +75,3 @@ __all__ = [
     "infer_sampling_period",
     "cast_series_to_kind",
 ]
-
-__version__ = "0.1.0-dev1"

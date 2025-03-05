@@ -10,7 +10,7 @@
         "dtype_kind": "u",
         "augmentation_config": {
             "mode": "constant",
-            "value": 1000
+            "value": 15000
         }
     },
     "gloria_config": {

@@ -1,4 +1,6 @@
 """
+Definition of Event base class and its implementations
+
 TODO:
     - Add more Event classes
     - Add functionality so library user can easily register their own functions
@@ -10,14 +12,12 @@ TODO:
 ### --- Module Imports --- ###
 # Standard Library
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Any, Type
-
+from typing import Any, Type, Union
 
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Self
 
 # Inhouse Packages
@@ -30,26 +30,22 @@ class Event(BaseModel, ABC):
     """
     Abstract base class for all events
     """
-    
+
     # All events will use some sort of pd.Timestamp or pd.Timedelta
     class Config:
-        arbitrary_types_allowed=True
-        
-    
+        arbitrary_types_allowed = True
+
     @property
-    def _event_type(self):
-        '''
+    def _event_type(self: Self):
+        """
         Returns name of the event class.
-        '''
+        """
         return type(self).__name__
-    
-    
+
     @abstractmethod
     def generate(
-            self: Self,
-            timestamps: pd.Series,
-            t_start: pd.Timestamp
-        ) -> pd.Series:
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
         """
         Generate a time series with a single instance of the event.
 
@@ -74,26 +70,32 @@ class Event(BaseModel, ABC):
         raise NotImplementedError("generate() method not implemented.")
         return pd.Series()
 
-    
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self: Self) -> dict[str, Any]:
         """
         Converts the event to a serializable dictionary.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Any]
             Dictionary containing the event type. All other event fields will
             be added by event child classes.
         """
-        event_dict = {'event_type': self._event_type}
+        event_dict = {"event_type": self._event_type}
         return event_dict
-    
-    
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+        """
+        Forward declaration of class method for static type checking.
+        See details in event_from_dict().
+        """
+        pass
+
     @classmethod
     def check_for_missing_keys(
-            cls: Type[Self],
-            event_dict: dict[str, Any]
-        ) -> None:
+        cls: Type[Self], event_dict: dict[str, Any]
+    ) -> None:
         """
         Confirms that all required fields for the requested event type are
         found in the event dictionary.
@@ -114,35 +116,45 @@ class Event(BaseModel, ABC):
         """
         # Use sets to find the difference between event model fields and passed
         # dictionary keys
-        required_fields = {name for name, info in cls.model_fields.items()
-                           if info.is_required()}
+        required_fields = {
+            name
+            for name, info in cls.model_fields.items()
+            if info.is_required()
+        }
         missing_keys = required_fields - set(event_dict.keys())
         # If any is missing, raise an error.
         if missing_keys:
-            missing_keys = ', '.join([f"'{key}'" for key in missing_keys])
+            missing_keys_str = ", ".join([f"'{key}'" for key in missing_keys])
             raise KeyError(
-                f"Key(s) {missing_keys} required for event of type "
+                f"Key(s) {missing_keys_str} required for event of type "
                 f"{cls.__name__} but not found in event dictionary."
             )
-        
+
 
 class BoxCar(Event):
     """
     A BoxCar shaped event
     """
+
     # Duration of of boxcar window
-    duration: pd.Timedelta | str
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.duration = pd.Timedelta(self.duration)
-    
-    
+    duration: pd.Timedelta
+
+    @field_validator("duration", mode="before")
+    @classmethod
+    def validate_duration(
+        cls: Type[Self], duration: Union[pd.Timedelta, str]
+    ) -> pd.Timedelta:
+        # Third Party
+        from pandas._libs.tslibs.parsing import DateParseError
+
+        try:
+            return pd.Timedelta(duration)
+        except DateParseError as e:
+            raise ValueError("Could not parse input sampling period.") from e
+
     def generate(
-            self: Self,
-            timestamps: pd.Series,
-            t_start: pd.Timestamp
-        ) -> pd.Series:
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
         """
         Generate a time series with a single boxcar event.
 
@@ -160,34 +172,32 @@ class BoxCar(Event):
         """
         mask = (timestamps >= t_start) & (timestamps < t_start + self.duration)
         return mask
-    
-    
-    def to_dict(self) -> dict[str, str]:
+
+    def to_dict(self: Self) -> dict[str, Any]:
         """
         Converts the BoxCar event to a serializable dictionary.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Any]
             Dictionary containing all event fields including event type
 
         """
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict['duration'] = str(self.duration)
+        event_dict["duration"] = str(self.duration)
         return event_dict
-    
-    
+
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, str]) -> Self:
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
         Creates BoxCar event instance from a dictionary that holds the event
         fields.
 
         Parameters
         ----------
-        event_dict : dict[str, str]
+        event_dict : dict[str, Any]
             Dictionary containing all event fields
 
         Returns
@@ -198,7 +208,7 @@ class BoxCar(Event):
         # Ensure that event dictionary contains all required fields.
         cls.check_for_missing_keys(event_dict)
         # Convert duration string to pd.Timedelta
-        event_dict['duration'] = pd.Timedelta(event_dict['duration'])
+        event_dict["duration"] = pd.Timedelta(event_dict["duration"])
         return cls(**event_dict)
 
 
@@ -206,20 +216,26 @@ class Gaussian(Event):
     """
     A Gaussian shaped event
     """
+
     # Duration of of boxcar window
-    sigma: pd.Timedelta | str
-    
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.sigma = pd.Timedelta(self.sigma)
-    
-    
+    sigma: pd.Timedelta
+
+    @field_validator("sigma", mode="before")
+    @classmethod
+    def validate_sigma(
+        cls: Type[Self], sigma: Union[pd.Timedelta, str]
+    ) -> pd.Timedelta:
+        # Third Party
+        from pandas._libs.tslibs.parsing import DateParseError
+
+        try:
+            return pd.Timedelta(sigma)
+        except DateParseError as e:
+            raise ValueError("Could not parse input sampling period.") from e
+
     def generate(
-            self: Self,
-            timestamps: pd.Series,
-            t_start: pd.Timestamp
-        ) -> pd.Series:
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
         """
         Generate a time series with a single Gaussian event.
 
@@ -233,40 +249,38 @@ class Gaussian(Event):
         Returns
         -------
         pd.Series
-            The output time series including the Gaussian event with amplitude 
+            The output time series including the Gaussian event with amplitude
             1.
         """
         # normalize the input timestamps
         t = (timestamps - t_start) / self.sigma
         # Evaluate the Gaussian
-        return np.exp(- 0.5*t**2)
-    
-    
-    def to_dict(self) -> dict[str, str]:
+        return np.exp(-0.5 * t**2)
+
+    def to_dict(self: Self) -> dict[str, Any]:
         """
         Converts the Gaussian event to a serializable dictionary.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Any]
             Dictionary containing all event fields including event type.
         """
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict['sigma'] = str(self.sigma)
+        event_dict["sigma"] = str(self.sigma)
         return event_dict
-    
-    
+
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, str]) -> Self:
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
         Creates Gaussian event instance from a dictionary that holds the event
         fields.
 
         Parameters
         ----------
-        event_dict : dict[str, str]
+        event_dict : dict[str, Any]
             Dictionary containing all event fields
 
         Returns
@@ -277,29 +291,35 @@ class Gaussian(Event):
         # Ensure that event dictionary contains all required fields.
         cls.check_for_missing_keys(event_dict)
         # Convert sigma string to pd.Timedelta
-        event_dict['sigma'] = pd.Timedelta(event_dict['sigma'])
+        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
         return cls(**event_dict)
-    
-    
+
+
 class SuperGaussian(Event):
     """
     A super-Gaussian shaped event (or Higher Order Gaussian)
     """
+
     # Duration of of boxcar window
-    sigma: pd.Timedelta | str
-    order: float = Field(gt = 1, default = 1)
-    
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.sigma = pd.Timedelta(self.sigma)
-    
-    
+    sigma: pd.Timedelta
+    order: float = Field(gt=1, default=1)
+
+    @field_validator("sigma", mode="before")
+    @classmethod
+    def validate_sigma(
+        cls: Type[Self], sigma: Union[pd.Timedelta, str]
+    ) -> pd.Timedelta:
+        # Third Party
+        from pandas._libs.tslibs.parsing import DateParseError
+
+        try:
+            return pd.Timedelta(sigma)
+        except DateParseError as e:
+            raise ValueError("Could not parse input sampling period.") from e
+
     def generate(
-            self: Self,
-            timestamps: pd.Series,
-            t_start: pd.Timestamp
-        ) -> pd.Series:
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
         """
         Generate a time series with a single Gaussian event.
 
@@ -313,41 +333,39 @@ class SuperGaussian(Event):
         Returns
         -------
         pd.Series
-            The output time series including the Gaussian event with amplitude 
+            The output time series including the Gaussian event with amplitude
             1.
         """
         # normalize the input timestamps
         t = (timestamps - t_start) / self.sigma
         # Evaluate the Gaussian
-        return np.exp(- (0.5*t**2)**self.order)
-    
-    
-    def to_dict(self) -> dict[str, str]:
+        return np.exp(-((0.5 * t**2) ** self.order))
+
+    def to_dict(self: Self) -> dict[str, Any]:
         """
         Converts the Gaussian event to a serializable dictionary.
 
         Returns
         -------
-        dict[str, str]
+        dict[str, Any]
             Dictionary containing all event fields including event type.
         """
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict['sigma'] = str(self.sigma)
-        event_dict['order'] = self.order
+        event_dict["sigma"] = str(self.sigma)
+        event_dict["order"] = str(self.order)
         return event_dict
-    
-    
+
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, str]) -> Self:
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
         Creates Gaussian event instance from a dictionary that holds the event
         fields.
 
         Parameters
         ----------
-        event_dict : dict[str, str]
+        event_dict : dict[str, Any]
             Dictionary containing all event fields
 
         Returns
@@ -358,21 +376,19 @@ class SuperGaussian(Event):
         # Ensure that event dictionary contains all required fields.
         cls.check_for_missing_keys(event_dict)
         # Convert sigma string to pd.Timedelta
-        event_dict['sigma'] = pd.Timedelta(event_dict['sigma'])
+        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
         return cls(**event_dict)
-    
+
 
 # A map of Event class names to actual classes
-EVENT_MAP = {
-    'BoxCar': BoxCar,
-    'Gaussian': Gaussian,
-    'SuperGaussian': SuperGaussian
+EVENT_MAP: dict[str, Type[Event]] = {
+    "BoxCar": BoxCar,
+    "Gaussian": Gaussian,
+    "SuperGaussian": SuperGaussian,
 }
 
-def event_from_dict(
-        cls: Type[Self],
-        event_dict: dict[str, Any]
-    ) -> Event:
+
+def event_from_dict(cls: Type[Event], event_dict: dict[str, Any]) -> Event:
     """
     Identifies the appropriate event type calls its from_dict() method.
 
@@ -394,21 +410,17 @@ def event_from_dict(
     """
     event_dict = event_dict.copy()
     # Get the event type
-    if 'event_type' not in event_dict:
+    if "event_type" not in event_dict:
         raise KeyError("The input dictionary must have the key 'event_type'")
-    event_type = event_dict.pop('event_type')
+    event_type = event_dict.pop("event_type")
     # Check that the event type exists
     if event_type not in EVENT_MAP:
         raise NotImplementedError(f"Event Type {event_type} does not exist.")
     # Call the from_dict() method of the correct event
     return EVENT_MAP[event_type].from_dict(event_dict)
 
-# Add event_from_dict() as class method to the Event base class, so it can 
+
+# Add event_from_dict() as class method to the Event base class, so it can
 # always called as Event.from_dict(event_dict) with any dictionary as long as
 # it contains the event_type field.
-Event.from_dict = classmethod(event_from_dict)
-
-
-### --- Main Script --- ###
-if __name__ == "__main__":
-    basepath = Path(__file__).parent
+Event.from_dict = classmethod(event_from_dict)  # type: ignore
