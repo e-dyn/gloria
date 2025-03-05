@@ -18,10 +18,27 @@ dependencies = [
     "holidays (>=0.67,<0.68)"
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha"
+    "Development Status :: 2 - Pre-Alpha",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Scientific/Engineering :: Information Analysis"
 ]
 
+[project.urls]
+Homepage = "https://www.e-dynamics.de/"
+
 [tool.poetry]
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -32,6 +49,9 @@ isort = "^6.0.1"
 mypy = "^1.15.0"
 pandas-stubs = "<=2.2.2"
 
+
+[tool.poetry.group.spyder]
+optional = true
 
 [tool.poetry.group.spyder.dependencies]
 pyqt5-qt5 = "<=5.15.2"
