@@ -6,6 +6,8 @@ TODO:
       for each Holiday regressor with equal input parameters
     - Add case handling if a holiday is not part of timestamps, but the
       associated event is so broad that it laps into the data
+    - Give possibility to pass a list of (country, subdiv) pairs to
+      CalendricData.
 """
 
 ### --- Module Imports --- ###
@@ -35,7 +37,7 @@ from gloria.events import BoxCar, Event
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import IntermittentEvent
 from gloria.types import RegressorMode
-from gloria.utilities import infer_sampling_period
+from gloria.utilities import get_logger, infer_sampling_period
 
 ### --- Global Constants Definitions --- ###
 
@@ -467,6 +469,11 @@ class CalendricData(Protocol):
             default_order_loc = cast(int, prop["default_order"])
             # If yearly interferes with quarterly turn quarterly off by default
             if (season == "quarterly") and skip_quarterly:
+                get_logger().info(
+                    "Quarterly seasonality will not be added to "
+                    "Gloria model due to interference with "
+                    "yearly seasonality."
+                )
                 continue
 
             # Now differentiate the cases of the current's season add_mode
@@ -480,6 +487,11 @@ class CalendricData(Protocol):
                 # If the data don't accomodate two full cycles of the season's
                 # fundamental period, don't add it at all and move on
                 if timespan / period_loc < 2:
+                    get_logger().info(
+                        f"Disabling {season} season. Configure "
+                        f"protocol with {season}_seasonality = "
+                        "True to overwrite this."
+                    )
                     continue
                 # Maximum order fulfilling Nyquist sampling condition
                 max_order = int(
@@ -490,6 +502,11 @@ class CalendricData(Protocol):
                 # fourier_order == 0 occurs if not even the fundamental period
                 # fulfills Nyquist. In this case we skip the season alltogether
                 if fourier_order == 0:
+                    get_logger().info(
+                        f"Disabling {season} season. Configure "
+                        f"protocol with {season}_seasonality = "
+                        "True to overwrite this."
+                    )
                     continue
             else:
                 # If none of the cases applied, add_mode can only be an integer

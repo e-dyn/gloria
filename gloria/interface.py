@@ -18,6 +18,8 @@ TODO:
     - remove timing from fitting procedure
     - There was a comment that n_changepoints = 0 or 1 are not handled
       correctly during set_changepoints. Can this be reproduced?
+    - Add logger-warning or even raise error when Gloria model
+      gets two protocols of the same type
 Global TODOs
     - Management of all Gloria default values in constants.py.
     - Check docstrings for errors (function signatures or parameter defaults
@@ -88,10 +90,14 @@ from gloria.regressors import (
     Seasonality,
 )
 from gloria.types import Distribution, RegressorMode
-from gloria.utilities import time_to_integer
+from gloria.utilities import get_logger, time_to_integer
+
+# from gloria.logging import get_logger
 
 
 ### --- Class and Function Definitions --- ###
+
+
 class Gloria(BaseModel):
     """
     Gloria forecaster.
@@ -189,9 +195,18 @@ class Gloria(BaseModel):
         from pandas._libs.tslibs.parsing import DateParseError
 
         try:
-            return pd.Timedelta(sampling_period)
+            s_period = pd.Timedelta(sampling_period)
         except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
+            msg = "Could not parse input sampling period."
+            get_logger().error(msg)
+            raise ValueError(msg) from e
+
+        if s_period <= pd.Timedelta(0):
+            msg = "Sampling period must be positive and nonzero"
+            get_logger().error(msg)
+            raise ValueError(msg)
+
+        return s_period
 
     def __init__(
         self: Self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
@@ -349,6 +364,16 @@ class Gloria(BaseModel):
             )
         # Check that seasonality name can be used. An error is raised if not
         self.validate_column_name(name, check_seasonalities=False)
+        # If name was already in use for a seasonality but no error was raised
+        # during validation, the seasonality will be overwritten.
+        # Important: for the logging info to be consistent with possible
+        # validation errors, keep the following if-clause subsequent to the
+        # validation.
+        if name in self.seasonalities:
+            get_logger().info(
+                f"'{name}' is an existing seasonality. Overwriting with new"
+                " configuration."
+            )
 
         # Validate and set prior_scale, mode, and fourier_order
         if prior_scale is None:
@@ -424,6 +449,16 @@ class Gloria(BaseModel):
 
         # Check that event name can be used. An error is raised if not
         self.validate_column_name(name, check_events=False)
+        # If name was already in use for an event but no error was raised
+        # during validation, the event will be overwritten.
+        # Important: for the logging info to be consistent with possible
+        # validation errors, keep the following if-clause subsequent to the
+        # validation.
+        if name in self.events:
+            get_logger().info(
+                f"'{name}' is an existing event. Overwriting with new"
+                " configuration."
+            )
 
         # Validate and set prior_scale, mode, and fourier_order
         if prior_scale is None:
@@ -466,7 +501,7 @@ class Gloria(BaseModel):
     def add_external_regressor(
         self: Self,
         name: str,
-        prior_scale: float = Field(gt=0),
+        prior_scale: float,
         mode: Optional[Literal["additive", "multiplicative"]] = None,
     ) -> Self:
         """
@@ -503,6 +538,16 @@ class Gloria(BaseModel):
             raise Exception("Regressors must be added prior to model fitting.")
         # Check that regressor name can be used. An error is raised if not
         self.validate_column_name(name, check_external_regressors=False)
+        # If name was already in use for a regressor but no error was raised
+        # during validation, the regressor will be overwritten.
+        # Important: for the logging info to be consistent with possible
+        # validation errors, keep the following if-clause subsequent to the
+        # validation.
+        if name in self.external_regressors:
+            get_logger().info(
+                f"'{name}' is an existing external regressor. Overwriting with"
+                " new configuration."
+            )
         # Validate and set prior_scale and mode
         prior_scale = float(prior_scale)
         if prior_scale <= 0:
@@ -612,21 +657,23 @@ class Gloria(BaseModel):
             raise ValueError(
                 f"Timestamp column '{self.timestamp_name}' is not sorted."
             )
-        # Check that timestamps lie on the expected grid. Note that no error
-        # will be raised as long as the data lie on multiples of the expected
-        # grid, eg. it is accepted, if daily sampling is expected, but the data
-        # are sampled every other day.
-        sampling_is_valid = (
-            ((time - time.min()) / self.sampling_period)
-            .apply(float.is_integer)
-            .all()
-        )
+        # Check that timestamps lie on the expected grid.
+        sample_multiples = (time - time.min()) / self.sampling_period
+        sampling_is_valid = sample_multiples.apply(float.is_integer).all()
         if not sampling_is_valid:
             raise ValueError(
                 f"Timestamp column '{self.timestamp_name}' is not sampled with"
                 f" expected sampling period '{self.sampling_period}'"
             )
-
+        # Note that no error will be raised as long as the data lie on
+        # multiples of the expected grid, eg. it is accepted, if daily sampling
+        # is expected, but the data are sampled every other day. A logger info
+        # is issued if that's the case
+        if (sample_multiples.diff() > 1).any():
+            get_logger().info(
+                "All timestamps are multiples of the sampling period, but gaps"
+                " were found."
+            )
         # Metric validation
         if self.metric_name not in df:
             raise KeyError(
@@ -699,6 +746,10 @@ class Gloria(BaseModel):
                     )
         # In case not explicit changepoints were provided, create a grid
         else:
+            get_logger().info(
+                f"Distributing {self.n_changepoints} equidistant"
+                " changepoints."
+            )
             # Place potential changepoints evenly through first
             # 'changepoint_range' proportion of the history
             hist_size = int(
@@ -707,6 +758,12 @@ class Gloria(BaseModel):
             # when there are more changepoints than data, reduce number of
             # changepoints accordingly
             if self.n_changepoints + 1 > hist_size:
+                get_logger().warning(
+                    f"Provided number of changepoints {self.n_changepoints} "
+                    f"greater than number of observations in changepoint "
+                    f"range. Using {hist_size - 1} instead. Consider reducing"
+                    " it"
+                )
                 self.n_changepoints = hist_size - 1
             if self.n_changepoints > 0:
                 # Create indices for the grid
@@ -800,7 +857,7 @@ class Gloria(BaseModel):
             A dictionary mapping feature -> mode
 
         """
-        # If not data were passed in, assume history as data. This is the case
+        # If no data were passed in, assume history as data. This is the case
         # if called during preprocessing
         if data is None:
             data = self.history
@@ -956,9 +1013,11 @@ class Gloria(BaseModel):
             )
 
         # Prepare the model and input data
+        get_logger().debug("Starting to preprocess input data.")
         input_data = self.preprocess(data)
 
         # Fit the model
+        get_logger().debug("Handing over preprocessed data to model backend.")
         self.model_backend.fit(
             input_data,
             optimize_mode=optimize_mode,

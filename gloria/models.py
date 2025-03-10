@@ -51,6 +51,7 @@ from typing_extensions import Self, TypeAlias
 # Inhouse Packages
 from gloria.constants import _CMDSTAN_VERSION
 from gloria.types import Distribution
+from gloria.utilities import get_logger
 
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
@@ -288,6 +289,10 @@ class ModelBackendBase(ABC):
         cmdstan_path = models_path / f"cmdstan-{_CMDSTAN_VERSION}"
         # If not yet installed, install CmdStan with desired version
         if not cmdstan_path.is_dir():
+            get_logger().info(
+                f"Cannot find cmdstan version {_CMDSTAN_VERSION}"
+                ". Installing now."
+            )
             install_cmdstan(version=_CMDSTAN_VERSION, dir=str(models_path))
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
@@ -460,6 +465,9 @@ class ModelBackendBase(ABC):
         self.stan_inits = self.calculate_initial_parameters()  # type: ignore
 
         # If the user wishes also initialize beta via an MAP estimation
+        get_logger().debug(
+            "Optimizing model parameters using" f" {optimize_mode}."
+        )
         optimized_model = self.model.optimize(
             data=stan_data.dict(),
             inits=self.stan_inits.dict(),
@@ -468,6 +476,9 @@ class ModelBackendBase(ABC):
         )
 
         if sample:
+            get_logger().info(
+                f"Starting Laplace sampling with {sample} " "samples."
+            )
             self.stan_fit = self.model.laplace_sample(
                 data=stan_data.dict(),
                 mode=optimized_model,
@@ -561,6 +572,10 @@ class ModelBackendBase(ABC):
         # If we drew samples using the Laplace algorithm, self.sample is True
         # In this case we are able to get yhat uppers and lowers.
         if self.sample:
+            get_logger().info(
+                "Evaluate model at all samples for yhat upper "
+                "and lower bounds."
+            )
             # Change dictionary of lists to list of dictionaries for looping
             params = [
                 dict(zip(params_dict.keys(), t))

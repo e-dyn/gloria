@@ -1,3 +1,4 @@
 gloria/stan_models/cmdstan-*/
 **/__pycache__
 stashed_stuff/
+logfiles/

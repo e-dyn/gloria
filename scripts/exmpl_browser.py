@@ -65,7 +65,7 @@ if __name__ == "__main__":
     model = Gloria(**gloria_pars)
 
     for name, props in SEASONALITIES.items():
-        model.add_seasonality(name, **props)
+        model.add_seasonality(name, **props)  # type: ignore
 
     # Add anomaly column as external regressor. Basically as if we knew where
     # anomalies will appear.
@@ -80,7 +80,11 @@ if __name__ == "__main__":
         event={"event_type": "SuperGaussian", "sigma": "11d", "order": 2.5},
         t_list=t_list,
     )
+    # time = df[model.timestamp_name]
+    # sample_multiples = (time - time.min()) / model.sampling_period
+    # x = sample_multiples.diff() > 1
 
+    # raise Exception
     model.fit(
         df,
         **fit_pars,
@@ -93,7 +97,7 @@ if __name__ == "__main__":
         model_path = basepath / "models/test_model_browser.json"
         model_json = model.to_json(filepath=model_path, indent=2)
         # And load it
-        model = Gloria.from_json(model_json=model_path, return_as="model")
+        model = Gloria.from_json(model_json=model_path, return_as="model")  # type: ignore
 
     data = model.make_future_dataframe(periods=40)
     result = model.predict(data)

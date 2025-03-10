@@ -2,6 +2,19 @@
 Constant definitions used throughout the Gloria code
 """
 
+# Standard Library
+from pathlib import Path
+
+# Third Party
+import pandas as pd
+
+# Local path of the gloria package
+_GLORIA_PATH = Path(__file__).parent.parent
+
+# The timestamp this module was loaded. Serves as unique ID for a single
+# python main-script run.
+_RUN_TIMESTAMP = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
+
 ### --- Gloria Default Settings --- ###
 
 _EVENT_PRIOR_SCALE = 10
@@ -43,3 +56,8 @@ if False:
         "d": 24 * 60 * 60,
         "W": 7 * 24 * 60 * 60,
     }
+
+### --- Logger settings --- ###
+# The logging levels for stream and file logs
+_STREAM_LEVEL = "INFO"
+_FILE_LEVEL = "DEBUG"
