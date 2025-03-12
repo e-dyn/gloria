@@ -115,7 +115,7 @@ class Protocol(ABC, BaseModel):
     @abstractmethod
     def set_seasonalities(
         self, model: "Gloria", timestamps: pd.Series
-    ) -> Self:
+    ) -> "Gloria":
         """
         Determines valid seasonalities according to protocol and input
         timestamps and adds them to the model.
@@ -131,10 +131,10 @@ class Protocol(ABC, BaseModel):
         -------
         None
         """
-        return self
+        pass
 
     @abstractmethod
-    def set_events(self, model: "Gloria", timestamps: pd.Series) -> Self:
+    def set_events(self, model: "Gloria", timestamps: pd.Series) -> "Gloria":
         """
         Determines valid events according to protocol and input timestamps and
         adds them to the model.
@@ -150,7 +150,7 @@ class Protocol(ABC, BaseModel):
         -------
         None
         """
-        return self
+        pass
 
 
 def get_protocol_map() -> dict[str, Type[Protocol]]:

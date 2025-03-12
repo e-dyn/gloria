@@ -26,13 +26,7 @@ if TYPE_CHECKING:
     from gloria import Gloria
 
 # Gloria
-from gloria.constants import (
-    _EVENT_MODE,
-    _EVENT_PRIOR_SCALE,
-    _HOLIDAY,
-    _SEASONALITY_MODE,
-    _SEASONALITY_PRIOR_SCALE,
-)
+from gloria.constants import _HOLIDAY
 from gloria.events import BoxCar, Event
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import IntermittentEvent
@@ -291,15 +285,13 @@ class CalendricData(Protocol):
     Details are described in set_seasonalities() and set_events()
     """
 
-    country: str
+    country: Optional[str] = None
     subdiv: Optional[str] = None
-    holiday_mode: RegressorMode = cast(RegressorMode, _EVENT_MODE)
-    holiday_prior_scale: float = Field(gt=0, default=_EVENT_PRIOR_SCALE)
+    holiday_mode: Optional[RegressorMode] = cast(RegressorMode, None)
+    holiday_prior_scale: Optional[float] = Field(gt=0, default=None)
     holiday_event: Event = BoxCar(duration=pd.Timedelta("1d"))
-    seasonality_mode: RegressorMode = cast(RegressorMode, _SEASONALITY_MODE)
-    seasonality_prior_scale: float = Field(
-        gt=0, default=_SEASONALITY_PRIOR_SCALE
-    )
+    seasonality_mode: Optional[RegressorMode] = cast(RegressorMode, None)
+    seasonality_prior_scale: Optional[float] = Field(gt=0, default=None)
     yearly_seasonality: Union[bool, str, int] = "auto"
     quarterly_seasonality: Union[bool, str, int] = False
     monthly_seasonality: Union[bool, str, int] = False
@@ -341,7 +333,9 @@ class CalendricData(Protocol):
             return arg
         raise ValueError("Must be 'auto', a boolean, or an integer >= 0.")
 
-    def set_events(self: Self, model: "Gloria", timestamps: pd.Series) -> Self:
+    def set_events(
+        self: Self, model: "Gloria", timestamps: pd.Series
+    ) -> "Gloria":
         """
         Adds all holidays for specified country and subdivision to the Gloria
         model.
@@ -362,29 +356,37 @@ class CalendricData(Protocol):
             The updated Gloria model.
 
         """
-        # Get all holidays that occur in the range of timestamps
-        holiday_df = make_holiday_dataframe(
-            timestamps=timestamps, country=self.country, subdiv=self.subdiv
-        )
-        # Extract unique holiday names
-        holiday_names = set(holiday_df[_HOLIDAY].unique())
-        # Add all holidays
-        for holiday in holiday_names:
-            model.add_event(
-                name=holiday,
-                prior_scale=self.holiday_prior_scale,
-                mode=self.holiday_mode,
-                regressor_type="Holiday",
-                event=self.holiday_event,
-                country=self.country,
-                subdiv=self.subdiv,
-            )
+        # If holiday parameters were not set for the protocol, take them from
+        # the Gloria model
+        ps = self.holiday_prior_scale
+        ps = model.event_prior_scale if ps is None else ps
+        mode = self.holiday_mode
+        mode = model.event_mode if mode is None else mode
 
-        return self
+        if self.country is not None:
+            # Get all holidays that occur in the range of timestamps
+            holiday_df = make_holiday_dataframe(
+                timestamps=timestamps, country=self.country, subdiv=self.subdiv
+            )
+            # Extract unique holiday names
+            holiday_names = set(holiday_df[_HOLIDAY].unique())
+            # Add all holidays
+            for holiday in holiday_names:
+                model.add_event(
+                    name=holiday,
+                    prior_scale=ps,
+                    mode=mode,
+                    regressor_type="Holiday",
+                    event=self.holiday_event,
+                    country=self.country,
+                    subdiv=self.subdiv,
+                )
+
+        return model
 
     def set_seasonalities(
         self: Self, model: "Gloria", timestamps: pd.Series
-    ) -> Self:
+    ) -> "Gloria":
         """
         Adds yearly, quarterly, monthly, weekly, daily seasonalities to the
         Gloria model.
@@ -435,6 +437,13 @@ class CalendricData(Protocol):
             The updated Gloria model.
 
         """
+        # If seasonality parameters were not set for the protocol, take them
+        # from the Gloria model
+        ps = self.seasonality_prior_scale
+        ps = model.seasonality_prior_scale if ps is None else ps
+        mode = self.seasonality_mode
+        mode = model.seasonality_mode if mode is None else mode
+
         # The q'th fraction of the data has a sampling period below or equal
         # to the inferred period. Distinguishing between the inferred period
         # and the Gloria model's sampling period helps to ensure that the data
@@ -518,11 +527,11 @@ class CalendricData(Protocol):
                 name=season,
                 period=str(period_loc),
                 fourier_order=fourier_order,
-                prior_scale=self.seasonality_prior_scale,
-                mode=self.seasonality_mode,
+                prior_scale=ps,
+                mode=mode,
             )
 
-        return self
+        return model
 
     def to_dict(self: Self) -> dict[str, Any]:
         """

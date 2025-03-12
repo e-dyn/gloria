@@ -20,6 +20,7 @@ TODO:
       correctly during set_changepoints. Can this be reproduced?
     - Add logger-warning or even raise error when Gloria model
       gets two protocols of the same type
+
 Global TODOs
     - Management of all Gloria default values in constants.py.
     - Check docstrings for errors (function signatures or parameter defaults
@@ -45,10 +46,25 @@ Global TODOs
       which looks clumsy and in other places with #type: ignore. Look for
       better solution, probably using @typing.overload
     - Browser Data with normal model caused stan optimization error
+    - Give option to do a pre-fit with poissonian model. Subsequently using the
+      dispersion_calc() will show whether data are under or overdispersed. With
+      that an appropriate model can be suggested to the user.
+    - What other global constants can be defined? Take a look at model, predict
+      and fit parameters. Use constants to make function arguments optional
+    - The data set '2025-02-19_binomial_test_n02.csv' cannot be fit with the
+      normally distributed model, if the CalendricData protocol adds all
+      holidays. The data itself only show an effect at Christmas. It can be
+      fixed by reducing event_prior_scale or or decreasing the duration of the
+      event (Gaussian with 5d doesn't work, with 2d it works)
 For Documentation
     - Summarize differences in features and API between Gloria and Prophet. For
       missing feature, describe workarounds. For additional features, show
       applications.
+    - Currently the fit routine has a boolean argument sample that triggers
+      Laplace sampling in the backend. Also, the predict routine has an
+      argument n_samples that controlls how many samples are drawn for the
+      trend uncertainty. These two parameters can be confused.
+      Clearly document their difference, maybe consider better names for them
 """
 
 ### --- Module Imports --- ###

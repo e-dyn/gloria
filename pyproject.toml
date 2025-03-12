@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Gloria fosters a new vision of Prophet's time series forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
-    {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"}
+    {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"},
+    {name = "Sami Chabani", email = "s.chabani@e-dynamics.de"}
 ]
 readme = "README.md"
 requires-python = ">=3.9,<4.0"

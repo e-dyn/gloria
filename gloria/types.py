@@ -9,7 +9,9 @@ from typing import Literal
 from typing_extensions import TypeAlias
 
 # The strings representing implemented backend models
-Distribution: TypeAlias = Literal["binomial constant n", "normal", "poisson"]
+Distribution: TypeAlias = Literal[
+    "binomial constant n", "normal", "poisson", "negative binomial"
+]
 
 # Mode in which regressors are added to the model
 RegressorMode: TypeAlias = Literal["additive", "multiplicative"]

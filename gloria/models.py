@@ -23,10 +23,12 @@ TODO:
       (3) Set regressor scales to the residual scale
       Also consider this in conjunction with estimating initial values for all
       beta. And probably reconsider reparametrizing the Stan-models.
+    - Repair regressor scaling when there is no regressor
 """
 
 ### --- Module Imports --- ###
 # Standard Library
+import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Literal, Optional, Type, Union, cast
@@ -44,14 +46,17 @@ from cmdstanpy import (
 from pydantic import BaseModel, Field, field_validator
 from scipy.optimize import minimize
 from scipy.special import expit, logit
-from scipy.stats import binom, norm, poisson
+from scipy.stats import binom, nbinom, norm, poisson
 from typing_extensions import Self, TypeAlias
 
 # Gloria
 # Inhouse Packages
 from gloria.constants import _CMDSTAN_VERSION
 from gloria.types import Distribution
-from gloria.utilities import get_logger
+from gloria.utilities import calculate_dispersion, get_logger
+
+stan_logger = logging.getLogger("cmdstanpy")
+stan_logger.setLevel(logging.ERROR)
 
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
@@ -311,13 +316,14 @@ class ModelBackendBase(ABC):
         self.fit_params: dict[str, Any] = dict()
 
     @abstractmethod
-    def augment_data(
+    def preprocess(
         self: Self,
         stan_data: ModelInputData,
         augmentation_config: Optional[BinomialPopulation] = None,
-    ) -> ModelInputData:
+    ) -> tuple[ModelInputData, ModelParams]:
         """
-        Augment the input data for the stan model with model dependent data.
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
 
         Parameters
         ----------
@@ -338,13 +344,15 @@ class ModelBackendBase(ABC):
         -------
         ModelInputData
             Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
 
         """
-        raise NotImplementedError("prepare_data() method not implemented.")
-        return stan_data
+        raise NotImplementedError("preprocess() method not implemented.")
+        return stan_data, ModelParams()
 
     def calculate_initial_parameters(
-        self: Self, y_scaled: Optional[np.ndarray] = None
+        self: Self, y_scaled: np.ndarray, stan_data: ModelInputData
     ) -> ModelParams:
         """
         Infers an estimation of the fit parameters k, m, delta from
@@ -355,16 +363,16 @@ class ModelBackendBase(ABC):
         y_scaled : np.ndarray
             The input y-data scaled to the GLM depending on the model, eg.
             logit(y / N) for the binomial model
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface.
 
         Returns
         -------
         ModelParams
             Contains the estimations
         """
-        if y_scaled is None:
-            raise ValueError("Input parameter y_scaled should not be None.")
 
-        t = self.stan_data.t
+        t = stan_data.t
 
         # Step 1: Estimation of k and m, such that a straight line passes from
         # first and last data point
@@ -384,7 +392,7 @@ class ModelBackendBase(ABC):
                     (
                         self.piecewise_linear(
                             t,  # Timestamps as integer
-                            self.stan_data.t_change,  # Changepoints
+                            stan_data.t_change,  # Changepoints
                             x[0],  # Trend offset
                             x[1],  # Base trend growth rate
                             x[2:],  # Trend rate adjustments
@@ -396,7 +404,7 @@ class ModelBackendBase(ABC):
             )
 
         # Optimize initial parameters
-        res = minimize(trend_optimizer, x0=[m, k, *np.zeros(self.stan_data.S)])
+        res = minimize(trend_optimizer, x0=[m, k, *np.zeros(stan_data.S)])
 
         # Return initial parameters. Beta is left as zero. It can be
         # additionally pre-fitted using the pre-optimize flag in the interface
@@ -406,7 +414,7 @@ class ModelBackendBase(ABC):
             m=res.x[0],
             k=res.x[1],
             delta=np.array(res.x[2:]),
-            beta=np.zeros(self.stan_data.K),
+            beta=np.zeros(stan_data.K),
         )
 
     def fit(
@@ -458,11 +466,12 @@ class ModelBackendBase(ABC):
         stan_data.X = stan_data.X / factor
 
         # The input stan_data only include data that all models have in common
-        # The augment_data method adds additional data that are model dependent
-        self.stan_data = self.augment_data(stan_data, augmentation_config)
-
-        # Calculate initial parameters m, k, and delta
-        self.stan_inits = self.calculate_initial_parameters()  # type: ignore
+        # The preprocess method adds additional data that are model dependent.
+        # Additionally it estimates initial guesses for model parameters m, k,
+        # and delta
+        self.stan_data, self.stan_inits = self.preprocess(
+            stan_data, augmentation_config
+        )
 
         # If the user wishes also initialize beta via an MAP estimation
         get_logger().debug(
@@ -638,7 +647,12 @@ class ModelBackendBase(ABC):
                 quant_kwargs["sigma"] = sigma
             else:
                 quant_kwargs["sigma"] = params_dict["sigma_obs"]
-            # quant_kwargs['sigma'] = params['sigma_obs']
+        elif self.model_name == "negative binomial":
+            if isinstance(self.stan_fit, CmdStanLaplace):
+                phi = np.array([p["phi"] for p in params]).mean()
+                quant_kwargs["phi"] = phi
+            else:
+                quant_kwargs["phi"] = params_dict["phi"]
         observed_lower = self.quant_func(
             lower_level, yhat - trend + trend_lower, **quant_kwargs
         )
@@ -926,14 +940,14 @@ class BinomialConstantN(ModelBackendBase):
         """
         return binom.ppf(level, self.stan_data.N, yhat / self.stan_data.N)  # type: ignore[attr-defined]
 
-    def augment_data(
+    def preprocess(
         self: Self,
         stan_data: ModelInputData,
         augmentation_config: Optional[BinomialPopulation] = None,
-    ) -> ModelInputData:
+    ) -> tuple[ModelInputData, ModelParams]:
         """
-        Augment the input data for the stan model with the population size used
-        for the binomial fit.
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
 
         Parameters
         ----------
@@ -948,12 +962,22 @@ class BinomialConstantN(ModelBackendBase):
                 data are distributed around the expectation value N*p with
                 p = value and N = population size
 
+        Raises
+        ------
+        NotImplementedError
+            Will be raised if the child-model class did not implement this
+            method
+
         Returns
         -------
         ModelInputData
             Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
         """
 
+        ## -- 1. Augment stan_data -- ##
         def distance_to_scale(f, y: np.ndarray) -> float:
             """
             This function yields the distance between desired scale and data
@@ -965,7 +989,7 @@ class BinomialConstantN(ModelBackendBase):
 
         if augmentation_config is None:
             raise ValueError(
-                "Missing configuration argument for augmentation" " method."
+                "Missing configuration argument for augmentation method."
             )
 
         # Prepare data
@@ -996,33 +1020,16 @@ class BinomialConstantN(ModelBackendBase):
 
         # Estimate a constant population size N for the binomial model
         stan_data.N = population  # type: ignore[attr-defined]
-        return stan_data
 
-    def calculate_initial_parameters(
-        self: Self, y_scaled: Optional[np.ndarray] = None
-    ) -> ModelParams:
-        """
-        Infers an estimation of the fit parameters k, m, delta from
-        the data.
-
-        The actual parameter estimation logic is implemented in the base class
-        method calculate_initial_parameters(), which is invoked by this method.
-        The main task here is to rescale the data vector y to the scale of the
-        linear model by applying inverse yhat and link functions
-
-        Returns
-        -------
-        ModelParams
-            Contains the estimations
-        """
+        ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. Replacing the zeros
         # with small values prevents underflow during scaling
-        y_scaled = np.where(self.stan_data.y == 0, 1e-10, self.stan_data.y)
-        y_scaled = logit(y_scaled / self.stan_data.N)  # type: ignore[attr-defined]
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        y_scaled = logit(y_scaled / stan_data.N)  # type: ignore[attr-defined]
 
-        # Call the parent class parameter estimation method
-        ini_params = super().calculate_initial_parameters(y_scaled)
-        return ini_params
+        # Calculate the parameters
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        return stan_data, ini_params
 
 
 class Normal(ModelBackendBase):
@@ -1082,8 +1089,8 @@ class Normal(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
-        sigma : float
-            Scale of the normal distribution
+        kwargs : dict[str, Any]
+            Must contain "sigma" as scale of the normal distribution
 
         Returns
         -------
@@ -1093,36 +1100,51 @@ class Normal(ModelBackendBase):
         """
         return norm.ppf(level, loc=yhat, scale=kwargs["sigma"])
 
-    def augment_data(
+    def preprocess(
         self: Self,
         stan_data: ModelInputData,
         augmentation_config: Optional[BinomialPopulation] = None,
-    ) -> ModelInputData:
-        # Add observed noise
-        stan_data.sigma_obs = 1  # type: ignore[attr-defined]
-        return stan_data
-
-    def calculate_initial_parameters(
-        self: Self, y_scaled: Optional[np.ndarray] = None
-    ) -> ModelParams:
+    ) -> tuple[ModelInputData, ModelParams]:
         """
-        Infers an estimation of the fit parameters k, m, delta from
-        the data.
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
+
+        Raises
+        ------
+        NotImplementedError
+            Will be raised if the child-model class did not implement this
+            method
 
         Returns
         -------
+        ModelInputData
+            Updated stan_data
         ModelParams
-            Contains the estimations
+            Guesses for the model parameters depending on the data
 
         """
+        ## -- 1. Augment stan_data -- ##
+        # Add observed noise
+        # stan_data.sigma_obs = 1  # type: ignore[attr-defined]
+
+        ## -- 2. Calculate initial parameter guesses -- ##
         # No scaling needed for normal distribution model as its link function
         # is the identity-function.
 
         # Call the parent class parameter estimation method
-        ini_params = super().calculate_initial_parameters(self.stan_data.y)
+        ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
         # The initial guess for the noise necessary for normal distribution
-        ini_params.sigma_obs_scaled = 1.0  # type: ignore[attr-defined]
-        return ini_params
+        ini_params.sigma_obs = 1  # type: ignore[attr-defined]
+        return stan_data, ini_params
 
 
 class Poisson(ModelBackendBase):
@@ -1191,50 +1213,205 @@ class Poisson(ModelBackendBase):
         """
         return poisson.ppf(level, yhat)
 
-    def augment_data(
+    def preprocess(
         self: Self,
         stan_data: ModelInputData,
         augmentation_config: Optional[BinomialPopulation] = None,
-    ) -> ModelInputData:
+    ) -> tuple[ModelInputData, ModelParams]:
         """
-        Augment the input data for the stan model with model dependent data.
-        """
-        # No modification needed for Poisson model
-        return stan_data
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
 
-    def calculate_initial_parameters(
-        self: Self, y_scaled: Optional[np.ndarray] = None
-    ) -> ModelParams:
-        """
-        Infers an estimation of the fit parameters k, m, delta from
-        the data.
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
+
+        Raises
+        ------
+        NotImplementedError
+            Will be raised if the child-model class did not implement this
+            method
 
         Returns
         -------
+        ModelInputData
+            Updated stan_data
         ModelParams
-            Contains the estimations
+            Guesses for the model parameters depending on the data
 
         """
+        ## -- 1. Augment stan_data -- ##
+        # Nothing to augment for Poisson model
 
+        ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. As the data are
         # scaled using the natural logarithm, zeros need to be replaced.
-        y_scaled = np.where(self.stan_data.y == 0, 1e-10, self.stan_data.y)
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = np.log(y_scaled)
 
         # Call the parent class parameter estimation method
-        ini_params = super().calculate_initial_parameters(y_scaled)
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        return stan_data, ini_params
 
-        return ini_params
+
+class NegativeBinomial(ModelBackendBase):
+    """
+    Implementation of model backend for negative binomial distribution
+    """
+
+    # These class attributes must be defined by each model backend
+    # Location of the stan file
+    stan_file = BASEPATH / "stan_models/negative_binomial.stan"
+    # Kind of data (integer, float, ...). Is used for data validation
+    kind = "bu"  # must be any combination of 'biuf'
+
+    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
+        """
+        Link function as used in Stan model
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Output of the GLM
+
+        Returns
+        -------
+        np.ndarray
+            Linked GLM output
+
+        """
+        return np.exp(x)
+
+    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
+        """
+        Produces the predicted values yhat
+
+        Parameters
+        ----------
+        linked_arg : np.ndarray
+            Linked GLM output
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values
+
+        """
+        return linked_arg
+
+    def quant_func(
+        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+    ) -> np.ndarray:
+        """
+        Quantile function of the underlying distribution
+
+        Parameters
+        ----------
+        level : float
+            Level of confidence in (0,1)
+        yhat : np.ndarray
+            Predicted values.
+
+        Returns
+        -------
+        np.ndarray
+            Quantile at given level
+
+        """
+        # Calculate success probability. Note that phi has the meaning of
+        # number of successes
+        p = kwargs["phi"] / (kwargs["phi"] + yhat)
+        return nbinom.ppf(level, n=kwargs["phi"], p=p)
+
+    def preprocess(
+        self: Self,
+        stan_data: ModelInputData,
+        augmentation_config: Optional[BinomialPopulation] = None,
+    ) -> tuple[ModelInputData, ModelParams]:
+        """
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
+
+        Raises
+        ------
+        NotImplementedError
+            Will be raised if the child-model class did not implement this
+            method
+
+        Returns
+        -------
+        ModelInputData
+            Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
+        """
+        ## -- 1. Augment stan_data -- ##
+        m_poisson = Poisson(model_name="poisson")
+        m_poisson.fit(
+            stan_data=stan_data,
+            optimize_mode="MLE",
+            sample=False,
+            augmentation_config=None,
+        )
+        result = m_poisson.predict(
+            t=stan_data.t,
+            X=stan_data.X,
+            interval_width=0.8,
+            n_samples=0,
+        )
+        dof = 2 + stan_data.S + stan_data.K
+        _, phi = calculate_dispersion(
+            y_obs=stan_data.y, y_model=result.yhat, dof=dof
+        )
+
+        if phi < 0:
+            get_logger().warning(
+                "Found negative dispersion factor, indicating underdispersed "
+                "data. Setting phi = abs(phi). Consider using Poisson or "
+                "Binomial model."
+            )
+            phi = abs(phi)
+        stan_data.phi_est = phi
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Apply inverse link function for y-value scaling. As the data are
+        # scaled using the natural logarithm, zeros need to be replaced.
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        y_scaled = np.log(y_scaled)
+
+        # Call the parent class parameter estimation method
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        # The initial guess for dispersion parameter phi
+        ini_params.phi_raw = 0
+        return stan_data, ini_params
 
 
 # A TypeAlias for all existing Model Backends
-ModelBackend: TypeAlias = Union[BinomialConstantN, Normal, Poisson]
+ModelBackend: TypeAlias = Union[
+    BinomialConstantN, Normal, Poisson, NegativeBinomial
+]
 
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
     "binomial constant n": BinomialConstantN,
     "poisson": Poisson,
     "normal": Normal,
+    "negative binomial": NegativeBinomial,
 }
 
 

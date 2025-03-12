@@ -1,5 +1,8 @@
 """
 A collection of helper functions used througout the gloria code
+
+TODO:
+    - include flags whether user wishes to log to file and stream.
 """
 
 ### --- Module Imports --- ###
@@ -235,7 +238,7 @@ def get_logger(
         """
         Keep only logs of level WARNING or below
         """
-        return record.levelno < logging.WARNING
+        return record.levelno <= logging.WARNING
 
     # Get the logger. Note that the timestamp is part of the logger name. If
     # timestamp uses the default _RUN_TIMESTAMP the logger will be unique
@@ -277,3 +280,44 @@ def get_logger(
     # assignment mypy complains. No way to make everyone happy.
     setattr(logger, "error", error_with_traceback(logger.error))  # noqa: B010
     return logger
+
+
+def calculate_dispersion(
+    y_obs: Union[np.ndarray, pd.Series],
+    y_model: Union[np.ndarray, pd.Series],
+    dof: int,
+) -> tuple[float, float]:
+    """
+    Calculates the dispersion factor with respect to poisson distributed
+    data given observations, modeled data, and degrees of freedom.
+
+    It can be used to pick an appropriate model:
+
+    alpha approx. 1 => Poisson
+    alpha < 1       => Binomial
+    alpha >         => negative Binomial
+
+    Parameters
+    ----------
+    y_obs : Union[np.ndarray, pd.Series]
+        Observed data
+    y_model : Union[np.ndarray, pd.Series]
+        Modeled data
+    dof : int
+        Degrees of freedom of the model
+
+    Returns
+    -------
+    alpha : float
+        Dispersion factor with respect to Poisson model
+    phi: float
+        Dispersion factor for Stan's negative Binomial model (Note: negative
+        for underdispersed data)
+    """
+    # Get number of observations
+    n = len(y_obs)
+    # Calculate dispersion factor using chi square
+    alpha = ((y_obs - y_model) ** 2 / y_model).sum() / (n - dof)
+    # Calculate Stan's dispersion factor
+    phi = (y_model / (alpha - 1)).mean()
+    return alpha, phi

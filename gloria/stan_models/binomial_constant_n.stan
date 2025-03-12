@@ -82,5 +82,5 @@ model {
     X_sa,
     trend .* (1 + X_sm * beta),
     beta
-   ); 
+  ); 
 }

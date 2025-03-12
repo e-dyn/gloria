@@ -12,7 +12,7 @@ from gloria import CalendricData, Gloria, RunConfig, cast_series_to_kind
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
-COMPARE_TO_PROPHET = False
+COMPARE_TO_PROPHET = True
 # Note: predicting after deserialization currently only works when there is no
 # external regressor
 INCLUDE_SERIALIZATION_STEP = True
@@ -61,8 +61,6 @@ if __name__ == "__main__":
         df[metric_name], config.metric_config.dtype_kind
     )
 
-    # df = df.head(30)
-
     gloria_pars = {
         **{k: v for k, v in config.data_config if k != "data_source"},
         **{
@@ -93,10 +91,10 @@ if __name__ == "__main__":
         country="US",
         yearly_seasonality=False,
         monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "sigma": "5d"},
+        holiday_event={"event_type": "Gaussian", "sigma": "3d"},
     )
-    model.add_protocol(protocol)
 
+    model.add_protocol(protocol)
     model.fit(
         df,
         **fit_pars,
@@ -111,7 +109,7 @@ if __name__ == "__main__":
         # And load it
         model_new = Gloria.from_json(model_json=model_path, return_as="model")
 
-    data = model.make_future_dataframe(periods=30)
+    data = model.make_future_dataframe(periods=0)
     data = pd.concat([data, df["ano_deviation"]], axis=1).reset_index(
         drop=True
     )

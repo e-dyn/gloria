@@ -46,7 +46,6 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   vector[K] s_a;                // Indicator of additive features
   vector[K] s_m;                // Indicator of multiplicative features
-  //real sigma_obs;
 }
 
 transformed data {
