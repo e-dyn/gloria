@@ -1,0 +1,29 @@
+{
+    "data_config": {
+        "data_source": "data/simulated/binomial_test_data.csv",
+        "sampling_period": "1d",
+        "timestamp_name": "ds"
+    },
+    "metric_config": {
+        "metric_name": "logins",
+        "population_name": "accounts",
+        "model": "binomial vectorized n",
+        "dtype_kind": "u",
+        "augmentation_config": {
+            "mode": "constant",
+            "value": 1000
+        }
+    },
+    "gloria_config": {
+        "n_changepoints": 10,
+        "changepoint_range": 0.8,
+        "seasonality_mode": "multiplicative",
+        "seasonality_prior_scale": 10.0,
+        "event_prior_scale": 2,
+        "changepoint_prior_scale": 0.05,
+        "interval_width": 0.8,
+        "uncertainty_samples": 1000,
+        "optimize_mode": "MLE",
+        "sample": false
+    }
+}

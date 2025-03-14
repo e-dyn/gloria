@@ -75,7 +75,7 @@ from typing import Any, Literal, Optional, Type, Union, cast
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from typing_extensions import Self
 
 # Gloria
@@ -183,6 +183,7 @@ class Gloria(BaseModel):
     sampling_period: pd.Timedelta = pd.Timedelta("1d")
     timestamp_name: str = "ds"
     metric_name: str = "y"
+    population_name: str = ""
     changepoints: Optional[pd.Series] = None
     n_changepoints: int = Field(ge=0, default=25)
     changepoint_range: float = Field(gt=0, lt=1, default=0.8)
@@ -207,6 +208,10 @@ class Gloria(BaseModel):
     def validate_sampling_period(
         cls: Type[Self], sampling_period: Union[pd.Timedelta, str]
     ) -> pd.Timedelta:
+        """
+        Converts sampling period to a pandas Timedelta if it was passed as a
+        string instead.
+        """
         # Third Party
         from pandas._libs.tslibs.parsing import DateParseError
 
@@ -223,6 +228,25 @@ class Gloria(BaseModel):
             raise ValueError(msg)
 
         return s_period
+
+    @field_validator("population_name")
+    @classmethod
+    def validate_population_name(
+        cls: Type[Self],
+        population_name: Optional[str],
+        other_fields: ValidationInfo,
+    ) -> Optional[str]:
+        """
+        Check that the population name is set if the 'binomial vectorized n' is
+        being used
+        """
+        model = other_fields.data["model"]
+        if (model == "binomial vectorized n") and (population_name == ""):
+            raise ValueError(
+                "The name of population must be set for model 'binomial "
+                "vectorized n' but is an empty string."
+            )
+        return population_name
 
     def __init__(
         self: Self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
@@ -318,6 +342,9 @@ class Gloria(BaseModel):
         reserved_names.extend(
             [self.timestamp_name, self.metric_name, _T_INT, _DTYPE_KIND]
         )
+        if self.model == "binomial vectorized n":
+            reserved_names.append(self.population_name)
+
         if name in reserved_names:
             raise ValueError(f"Name {name} is reserved.")
 
@@ -620,6 +647,52 @@ class Gloria(BaseModel):
 
         return self
 
+    def validate_metric_column(
+        self: Self,
+        df: pd.DataFrame,
+        name: str,
+        col_type: Literal["Metric", "Population"] = "Metric",
+    ) -> None:
+        """
+        Validate that the metric column exists and contains only valid values.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input pandas DataFrame of data to be fitted.
+        name : str
+            The metric column name
+        col_type : Literal["Metric", "Population"], optional
+            Specifies whether the metric column or population column is to be
+            validated. The default is "Metric".
+
+        Raises
+        ------
+        KeyError
+            Raised if the metric column doesn't exist in the DataFrame
+        TypeError
+            Raised if the metric columns dtype does not fit to the model
+        ValueError
+            Raised if there are any NaNs in the metric column
+
+        """
+        if name not in df:
+            raise KeyError(
+                f"{col_type} column '{name}' is missing from " "DataFrame."
+            )
+        m_dtype_kind = df[name].dtype.kind
+        allowed_types = list(MODEL_MAP[self.model].kind)
+        if m_dtype_kind not in allowed_types:
+            type_list = ", ".join([f"'{s}'" for s in allowed_types])
+            raise TypeError(
+                f"{col_type} column '{name}' type is '{m_dtype_kind}', but "
+                f"must be any of {type_list} for model '{self.model}'."
+            )
+        if df[name].isnull().any():
+            raise ValueError(
+                f"Found NaN in {col_type.lower()} column '{name}'."
+            )
+
     def validate_dataframe(self: Self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Validates that the input data frame of the fitting-method adheres to
@@ -630,8 +703,10 @@ class Gloria(BaseModel):
         df : pd.DataFrame
             DataFrame that contains at the very least a timestamp column with
             name self.timestamp_name and a numeric column with name
-            self.metric_name. If external regressors were added to the model,
-            the respective columns must be present as well.
+            self.metric_name. If the Gloria model is 'binomial vectorized n'
+            a column with name self.population.name must exists. If external
+            regressors were added to the model, the respective columns must be
+            present as well.
 
         Returns
         -------
@@ -691,23 +766,21 @@ class Gloria(BaseModel):
                 " were found."
             )
         # Metric validation
-        if self.metric_name not in df:
-            raise KeyError(
-                f"Metric column '{self.metric_name}' is missing from "
-                "DataFrame."
+        self.validate_metric_column(
+            df=df, name=self.metric_name, col_type="Metric"
+        )
+        # Population validation
+        if self.model == "binomial vectorized n":
+            self.validate_metric_column(
+                df=df, name=self.population_name, col_type="Population"
             )
-        m_dtype_kind = df[self.metric_name].dtype.kind
-        allowed_types = list(MODEL_MAP[self.model].kind)
-        if m_dtype_kind not in allowed_types:
-            type_list = ", ".join([f"'{s}'" for s in allowed_types])
-            raise TypeError(
-                f"Metric column type is '{m_dtype_kind}', but must be any of"
-                f" {type_list} for selected model '{self.model}'."
-            )
-        if df[self.metric_name].isnull().any():
-            raise ValueError(
-                f"Found NaN in metric column '{self.metric_name}'."
-            )
+            # Check values in the population column
+            if (df[self.population_name] < df[self.metric_name]).any():
+                raise ValueError(
+                    "There are values in the metric column that exceed the "
+                    "corresponding values in the population column, which is "
+                    "not allowed for model 'binomial vectorized n'."
+                )
 
         # Regressor validation
         for name in self.external_regressors:
@@ -720,7 +793,7 @@ class Gloria(BaseModel):
             if df[name].isnull().any():
                 raise ValueError(f"Regressor column '{name}' contains NaN.")
 
-        return df.loc[
+        history = df.loc[
             :,
             [
                 self.timestamp_name,
@@ -728,6 +801,10 @@ class Gloria(BaseModel):
                 *self.external_regressors.keys(),
             ],
         ].copy()
+
+        if self.model == "binomial vectorized n":
+            history[self.population_name] = df[self.population_name].copy()
+        return history
 
     def set_changepoints(self: Self) -> Self:
         """
@@ -966,7 +1043,7 @@ class Gloria(BaseModel):
         mode_values = np.array(list(self.modes.values()))
 
         # Prepares the input data as used by the model backend
-        return ModelInputData(
+        input_data = ModelInputData(
             T=self.history.shape[0],
             S=len(self.changepoints_int),
             K=self.X.shape[1],
@@ -979,6 +1056,10 @@ class Gloria(BaseModel):
             X=self.X.values,
             sigmas=np.array(list(self.prior_scales.values())),
         )
+        # Add population size for vectorized binomial model
+        if self.model == "binomial vectorized n":
+            input_data.N_vec = np.asarray(self.history[self.population_name])
+        return input_data
 
     def fit(
         self: Self,
@@ -1061,6 +1142,29 @@ class Gloria(BaseModel):
             A dataframe containing timestamps, predicted metric, trend, and
             lower and upper bounds.
         """
+        # Validate and extract population to pass it to predict
+        N_vec = None
+        if self.model == "binomial vectorized n":
+            if self.population_name not in data:
+                raise KeyError(
+                    "Prediction input data require a population size column "
+                    f"'{self.population_name}' for vectorized binomial model."
+                )
+            N_vec = data[self.population_name].copy()
+
+        # Validate external regressors
+        missing_regressors = [
+            f"'{name}'"
+            for name in self.external_regressors
+            if name not in data
+        ]
+        if missing_regressors:
+            missing_regressors_str = ", ".join(missing_regressors)
+            raise KeyError(
+                "Prediction input data miss the external regressor column(s) "
+                f"{missing_regressors_str}."
+            )
+
         # First convert to integer timestamps with respect to first timestamp
         # and sampling_delta of training data
         data = data.copy()
@@ -1079,6 +1183,7 @@ class Gloria(BaseModel):
             np.asarray(X),
             self.interval_width,
             self.uncertainty_samples,
+            N_vec=N_vec,
         )
 
         # Insert timestamp into result

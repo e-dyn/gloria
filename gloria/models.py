@@ -15,7 +15,7 @@ BinomialPopulation, ModelParams, ModelInputData:
 
 
 TODO:
-    - Docstring for the module
+    - Update docstring for the module
     - Appropriate regressor scaling. Idea: (1) the piece-wise-linear estimation
       in calculate_initial_parameters also returns the residuals
         res = y_scaled - trend
@@ -24,6 +24,17 @@ TODO:
       Also consider this in conjunction with estimating initial values for all
       beta. And probably reconsider reparametrizing the Stan-models.
     - Repair regressor scaling when there is no regressor
+    - MULTIPLICATIVE FEATURES HAVE A BIG BUG!! Prophet uses trend*1(1+X_m*beta)
+      For calculating multiplicative features. For models with identity link
+      function this works (only normal). However, for models on the logit
+      or log scale (binomial, negative binomial, poisson) the trend has a zero
+      crossing somewhere else (e.g at 0.5*N for binomial). As a result,
+      the amplitude of multiplicative features is surpressed at this point
+      rather than at the real zero.
+    - Include all Prophet output columns of the prediction to Gloria output
+    - Make yhat, linked, quant functions return reasonable values even in the
+      base class. Then not all of them need to be implemented by the actual
+      model classes
 """
 
 ### --- Module Imports --- ###
@@ -528,6 +539,7 @@ class ModelBackendBase(ABC):
         X: np.ndarray,
         interval_width: float,
         n_samples: int,
+        N_vec: Optional[np.ndarray] = None,
     ) -> pd.DataFrame:
         """
         Based on the fitted model parameters predicts values and uncertainties
@@ -543,6 +555,9 @@ class ModelBackendBase(ABC):
             Confidence interval width: Must fall in [0, 1]
         n_samples : int
             Number of samples to draw from
+        N_vec : Optional[np.ndarray], optional
+            Vectorized population size - only relevant for model
+            'binomial vectorized n'. Default is None.
 
         Raises
         ------
@@ -559,10 +574,18 @@ class ModelBackendBase(ABC):
                   predicted values with respect to specified interval_width
                 - observed_upper/lower: uncertainty intervals for observed
                   values
+                - '_linked' versions of all quantities except for 'observed'.
         """
 
         if self.fit_params is None:
             raise ValueError("Can't predict prior to fit.")
+
+        if self.model_name != "binomial vectorized n":
+            yhat_func = self.yhat_func
+        else:
+
+            def yhat_func(linked_arg):
+                return self.yhat_func(linked_arg, N_vec=N_vec)
 
         # Get optimized parameters (or their samples) from fit
         params_dict = self.fit_params
@@ -616,27 +639,36 @@ class ModelBackendBase(ABC):
 
             # For the actual predictions, plug the arguments to the link
             # function and the yhat function
-            yhat = self.yhat_func(self.link_func(yhat_arg))
-            yhat_lower = self.yhat_func(
-                self.link_func(yhat_lower_arg + trend_uncertainty.lower)
+            yhat_linked = self.link_func(yhat_arg)
+            yhat_linked_lower = self.link_func(
+                yhat_lower_arg + trend_uncertainty.lower
             )
-            yhat_upper = self.yhat_func(
-                self.link_func(yhat_upper_arg + trend_uncertainty.upper)
+            yhat_linked_upper = self.link_func(
+                yhat_upper_arg + trend_uncertainty.upper
             )
+            yhat = yhat_func(yhat_linked)
+            yhat_lower = yhat_func(yhat_linked_lower)
+            yhat_upper = yhat_func(yhat_linked_upper)
         else:
             trend_arg, yhat_arg = self.predict_regression(t, X, params_dict)
 
-            yhat = self.yhat_func(self.link_func(yhat_arg))
+            yhat_linked = self.link_func(yhat_arg)
+            yhat_linked_lower = yhat_linked
+            yhat_linked_upper = yhat_linked
+            yhat = yhat_func(yhat_linked)
             yhat_lower = yhat
             yhat_upper = yhat
 
-        trend = self.yhat_func(self.link_func(trend_arg))
-        trend_lower = self.yhat_func(
-            self.link_func(trend_arg + trend_uncertainty.lower)
+        trend_linked = self.link_func(trend_arg)
+        trend_linked_lower = self.link_func(
+            trend_arg + trend_uncertainty.lower
         )
-        trend_upper = self.yhat_func(
-            self.link_func(trend_arg + trend_uncertainty.upper)
+        trend_linked_upper = self.link_func(
+            trend_arg + trend_uncertainty.upper
         )
+        trend = yhat_func(trend_linked)
+        trend_lower = yhat_func(trend_linked_lower)
+        trend_upper = yhat_func(trend_linked_upper)
         # For the observed uncertainties, we need to plug the yhats into
         # the actual distribution function and evaluate their respective
         # quantiles
@@ -653,6 +685,8 @@ class ModelBackendBase(ABC):
                 quant_kwargs["phi"] = phi
             else:
                 quant_kwargs["phi"] = params_dict["phi"]
+        elif self.model_name == "binomial vectorized n":
+            quant_kwargs["N_vec"] = N_vec
         observed_lower = self.quant_func(
             lower_level, yhat - trend + trend_lower, **quant_kwargs
         )
@@ -666,11 +700,17 @@ class ModelBackendBase(ABC):
                 "yhat": yhat,
                 "yhat_lower": yhat_lower,
                 "yhat_upper": yhat_upper,
+                "yhat_linked": yhat_linked,
+                "yhat_linked_lower": yhat_linked_lower,
+                "yhat_linked_upper": yhat_linked_upper,
                 "observed_lower": observed_lower,
                 "observed_upper": observed_upper,
                 "trend": trend,
                 "trend_lower": trend_lower,
                 "trend_upper": trend_upper,
+                "trend_linked": trend_linked,
+                "trend_linked_lower": trend_linked_lower,
+                "trend_linked_upper": trend_linked_upper,
             }
         )
 
@@ -962,12 +1002,6 @@ class BinomialConstantN(ModelBackendBase):
                 data are distributed around the expectation value N*p with
                 p = value and N = population size
 
-        Raises
-        ------
-        NotImplementedError
-            Will be raised if the child-model class did not implement this
-            method
-
         Returns
         -------
         ModelInputData
@@ -1026,6 +1060,131 @@ class BinomialConstantN(ModelBackendBase):
         # with small values prevents underflow during scaling
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = logit(y_scaled / stan_data.N)  # type: ignore[attr-defined]
+
+        # Calculate the parameters
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        return stan_data, ini_params
+
+
+class BinomialVectorizedN(ModelBackendBase):
+    """
+    Implementation of model backend for binomial distribution with vectorized N
+    """
+
+    # These class attributes must be defined by each model backend
+    # Location of the stan file
+    stan_file = BASEPATH / "stan_models/binomial_vectorized_n.stan"
+    # Kind of data (integer, float, ...). Is used for data validation
+    kind = "bu"  # must be any combination of 'biuf'
+
+    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
+        """
+        Link function as used in Stan model
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Output of the GLM
+
+        Returns
+        -------
+        np.ndarray
+            Linked GLM output
+
+        """
+        return expit(x)
+
+    def yhat_func(
+        self: Self, linked_arg: np.ndarray, N_vec: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        """
+        Produces the predicted values yhat
+
+        Parameters
+        ----------
+        linked_arg : np.ndarray
+            Linked GLM output
+        N_vec : Optional[np.ndarray], optional
+            Vectorized population size. Default is None, in which case it will
+            be taken from self.stan_data
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values
+
+        """
+        N_vec = self.stan_data.N_vec if N_vec is None else N_vec
+        return N_vec * linked_arg
+
+    def quant_func(
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        **kwargs: dict[str, Any],
+    ) -> np.ndarray:
+        """
+        Quantile function of the underlying distribution
+
+        Parameters
+        ----------
+        level : float
+            Level of confidence in (0,1)
+        yhat : np.ndarray
+            Predicted values.
+
+        Returns
+        -------
+        np.ndarray
+            Quantile at given level
+
+        """
+        N_vec = (
+            self.stan_data.N_vec
+            if kwargs["N_vec"] is None
+            else kwargs["N_vec"]
+        )
+        return binom.ppf(level, N_vec, yhat / N_vec)
+
+    def preprocess(
+        self: Self,
+        stan_data: ModelInputData,
+        augmentation_config: Optional[BinomialPopulation] = None,
+    ) -> tuple[ModelInputData, ModelParams]:
+        """
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : BinomialPopulation
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
+
+        Returns
+        -------
+        ModelInputData
+            Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
+        """
+
+        ## -- 1. Augment stan_data -- ##
+        # Nothing to augment
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Apply inverse link function for y-value scaling. Replacing the zeros
+        # with small values prevents underflow during scaling
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        p = np.full(y_scaled.shape, np.finfo(float).eps)
+        p = np.divide(
+            y_scaled, stan_data.N_vec, out=p, where=(stan_data.N_vec != 0)
+        )
+        y_scaled = logit(p)  # type: ignore[attr-defined]
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1117,12 +1276,6 @@ class Normal(ModelBackendBase):
             Configuration parameters for the augmentation process. Currently,
             it is only required for the BinomialConstantN model. For all other
             models it defaults to None.
-
-        Raises
-        ------
-        NotImplementedError
-            Will be raised if the child-model class did not implement this
-            method
 
         Returns
         -------
@@ -1230,12 +1383,6 @@ class Poisson(ModelBackendBase):
             Configuration parameters for the augmentation process. Currently,
             it is only required for the BinomialConstantN model. For all other
             models it defaults to None.
-
-        Raises
-        ------
-        NotImplementedError
-            Will be raised if the child-model class did not implement this
-            method
 
         Returns
         -------
@@ -1346,12 +1493,6 @@ class NegativeBinomial(ModelBackendBase):
             it is only required for the BinomialConstantN model. For all other
             models it defaults to None.
 
-        Raises
-        ------
-        NotImplementedError
-            Will be raised if the child-model class did not implement this
-            method
-
         Returns
         -------
         ModelInputData
@@ -1409,6 +1550,7 @@ ModelBackend: TypeAlias = Union[
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
     "binomial constant n": BinomialConstantN,
+    "binomial vectorized n": BinomialVectorizedN,
     "poisson": Poisson,
     "normal": Normal,
     "negative binomial": NegativeBinomial,

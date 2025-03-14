@@ -42,6 +42,7 @@ class MetricConfig(BaseModel):
     """
 
     metric_name: str
+    population_name: Optional[str] = None
     model: Distribution
     dtype_kind: DTypeKind
     augmentation_config: Optional[BinomialPopulation] = None
