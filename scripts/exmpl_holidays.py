@@ -80,26 +80,36 @@ if __name__ == "__main__":
         if k in ["optimize_mode", "sample"]
     }
 
-    model = Gloria(**gloria_pars)
+    N = 10
+    t = 0.0
+    for i in range(1, N + 1):
+        model = Gloria(**gloria_pars)
 
-    # Add anomaly column as external regressor. Basically as if we knew where
-    # anomalies will appear.
-    model.add_external_regressor(
-        "ano_deviation", prior_scale=0.3, mode="additive"
-    )
-    protocol = CalendricData(
-        country="US",
-        yearly_seasonality=False,
-        monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "sigma": "3d"},
-    )
+        # Add anomaly column as external regressor. Basically as if we knew where
+        # anomalies will appear.
+        model.add_external_regressor(
+            "ano_deviation", prior_scale=0.3, mode="additive"
+        )
+        protocol = CalendricData(
+            country="US",
+            yearly_seasonality=False,
+            monthly_seasonality="auto",
+            holiday_event={"event_type": "Gaussian", "sigma": "3d"},
+        )
 
-    model.add_protocol(protocol)
-    model.fit(
-        df,
-        **fit_pars,
-        augmentation_config=config.metric_config.augmentation_config,
-    )
+        model.add_protocol(protocol)
+        # Standard Library
+        import time
+
+        t0 = time.time()
+        model.fit(
+            df,
+            **fit_pars,
+            augmentation_config=config.metric_config.augmentation_config,
+        )
+        t1 = time.time()
+        t += t1 - t0
+    print(t / N)
 
     # Demonstration of model serialization and deserialization work flow
     if INCLUDE_SERIALIZATION_STEP:
@@ -184,3 +194,9 @@ if __name__ == "__main__":
 
     plt.legend()
     plt.show()
+
+    a = (
+        (df.y <= result.observed_lower) | (df.y > result.observed_upper)
+    ).sum()
+    a /= len(df.y)
+    print(a)
