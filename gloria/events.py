@@ -1,12 +1,5 @@
 """
 Definition of Event base class and its implementations
-
-TODO:
-    - Add more Event classes
-    - Add functionality so library user can easily register their own functions
-      as custom events without the need to modify the event module
-    - move execution of check_for_missing_keys() from cls.from_dict to
-      event_from_dict. Same for regressors
 """
 
 ### --- Module Imports --- ###
@@ -19,8 +12,6 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Self
-
-# Inhouse Packages
 
 ### --- Global Constants Definitions --- ###
 
@@ -67,8 +58,7 @@ class Event(BaseModel, ABC):
         pd.Series
             The output time series including the event.
         """
-        raise NotImplementedError("generate() method not implemented.")
-        return pd.Series()
+        pass
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -127,7 +117,7 @@ class Event(BaseModel, ABC):
             missing_keys_str = ", ".join([f"'{key}'" for key in missing_keys])
             raise KeyError(
                 f"Key(s) {missing_keys_str} required for event of type "
-                f"{cls.__name__} but not found in event dictionary."
+                f"'{cls.__name__}' but not found in event dictionary."
             )
 
 
@@ -171,7 +161,7 @@ class BoxCar(Event):
             The output time series including the boxcar event with amplitude 1.
         """
         mask = (timestamps >= t_start) & (timestamps < t_start + self.duration)
-        return mask
+        return mask * 1
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -205,8 +195,6 @@ class BoxCar(Event):
         BoxCar
             BoxCar instance with fields from event_dict
         """
-        # Ensure that event dictionary contains all required fields.
-        cls.check_for_missing_keys(event_dict)
         # Convert duration string to pd.Timedelta
         event_dict["duration"] = pd.Timedelta(event_dict["duration"])
         return cls(**event_dict)
@@ -288,8 +276,6 @@ class Gaussian(Event):
         BoxCar
             BoxCar instance with fields from event_dict
         """
-        # Ensure that event dictionary contains all required fields.
-        cls.check_for_missing_keys(event_dict)
         # Convert sigma string to pd.Timedelta
         event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
         return cls(**event_dict)
@@ -302,7 +288,7 @@ class SuperGaussian(Event):
 
     # Duration of of boxcar window
     sigma: pd.Timedelta
-    order: float = Field(gt=1, default=1)
+    order: float = Field(ge=1, default=1.0)
 
     @field_validator("sigma", mode="before")
     @classmethod
@@ -354,7 +340,7 @@ class SuperGaussian(Event):
         event_dict = super().to_dict()
         # Add additional fields
         event_dict["sigma"] = str(self.sigma)
-        event_dict["order"] = str(self.order)
+        event_dict["order"] = self.order
         return event_dict
 
     @classmethod
@@ -373,8 +359,6 @@ class SuperGaussian(Event):
         BoxCar
             BoxCar instance with fields from event_dict
         """
-        # Ensure that event dictionary contains all required fields.
-        cls.check_for_missing_keys(event_dict)
         # Convert sigma string to pd.Timedelta
         event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
         return cls(**event_dict)
@@ -411,13 +395,19 @@ def event_from_dict(cls: Type[Event], event_dict: dict[str, Any]) -> Event:
     event_dict = event_dict.copy()
     # Get the event type
     if "event_type" not in event_dict:
-        raise KeyError("The input dictionary must have the key 'event_type'")
+        raise KeyError("The input dictionary must have the key 'event_type'.")
     event_type = event_dict.pop("event_type")
     # Check that the event type exists
-    if event_type not in EVENT_MAP:
-        raise NotImplementedError(f"Event Type {event_type} does not exist.")
+    try:
+        event_class = EVENT_MAP[event_type]
+    except KeyError as e:
+        raise NotImplementedError(
+            f"Event Type '{event_type}' does not exist."
+        ) from e
+    # Ensure that event dictionary contains all required fields.
+    event_class.check_for_missing_keys(event_dict)
     # Call the from_dict() method of the correct event
-    return EVENT_MAP[event_type].from_dict(event_dict)
+    return event_class.from_dict(event_dict)
 
 
 # Add event_from_dict() as class method to the Event base class, so it can

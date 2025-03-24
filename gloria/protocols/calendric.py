@@ -1,13 +1,5 @@
 """
 Definition of the protocol for handling calendric data.
-
-TODO:
-    - Cache the results of make_holiday_dataframe as it is called once
-      for each Holiday regressor with equal input parameters
-    - Add case handling if a holiday is not part of timestamps, but the
-      associated event is so broad that it laps into the data
-    - Give possibility to pass a list of (country, subdiv) pairs to
-      CalendricData.
 """
 
 ### --- Module Imports --- ###
@@ -26,12 +18,13 @@ if TYPE_CHECKING:
     from gloria import Gloria
 
 # Gloria
-from gloria.constants import _HOLIDAY
 from gloria.events import BoxCar, Event
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import IntermittentEvent
-from gloria.types import RegressorMode
-from gloria.utilities import get_logger, infer_sampling_period
+from gloria.utilities.constants import _HOLIDAY
+from gloria.utilities.logging import get_logger
+from gloria.utilities.misc import infer_sampling_period
+from gloria.utilities.types import RegressorMode
 
 ### --- Global Constants Definitions --- ###
 
@@ -223,6 +216,66 @@ class Holiday(IntermittentEvent):
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
         return cls(**regressor_dict)
 
+    def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
+        """
+        Calculate all timestamps of holiday occurences within the range of
+        input timestamps.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        t_list : list[pd.Timestamp]
+
+        """
+        # A temporary timestamp name
+        t_name = "dummy"
+
+        # Create a DataFrame with all holidays in the desired timerange
+        holiday_df = make_holiday_dataframe(
+            timestamps=t,
+            country=self.country,
+            subdiv=self.subdiv,
+            timestamp_name=t_name,
+        )
+
+        # Filter for the desired holiday saved in self.name
+        t_list = (
+            holiday_df[t_name].loc[holiday_df[_HOLIDAY] == self.name].to_list()
+        )
+        return t_list
+
+    def get_impact(self: Self, t: pd.Series) -> float:
+        """
+        Calculates the fraction of overall events within the timestamp range.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        impact : float
+            Fraction of overall events within the timestamp range
+
+        """
+        # Set list of all occurences of desired holiday
+        t_list = self.get_t_list(t)
+        # In case no event is in the list, return zero to signal that no event
+        # will be fitted
+        if len(t_list) == 0:
+            return 0.0
+        # Count instances in t_list that are within the timestamp range
+        impact = sum(float(t.min() <= t0 <= t.max()) for t0 in t_list)
+        impact /= len(t_list)
+        return impact
+
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict, dict]:
@@ -250,21 +303,8 @@ class Holiday(IntermittentEvent):
             A map for 'feature matrix column name' -> 'mode'
         """
 
-        # A temporary timestamp name
-        t_name = "dummy"
-
-        # Create a DataFrame with all holidays in the desired timerange
-        holiday_df = make_holiday_dataframe(
-            timestamps=t,
-            country=self.country,
-            subdiv=self.subdiv,
-            timestamp_name=t_name,
-        )
-
-        # Filter for the desired holiday saved in self.name
-        self.t_list = (
-            holiday_df[t_name].loc[holiday_df[_HOLIDAY] == self.name].to_list()
-        )
+        # Set list of all occurences of desired holiday
+        self.t_list = self.get_t_list(t)
 
         # Once we have the list, the IntermittentEvent.make_feature() method
         # will take care of the rest.
@@ -372,6 +412,12 @@ class CalendricData(Protocol):
             holiday_names = set(holiday_df[_HOLIDAY].unique())
             # Add all holidays
             for holiday in holiday_names:
+                if holiday in model.events:
+                    get_logger().info(
+                        f"Skipping calendric protocol holiday '{holiday}' as "
+                        "as it was added to the model before."
+                    )
+                    continue
                 model.add_event(
                     name=holiday,
                     prior_scale=ps,
@@ -474,6 +520,12 @@ class CalendricData(Protocol):
 
         # Add the seasonalities to the model
         for season, prop in DEFAULT_SEASONALITIES.items():
+            if season in model.seasonalities:
+                get_logger().info(
+                    f"Skipping calendric protocol seasonality '{season}' as it"
+                    " was added to the model before."
+                )
+                continue
             period_loc = cast(pd.Timedelta, prop["period"])
             default_order_loc = cast(int, prop["default_order"])
             # If yearly interferes with quarterly turn quarterly off by default

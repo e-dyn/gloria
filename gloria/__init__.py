@@ -18,6 +18,7 @@ from gloria.api import (
     cast_series_to_kind,
     get_holidays,
     infer_sampling_period,
+    log_config,
     make_holiday_dataframe,
     model_from_dict,
     model_from_json,
@@ -51,6 +52,7 @@ __all__ = [
     "time_to_integer",
     "infer_sampling_period",
     "cast_series_to_kind",
+    "log_config",
 ]
 
 __version__ = "0.1.0-dev1"

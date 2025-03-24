@@ -1,12 +1,12 @@
 {
     "data_config": {
-        "data_source": "data/simulated/2025-02-19_binomial_test_n02_overdispersed.csv",
+        "data_source": "data/simulated/2025-02-19_binomial_test_n02.csv",
         "sampling_period": "1d",
         "timestamp_name": "ds"
     },
     "metric_config": {
         "metric_name": "y",
-        "model": "negative binomial",
+        "model": "poisson",
         "dtype_kind": "u",
         "augmentation_config": {
             "mode": "constant",

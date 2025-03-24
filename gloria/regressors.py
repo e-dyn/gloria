@@ -1,32 +1,5 @@
 """
 Defintion of Regressor classes used by the Gloria Model
-
-TODO:
-    - Include checkups that verify that an event has been trained. That
-      requires a flag per Regressor whether it was trained or not, a flag
-      that tells the make_feature() method whether it was called from the
-      Gloria.fit() method, as well as a routine that checks whether the
-      training timestamps properly cover the regressor, e.g. that at least one
-      full cycle is covered. If not, set the has_been_trained flag to False and
-      exclude the regressor from training. This is an important safe-guard: in
-      the most extreme case of a regressor being completely out of the time
-      range, the respective regressor matrix column is entirely zero, causing
-      the fit to fail.
-    - For consistency, The currently unitless period attribute of the season
-      regressor should be changed to type pd.Timedelta. Note that make_feauture
-      and fourier_series methods have to be adapted, too, as well as the
-      respective methods of the Gloria interface.
-    - Add Rule-based quasi-periodic EventRegressor that accepts strings like
-      "every first of the month" and parsing these rules into lists of
-      timestamps during make_feature
-    - This affects all EventRegressors: if an event is long (eg. high sigma)
-      it might leak into the timestamp range even the center of the event is
-      outside. Therefore, it is usefull to define a rule that decides how far
-      an event can lie outside the timestamp range without being discarded.
-    - Write functions that create REGRESSOR_MAP and EVENT_REGRESSORS similar
-      to the PROTOCOL_MAP in protocol_base. The maps need to be manually
-      maintained. The code is more understandable though and doesn't trigger
-      linting errors
 """
 
 ### --- Module Imports --- ###
@@ -42,9 +15,10 @@ from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 # Gloria
-# Inhouse Packages
-from gloria.constants import _DELIM
 from gloria.events import Event
+
+# Inhouse Packages
+from gloria.utilities.constants import _DELIM
 
 
 ### --- Class and Function Definitions --- ###
@@ -168,8 +142,7 @@ class Regressor(BaseModel, ABC):
         dict : TYPE
             A map for 'feature matrix column name' -> 'mode'
         """
-        raise NotImplementedError("make_feature() method not implemented.")
-        return pd.DataFrame(), dict(), dict()
+        pass
 
 
 class ExternalRegressor(Regressor):
@@ -194,8 +167,6 @@ class ExternalRegressor(Regressor):
         ExternalRegressor
             ExternalRegressor instance with fields from regressor_dict
         """
-        # Ensure that regressor dictionary contains all required fields.
-        cls.check_for_missing_keys(regressor_dict)
         return cls(**regressor_dict)
 
     def make_feature(
@@ -286,8 +257,6 @@ class Seasonality(Regressor):
         Seasonality
             Seasonality regressor instance with fields from regressor_dict
         """
-        # Ensure that regressor dictionary contains all required fields.
-        cls.check_for_missing_keys(regressor_dict)
         return cls(**regressor_dict)
 
     def make_feature(
@@ -399,6 +368,13 @@ class EventRegressor(Regressor):
         regressor_dict["event"] = self.event.to_dict()
         return regressor_dict
 
+    @abstractmethod
+    def get_impact(self: Self, t: pd.Series) -> float:
+        """
+        Calculates the fraction of overall events within the timestamp range
+        """
+        pass
+
 
 class SingleEvent(EventRegressor):
     """
@@ -439,12 +415,29 @@ class SingleEvent(EventRegressor):
         SingleEvent
             SingleEvent regressor instance with fields from regressor_dict
         """
-        # Ensure that regressor dictionary contains all required fields.
-        cls.check_for_missing_keys(regressor_dict)
         # Convert non-built-in types
         regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
         return cls(**regressor_dict)
+
+    def get_impact(self: Self, t: pd.Series) -> float:
+        """
+        Calculates the fraction of overall events within the timestamp range.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        impact : float
+            Fraction of overall events within the timestamp range
+
+        """
+        impact = float(t.min() <= self.t_start <= t.max())
+        return impact
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
@@ -525,15 +518,45 @@ class IntermittentEvent(EventRegressor):
             IntermittentEvent regressor instance with fields from
             regressor_dict
         """
-        # Ensure that regressor dictionary contains all required fields.
-        cls.check_for_missing_keys(regressor_dict)
-
-        # Convert non-built-in fields
-        regressor_dict["t_list"] = [
-            pd.Timestamp(t) for t in regressor_dict["t_list"]
-        ]
+        # Convert non-built-in
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
+        # As t_list is optional, check if it is present
+        if "t_list" in regressor_dict:
+            try:
+                regressor_dict["t_list"] = [
+                    pd.Timestamp(t) for t in regressor_dict["t_list"]
+                ]
+            except Exception as e:
+                raise TypeError(
+                    "Field 't_list' of IntermittentEvent regressor must be a "
+                    "list of objects that can be cast to a pandas timestamp."
+                ) from e
         return cls(**regressor_dict)
+
+    def get_impact(self: Self, t: pd.Series) -> float:
+        """
+        Calculates the fraction of overall events within the timestamp range.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        impact : float
+            Fraction of overall events within the timestamp range
+
+        """
+        # In case no event is in the list, return zero to signal that no event
+        # will be fitted
+        if len(self.t_list) == 0:
+            return 0.0
+        # Count instances in t_list that are within the timestamp range
+        impact = sum(float(t.min() <= t0 <= t.max()) for t0 in self.t_list)
+        impact /= len(self.t_list)
+        return impact
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
@@ -620,13 +643,70 @@ class PeriodicEvent(SingleEvent):
             PeriodicEvent regressor instance with fields from
             regressor_dict
         """
-        # Ensure that regressor dictionary contains all required fields.
-        cls.check_for_missing_keys(regressor_dict)
         # Convert non-built-in fields
         regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
         regressor_dict["period"] = pd.Timedelta(regressor_dict["period"])
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
         return cls(**regressor_dict)
+
+    def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
+        """
+        Calculate all timestamps of periods within the range of input
+        timestamps.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        t_list : list[pd.Timestamp]
+
+        """
+        # Calculate number of periods with respect to t_start necessary to
+        # cover the entire given timestamp range.
+        n_min = (t.min() - self.t_start) // self.period
+        n_max = (t.max() - self.t_start) // self.period
+
+        # Generate list of event start times
+        t_list = [
+            self.t_start + n * self.period for n in range(n_min, n_max + 1)
+        ]
+        # Remove timestamps outside of range of t
+        t_list = [t0 for t0 in t_list if t.min() <= t0 <= t.max()]
+        return t_list
+
+    def get_impact(self: Self, t: pd.Series) -> float:
+        """
+        Calculates the fraction of overall events within the timestamp range.
+
+        Parameters
+        ----------
+        t : pd.Series
+            A pandas series of timestamps at which the regressor has to be
+            evaluated
+
+        Returns
+        -------
+        impact : float
+            Fraction of overall events within the timestamp range
+
+        """
+
+        # Generate list of event start times
+        t_list = self.get_t_list(t)
+
+        # In case no event is in the list, return zero to signal that no event
+        # will be fitted
+        if len(t_list) == 0:
+            return 0.0
+
+        # Count instances in t_list that are within the timestamp range
+        impact = sum(float(t.min() <= t0 <= t.max()) for t0 in t_list)
+        impact /= len(t_list)
+        return impact
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
@@ -660,16 +740,8 @@ class PeriodicEvent(SingleEvent):
             f"{_DELIM}{self.name}"
         )
 
-        # Calculate number of periods with respect to t_start necessary to
-        # cover the entire given timestamp range. -3 / +4 are safety margins
-        # for long events.
-        n_min = (t.min() - self.t_start) // self.period - 3
-        n_max = (t.max() - self.t_start) // self.period + 4
-
         # Generate list of event start times
-        t_list = [
-            self.t_start + n * self.period for n in range(n_min, n_max + 1)
-        ]
+        t_list = self.get_t_list(t)
 
         # Loop through all start times in t_list, and accumulate the events
         all_events = pd.Series(0, index=range(t.shape[0]))
@@ -750,16 +822,20 @@ def regressor_from_dict(
     # Get the regressor type
     if "regressor_type" not in regressor_dict:
         raise KeyError(
-            "The input dictionary must have the key" " 'regressor_type'"
+            "The input dictionary must have the key 'regressor_type'."
         )
     regressor_type = regressor_dict.pop("regressor_type")
     # Check that the regressor type exists
-    if regressor_type not in REGRESSOR_MAP:
+    try:
+        regressor_class = REGRESSOR_MAP[regressor_type]
+    except KeyError as e:
         raise NotImplementedError(
-            f"Regressor Type {regressor_type} does not" " exist."
-        )
+            f"Regressor Type '{regressor_type}' does not exist."
+        ) from e
+    # Ensure that regressor dictionary contains all required fields.
+    regressor_class.check_for_missing_keys(regressor_dict)
     # Call the from_dict() method of the correct regressor
-    return REGRESSOR_MAP[regressor_type].from_dict(regressor_dict)
+    return regressor_class.from_dict(regressor_dict)
 
 
 # Add regressor_from_dict() as class method to the Regressor base class, so

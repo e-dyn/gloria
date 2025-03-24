@@ -1,40 +1,6 @@
 """
 This Module defines the Backend classes for all distribution models that can be
 used in Gloria.
-
-ModelBackendBase:
-    - Defines the basic interface for all backend classes including fitting and
-      prediction methods as well as initial parameter estimation and input data
-      augmentation
-BinomialConstantN, Poisson, Normal:
-    - Implementations of ModelBackendBase for different distribution models.
-      Their differences are mostly found in appropriatly scaling the data with
-      respect to the model's link functions.
-BinomialPopulation, ModelParams, ModelInputData:
-    - Classes that help validating input data passed from Gloria
-
-
-TODO:
-    - Update docstring for the module
-    - Appropriate regressor scaling. Idea: (1) the piece-wise-linear estimation
-      in calculate_initial_parameters also returns the residuals
-        res = y_scaled - trend
-      (2) Find the scale of the residuals, eg. their standard deviation
-      (3) Set regressor scales to the residual scale
-      Also consider this in conjunction with estimating initial values for all
-      beta. And probably reconsider reparametrizing the Stan-models.
-    - Repair regressor scaling when there is no regressor
-    - MULTIPLICATIVE FEATURES HAVE A BIG BUG!! Prophet uses trend*1(1+X_m*beta)
-      For calculating multiplicative features. For models with identity link
-      function this works (only normal). However, for models on the logit
-      or log scale (binomial, negative binomial, poisson) the trend has a zero
-      crossing somewhere else (e.g at 0.5*N for binomial). As a result,
-      the amplitude of multiplicative features is surpressed at this point
-      rather than at the real zero.
-    - Include all Prophet output columns of the prediction to Gloria output
-    - Make yhat, linked, quant functions return reasonable values even in the
-      base class. Then not all of them need to be implemented by the actual
-      model classes
 """
 
 ### --- Module Imports --- ###
@@ -42,7 +8,7 @@ TODO:
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Literal, Optional, Type, Union, cast
+from typing import Any, Callable, Literal, Optional, Type, Union, cast
 
 # Third Party
 import numpy as np
@@ -62,9 +28,10 @@ from typing_extensions import Self, TypeAlias
 
 # Gloria
 # Inhouse Packages
-from gloria.constants import _CMDSTAN_VERSION
-from gloria.types import Distribution
-from gloria.utilities import calculate_dispersion, get_logger
+from gloria.utilities.constants import _BACKEND_DEFAULTS, _CMDSTAN_VERSION
+from gloria.utilities.logging import get_logger
+from gloria.utilities.misc import calculate_dispersion
+from gloria.utilities.types import Distribution
 
 stan_logger = logging.getLogger("cmdstanpy")
 stan_logger.setLevel(logging.ERROR)
@@ -74,6 +41,26 @@ BASEPATH = Path(__file__).parent
 
 
 ### --- Class and Function Definitions --- ###
+class LinkPair(BaseModel):
+    """
+    Link function pairs connection the expectation value to Stan's GLM
+    predictors
+
+    link = transforming expectation value to predictor
+    inverse = transforming predictor to expectation value
+    """
+
+    link: Callable[[np.ndarray], np.ndarray]
+    inverse: Callable[[np.ndarray], np.ndarray]
+
+
+LINK_FUNC_MAP = {
+    "id": LinkPair(link=lambda x: x, inverse=lambda x: x),
+    "log": LinkPair(link=lambda x: np.log(x), inverse=lambda x: np.exp(x)),
+    "logit": LinkPair(link=lambda x: logit(x), inverse=lambda x: expit(x)),
+}
+
+
 class BinomialPopulation(BaseModel):
     """
     Configuration parameters used by the augment_data method of the model
@@ -268,18 +255,27 @@ class ModelBackendBase(ABC):
     stan_file = Path()
     # Kind of data (integer, float, ...). Is used for data validation
     kind = ""  # must be any combination of "biuf"
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model.
-        """
-        return np.array([])
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["id"]
 
     def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
         """
-        Produces the predicted values yhat
+        Produces the predicted values yhat.
+
+        Parameters
+        ----------
+        linked_arg : np.ndarray
+            Linked GLM output
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values
         """
-        return np.array([])
+        # The base class yhat_func is simply an identity function, which can be
+        # used by many models (normal, poisson, ...). Others like binomial need
+        # their own implementation.
+        return linked_arg
 
     def quant_func(
         self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
@@ -359,8 +355,7 @@ class ModelBackendBase(ABC):
             Guesses for the model parameters depending on the data
 
         """
-        raise NotImplementedError("preprocess() method not implemented.")
-        return stan_data, ModelParams()
+        pass
 
     def calculate_initial_parameters(
         self: Self, y_scaled: np.ndarray, stan_data: ModelInputData
@@ -431,8 +426,10 @@ class ModelBackendBase(ABC):
     def fit(
         self: Self,
         stan_data: ModelInputData,
-        optimize_mode: Literal["MAP", "MLE"] = "MAP",
-        sample: bool = True,
+        optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS[
+            "optimize_mode"
+        ],
+        sample: bool = _BACKEND_DEFAULTS["sample"],
         augmentation_config: Optional[BinomialPopulation] = None,
         **kwargs: dict[str, Any],
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
@@ -470,11 +467,12 @@ class ModelBackendBase(ABC):
         # squares. The additional normalization of the factor with respect to
         # its median ensures that most regressors won't be rescaled but only
         # the too weak or too strong.
-        factor = np.sqrt((stan_data.X**2).sum(axis=0))
+        if stan_data.X.size:
+            factor = np.sqrt((stan_data.X**2).sum(axis=0))
 
-        factor /= np.median(factor)
+            factor /= np.median(factor)
 
-        stan_data.X = stan_data.X / factor
+            stan_data.X = stan_data.X / factor
 
         # The input stan_data only include data that all models have in common
         # The preprocess method adds additional data that are model dependent.
@@ -518,8 +516,9 @@ class ModelBackendBase(ABC):
             if k != "trend"
         }
         # Scale back both regressors and fit parameters
-        self.stan_data.X *= factor
-        self.fit_params["beta"] /= factor
+        if stan_data.X.size:
+            self.stan_data.X *= factor
+            self.fit_params["beta"] /= factor
 
         # In case of the normal model the data were normalized by the Stan
         # model. Therefore the optimized model parameters need to be scaled
@@ -639,11 +638,11 @@ class ModelBackendBase(ABC):
 
             # For the actual predictions, plug the arguments to the link
             # function and the yhat function
-            yhat_linked = self.link_func(yhat_arg)
-            yhat_linked_lower = self.link_func(
+            yhat_linked = self.link_pair.inverse(yhat_arg)
+            yhat_linked_lower = self.link_pair.inverse(
                 yhat_lower_arg + trend_uncertainty.lower
             )
-            yhat_linked_upper = self.link_func(
+            yhat_linked_upper = self.link_pair.inverse(
                 yhat_upper_arg + trend_uncertainty.upper
             )
             yhat = yhat_func(yhat_linked)
@@ -652,18 +651,18 @@ class ModelBackendBase(ABC):
         else:
             trend_arg, yhat_arg = self.predict_regression(t, X, params_dict)
 
-            yhat_linked = self.link_func(yhat_arg)
+            yhat_linked = self.link_pair.inverse(yhat_arg)
             yhat_linked_lower = yhat_linked
             yhat_linked_upper = yhat_linked
             yhat = yhat_func(yhat_linked)
             yhat_lower = yhat
             yhat_upper = yhat
 
-        trend_linked = self.link_func(trend_arg)
-        trend_linked_lower = self.link_func(
+        trend_linked = self.link_pair.inverse(trend_arg)
+        trend_linked_lower = self.link_pair.inverse(
             trend_arg + trend_uncertainty.lower
         )
-        trend_linked_upper = self.link_func(
+        trend_linked_upper = self.link_pair.inverse(
             trend_arg + trend_uncertainty.upper
         )
         trend = yhat_func(trend_linked)
@@ -924,23 +923,8 @@ class BinomialConstantN(ModelBackendBase):
     stan_file = BASEPATH / "stan_models/binomial_constant_n.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Output of the GLM
-
-        Returns
-        -------
-        np.ndarray
-            Linked GLM output
-
-        """
-        return expit(x)
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["logit"]
 
     def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
         """
@@ -1059,7 +1043,7 @@ class BinomialConstantN(ModelBackendBase):
         # Apply inverse link function for y-value scaling. Replacing the zeros
         # with small values prevents underflow during scaling
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = logit(y_scaled / stan_data.N)  # type: ignore[attr-defined]
+        y_scaled = self.link_pair.link(y_scaled / stan_data.N)  # type: ignore[attr-defined]
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1076,23 +1060,8 @@ class BinomialVectorizedN(ModelBackendBase):
     stan_file = BASEPATH / "stan_models/binomial_vectorized_n.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Output of the GLM
-
-        Returns
-        -------
-        np.ndarray
-            Linked GLM output
-
-        """
-        return expit(x)
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["logit"]
 
     def yhat_func(
         self: Self, linked_arg: np.ndarray, N_vec: Optional[np.ndarray] = None
@@ -1184,7 +1153,7 @@ class BinomialVectorizedN(ModelBackendBase):
         p = np.divide(
             y_scaled, stan_data.N_vec, out=p, where=(stan_data.N_vec != 0)
         )
-        y_scaled = logit(p)  # type: ignore[attr-defined]
+        y_scaled = self.link_pair.link(p)  # type: ignore[attr-defined]
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1201,40 +1170,8 @@ class Normal(ModelBackendBase):
     stan_file = BASEPATH / "stan_models/normal.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "biuf"  # must be any combination of 'biuf'
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Output of the GLM
-
-        Returns
-        -------
-        np.ndarray
-            Linked GLM output
-
-        """
-        return x
-
-    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
-        """
-        Produces the predicted values yhat
-
-        Parameters
-        ----------
-        linked_arg : np.ndarray
-            Linked GLM output
-
-        Returns
-        -------
-        np.ndarray
-            Predicted values
-
-        """
-        return linked_arg
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["id"]
 
     def quant_func(
         self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
@@ -1310,40 +1247,8 @@ class Poisson(ModelBackendBase):
     stan_file = BASEPATH / "stan_models/poisson.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Output of the GLM
-
-        Returns
-        -------
-        np.ndarray
-            Linked GLM output
-
-        """
-        return np.exp(x)
-
-    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
-        """
-        Produces the predicted values yhat
-
-        Parameters
-        ----------
-        linked_arg : np.ndarray
-            Linked GLM output
-
-        Returns
-        -------
-        np.ndarray
-            Predicted values
-
-        """
-        return linked_arg
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["log"]
 
     def quant_func(
         self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
@@ -1399,7 +1304,7 @@ class Poisson(ModelBackendBase):
         # Apply inverse link function for y-value scaling. As the data are
         # scaled using the natural logarithm, zeros need to be replaced.
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = np.log(y_scaled)
+        y_scaled = self.link_pair.link(y_scaled)
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1416,40 +1321,8 @@ class NegativeBinomial(ModelBackendBase):
     stan_file = BASEPATH / "stan_models/negative_binomial.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
-
-    def link_func(self: Self, x: np.ndarray) -> np.ndarray:
-        """
-        Link function as used in Stan model
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Output of the GLM
-
-        Returns
-        -------
-        np.ndarray
-            Linked GLM output
-
-        """
-        return np.exp(x)
-
-    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
-        """
-        Produces the predicted values yhat
-
-        Parameters
-        ----------
-        linked_arg : np.ndarray
-            Linked GLM output
-
-        Returns
-        -------
-        np.ndarray
-            Predicted values
-
-        """
-        return linked_arg
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["log"]
 
     def quant_func(
         self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
@@ -1533,7 +1406,7 @@ class NegativeBinomial(ModelBackendBase):
         # Apply inverse link function for y-value scaling. As the data are
         # scaled using the natural logarithm, zeros need to be replaced.
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = np.log(y_scaled)
+        y_scaled = self.link_pair.link(y_scaled)
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)

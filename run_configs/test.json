@@ -1,0 +1,34 @@
+{
+    "data": {
+        "path": "",
+        "sampling_period": "1d",
+        "timestamp_name": "ds",
+        "metric_name": "y",
+        "population_name": null,
+        "dtype_kind": "f"
+    },
+    "model": {
+        "model": "normal",
+        "changepoints": null,
+        "n_changepoints": 25,
+        "changepoint_range": 0.8,
+        "seasonality_mode": "additive",
+        "seasonality_prior_scale": 10,
+        "event_mode": "additive",
+        "event_prior_scale": 10,
+        "changepoint_prior_scale": 0.05,
+        "interval_width": 0.8,
+        "uncertainty_samples": 1000
+    },
+    "fit": {
+        "optimize_mode": "MAP",
+        "sample": true,
+        "augmentation_config": null,
+        "model_output_path": null
+    },
+    "predict": {
+        "df_future_path": null,
+        "periods": 10,
+        "include_history": true
+    }
+}

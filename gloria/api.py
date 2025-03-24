@@ -3,14 +3,6 @@ Define public API by import all functions and classes exposed to the end-user
 """
 
 # Gloria
-# Configuration
-from gloria.configuration import (
-    DataConfig,
-    GloriaConfig,
-    MetricConfig,
-    RunConfig,
-)
-
 # Events
 from gloria.events import BoxCar, Gaussian, SuperGaussian
 
@@ -34,19 +26,26 @@ from gloria.regressors import (
     SingleEvent,
 )
 
-# Serialization
-from gloria.serialize import (
+# Configuration
+from gloria.utilities.configuration import (
+    DataConfig,
+    GloriaConfig,
+    MetricConfig,
+    RunConfig,
+)
+from gloria.utilities.logging import log_config
+from gloria.utilities.misc import (
+    cast_series_to_kind,
+    infer_sampling_period,
+    time_to_integer,
+)
+
+# Utilities
+from gloria.utilities.serialize import (
     model_from_dict,
     model_from_json,
     model_to_dict,
     model_to_json,
-)
-
-# Utilities
-from gloria.utilities import (
-    cast_series_to_kind,
-    infer_sampling_period,
-    time_to_integer,
 )
 
 __all__ = [
@@ -74,4 +73,5 @@ __all__ = [
     "time_to_integer",
     "infer_sampling_period",
     "cast_series_to_kind",
+    "log_config",
 ]

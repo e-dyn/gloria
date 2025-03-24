@@ -12,10 +12,10 @@ from gloria import CalendricData, Gloria, RunConfig, cast_series_to_kind
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
-COMPARE_TO_PROPHET = True
+COMPARE_TO_PROPHET = False
 # Note: predicting after deserialization currently only works when there is no
 # external regressor
-INCLUDE_SERIALIZATION_STEP = True
+INCLUDE_SERIALIZATION_STEP = False
 
 SEASONALITIES = {
     "weekly": {
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         result_prophet = model_prophet.predict(data)
         result_prophet = result_prophet[mask]
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=140)
     ax.plot(df[timestamp_name], df[metric_name], "o", label="data")
     ax.plot(result[timestamp_name], result["trend"], "black", label="trend")
     ax.plot(result[timestamp_name], result["yhat"], "red", label="fit")

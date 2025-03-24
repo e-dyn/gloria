@@ -1,11 +1,5 @@
 """
 Definition of the protocol interface
-
-TODO:
-    - Should their methods be executed after deserializing a model? Probably
-      not, as the actions of a protocol are already part of the model's
-      state when it is being serialized (protocol acts during fit, but
-      a model can only be serialized after the fit.)
 """
 
 ### --- Module Imports --- ###
