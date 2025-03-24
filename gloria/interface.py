@@ -14,10 +14,10 @@ FUTURE IMPROVEMENTS:
     - Add Disclaimer and copyright note to all modules
     - Seasonality regressor works with integer timescale. All others with real
       timestamps. Unify.
-    - Restructure Configuration to less ed.Detect like structure, integrate
-      LoggingConfig, keep Logging-Config assignment-validation, read from toml
-
-TODO:
+    - Reevaluate configuration.py. Probably a utility like that only adds value
+      if we offer automated pipelines, which we may not want to do. If we
+      decide against configuration.py, move it out of the library and keep it
+      as internal tool.
     - Currently, many places Timedeltas are just accepted as string. It would
       be more natural if they are also accepted as pd.Timedelta
 
