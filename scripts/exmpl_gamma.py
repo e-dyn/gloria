@@ -22,13 +22,13 @@ SEASONALITIES = {
         "period": "7d",
         "fourier_order": 1,
         "prior_scale": 0.1,
-        "mode": "additive",
+        "mode": "multiplicative",
     },
     "monthly": {
         "period": f"{365.25/12}d",
         "fourier_order": 1,
         "prior_scale": 0.1,
-        "mode": "additive",
+        "mode": "multiplicative",
     },
     # 'quarterly': {
     #     'period': f'{365.25/4}d',
@@ -87,7 +87,8 @@ if __name__ == "__main__":
     protocol = CalendricData(
         # country="US",
         yearly_seasonality=False,
-        monthly_seasonality="auto",
+        monthly_seasonality=3,
+        weekly_seasonality=3,
     )
 
     model.add_protocol(protocol)

@@ -615,10 +615,18 @@ class ModelBackendBase(ABC):
                 for t in zip(*params_dict.values())
             ]
 
+            # Single out scale parameter
+            scale = (
+                params_dict["scale"].mean()
+                if "scale" in params_dict
+                else N_vec
+            )
+
             # For each parameter sample produced by the fit method, calculate
             # the trend and overall yhat arguments and collect them in lists.
             yhat_arg_lst = []
             trend_arg_lst = []
+
             for pars in params:
                 trend_arg, yhat_arg = self.predict_regression(t, X, pars)
                 yhat_arg_lst.append(yhat_arg)
@@ -647,9 +655,9 @@ class ModelBackendBase(ABC):
             yhat_linked_upper = self.link_pair.inverse(
                 yhat_upper_arg + trend_uncertainty.upper
             )
-            yhat = self.yhat_func(yhat_linked)
-            yhat_lower = self.yhat_func(yhat_linked_lower)
-            yhat_upper = self.yhat_func(yhat_linked_upper)
+            yhat = self.yhat_func(yhat_linked, scale=scale)
+            yhat_lower = self.yhat_func(yhat_linked_lower, scale=scale)
+            yhat_upper = self.yhat_func(yhat_linked_upper, scale=scale)
         else:
             trend_arg, yhat_arg = self.predict_regression(t, X, params_dict)
             scale = params_dict["scale"] if "scale" in params_dict else N_vec
@@ -1242,7 +1250,7 @@ class Normal(ModelBackendBase):
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
         # The initial guess for the noise necessary for normal distribution
-        ini_params.sigma_obs = 1  # type: ignore[attr-defined]
+        ini_params.sigma_obs = 0.5  # type: ignore[attr-defined]
         return stan_data, ini_params
 
 

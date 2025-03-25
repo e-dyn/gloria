@@ -6,7 +6,7 @@
     },
     "metric_config": {
         "metric_name": "data",
-        "model": "gamma",
+        "model": "normal",
         "dtype_kind": "f",
         "augmentation_config": {
             "mode": "constant",
@@ -16,8 +16,8 @@
     "gloria_config": {
         "n_changepoints": 10,
         "changepoint_range": 0.8,
-        "seasonality_mode": "additive",
-        "seasonality_prior_scale": 10.0,
+        "seasonality_mode": "multiplicative",
+        "seasonality_prior_scale": 0.1,
         "event_prior_scale": 2,
         "changepoint_prior_scale": 0.05,
         "interval_width": 0.8,
