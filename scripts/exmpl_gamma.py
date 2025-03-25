@@ -142,6 +142,7 @@ if __name__ == "__main__":
     ax.plot(df[timestamp_name], df[metric_name], "o", label="data")
     ax.plot(result[timestamp_name], result["trend"], "black", label="trend")
     ax.plot(result[timestamp_name], result["yhat"], "red", label="fit")
+    ax.plot(df[timestamp_name], df["shape"], "green", label="model")
     ax.plot(
         result[timestamp_name],
         result["trend_upper"],

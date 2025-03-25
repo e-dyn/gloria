@@ -39,7 +39,7 @@ data {
   int<lower=0> S;               // Number of changepoints
   int<lower=0> K;               // Number of regressors
   real<lower=0> tau;            // Scale on changepoints prior
-  array[T] int<lower=0> y;      // Time series
+  array[T] real<lower=0> y;     // Time series
   vector[T] t;                  // Time as integer vector
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
