@@ -60,17 +60,13 @@ parameters {
   real m;                       // Trend offset
   vector[S] delta;              // Trend rate adjustments
   vector[K] beta;               // Slope for y
-  //real<lower = - phi_est/phi_width> phi_raw;
-  //real<lower = 0> phi_raw;
   real<lower = -10> phi_raw;
 }
 
 transformed parameters {
   vector[T] trend;
   trend = linear_trend(k, m, delta, t, A, t_change);
-  real<lower = 0> phi = (phi_raw*phi_est*0.1 + phi_est);
-  //real<lower = 0> phi = (phi_raw*phi_est);
-  //real<lower = 0> phi = (phi_est/phi_raw);
+  real<lower = 0> scale = (phi_raw*phi_est*0.1 + phi_est);
 }
 
 model {
@@ -79,8 +75,6 @@ model {
   m ~ normal(0, 5);
   delta ~ double_exponential(0, tau);
   beta ~ normal(0, sigmas);
-  //phi ~ normal(phi_est,phi_width);
-  //phi_raw ~ std_normal();
   phi_raw ~ std_normal();
   
   // Likelihood
@@ -88,6 +82,6 @@ model {
     X_sa,
     trend .* (1 + X_sm * beta),
     beta,
-    phi
+    scale
   );
 }

@@ -23,7 +23,7 @@ from cmdstanpy import (
 from pydantic import BaseModel, Field, field_validator
 from scipy.optimize import minimize
 from scipy.special import expit, logit
-from scipy.stats import binom, nbinom, norm, poisson
+from scipy.stats import binom, gamma, nbinom, norm, poisson
 from typing_extensions import Self, TypeAlias
 
 # Gloria
@@ -258,7 +258,11 @@ class ModelBackendBase(ABC):
     # Pair of 'link function'/'inverse link function'
     link_pair = LINK_FUNC_MAP["id"]
 
-    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
+    def yhat_func(
+        self: Self,
+        linked_arg: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
         """
         Produces the predicted values yhat.
 
@@ -266,6 +270,8 @@ class ModelBackendBase(ABC):
         ----------
         linked_arg : np.ndarray
             Linked GLM output
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution.
 
         Returns
         -------
@@ -278,7 +284,10 @@ class ModelBackendBase(ABC):
         return linked_arg
 
     def quant_func(
-        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -579,13 +588,6 @@ class ModelBackendBase(ABC):
         if self.fit_params is None:
             raise ValueError("Can't predict prior to fit.")
 
-        if self.model_name != "binomial vectorized n":
-            yhat_func = self.yhat_func
-        else:
-
-            def yhat_func(linked_arg):
-                return self.yhat_func(linked_arg, N_vec=N_vec)
-
         # Get optimized parameters (or their samples) from fit
         params_dict = self.fit_params
 
@@ -645,16 +647,17 @@ class ModelBackendBase(ABC):
             yhat_linked_upper = self.link_pair.inverse(
                 yhat_upper_arg + trend_uncertainty.upper
             )
-            yhat = yhat_func(yhat_linked)
-            yhat_lower = yhat_func(yhat_linked_lower)
-            yhat_upper = yhat_func(yhat_linked_upper)
+            yhat = self.yhat_func(yhat_linked)
+            yhat_lower = self.yhat_func(yhat_linked_lower)
+            yhat_upper = self.yhat_func(yhat_linked_upper)
         else:
             trend_arg, yhat_arg = self.predict_regression(t, X, params_dict)
+            scale = params_dict["scale"] if "scale" in params_dict else N_vec
 
             yhat_linked = self.link_pair.inverse(yhat_arg)
             yhat_linked_lower = yhat_linked
             yhat_linked_upper = yhat_linked
-            yhat = yhat_func(yhat_linked)
+            yhat = self.yhat_func(yhat_linked, scale=scale)
             yhat_lower = yhat
             yhat_upper = yhat
 
@@ -665,32 +668,17 @@ class ModelBackendBase(ABC):
         trend_linked_upper = self.link_pair.inverse(
             trend_arg + trend_uncertainty.upper
         )
-        trend = yhat_func(trend_linked)
-        trend_lower = yhat_func(trend_linked_lower)
-        trend_upper = yhat_func(trend_linked_upper)
+        trend = self.yhat_func(trend_linked, scale=scale)
+        trend_lower = self.yhat_func(trend_linked_lower, scale=scale)
+        trend_upper = self.yhat_func(trend_linked_upper, scale=scale)
         # For the observed uncertainties, we need to plug the yhats into
         # the actual distribution function and evaluate their respective
         # quantiles
-        quant_kwargs = dict()
-        if self.model_name == "normal":
-            if isinstance(self.stan_fit, CmdStanLaplace):
-                sigma = np.array([p["sigma_obs"] for p in params]).mean()
-                quant_kwargs["sigma"] = sigma
-            else:
-                quant_kwargs["sigma"] = params_dict["sigma_obs"]
-        elif self.model_name == "negative binomial":
-            if isinstance(self.stan_fit, CmdStanLaplace):
-                phi = np.array([p["phi"] for p in params]).mean()
-                quant_kwargs["phi"] = phi
-            else:
-                quant_kwargs["phi"] = params_dict["phi"]
-        elif self.model_name == "binomial vectorized n":
-            quant_kwargs["N_vec"] = N_vec
         observed_lower = self.quant_func(
-            lower_level, yhat - trend + trend_lower, **quant_kwargs
+            lower_level, yhat - trend + trend_lower, scale=scale
         )
         observed_upper = self.quant_func(
-            upper_level, yhat - trend + trend_upper, **quant_kwargs
+            upper_level, yhat - trend + trend_upper, scale=scale
         )
 
         # Reconstruct
@@ -926,7 +914,11 @@ class BinomialConstantN(ModelBackendBase):
     # Pair of 'link function'/'inverse link function'
     link_pair = LINK_FUNC_MAP["logit"]
 
-    def yhat_func(self: Self, linked_arg: np.ndarray) -> np.ndarray:
+    def yhat_func(
+        self: Self,
+        linked_arg: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
         """
         Produces the predicted values yhat
 
@@ -934,6 +926,9 @@ class BinomialConstantN(ModelBackendBase):
         ----------
         linked_arg : np.ndarray
             Linked GLM output
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. None for binomial constant n
+            model
 
         Returns
         -------
@@ -944,7 +939,10 @@ class BinomialConstantN(ModelBackendBase):
         return self.stan_data.N * linked_arg  # type: ignore[attr-defined]
 
     def quant_func(
-        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -955,6 +953,9 @@ class BinomialConstantN(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. None for binomial constant n
+            model
 
         Returns
         -------
@@ -1064,7 +1065,9 @@ class BinomialVectorizedN(ModelBackendBase):
     link_pair = LINK_FUNC_MAP["logit"]
 
     def yhat_func(
-        self: Self, linked_arg: np.ndarray, N_vec: Optional[np.ndarray] = None
+        self: Self,
+        linked_arg: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Produces the predicted values yhat
@@ -1073,9 +1076,11 @@ class BinomialVectorizedN(ModelBackendBase):
         ----------
         linked_arg : np.ndarray
             Linked GLM output
-        N_vec : Optional[np.ndarray], optional
-            Vectorized population size. Default is None, in which case it will
-            be taken from self.stan_data
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. Equals vectorized population
+            size for binomial vectorized n model. Default is None, in which
+            case it will be taken from self.stan_data.
+
 
         Returns
         -------
@@ -1083,14 +1088,14 @@ class BinomialVectorizedN(ModelBackendBase):
             Predicted values
 
         """
-        N_vec = self.stan_data.N_vec if N_vec is None else N_vec
+        N_vec = self.stan_data.N_vec if scale is None else scale
         return N_vec * linked_arg
 
     def quant_func(
         self: Self,
         level: float,
         yhat: np.ndarray,
-        **kwargs: dict[str, Any],
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1101,6 +1106,10 @@ class BinomialVectorizedN(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. Equals vectorized population
+            size for binomial vectorized n model. Default is None, in which
+            case it will be taken from self.stan_data.
 
         Returns
         -------
@@ -1108,11 +1117,7 @@ class BinomialVectorizedN(ModelBackendBase):
             Quantile at given level
 
         """
-        N_vec = (
-            self.stan_data.N_vec
-            if kwargs["N_vec"] is None
-            else kwargs["N_vec"]
-        )
+        N_vec = self.stan_data.N_vec if scale is None else scale
         return binom.ppf(level, N_vec, yhat / N_vec)
 
     def preprocess(
@@ -1174,7 +1179,10 @@ class Normal(ModelBackendBase):
     link_pair = LINK_FUNC_MAP["id"]
 
     def quant_func(
-        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1185,8 +1193,9 @@ class Normal(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
-        kwargs : dict[str, Any]
-            Must contain "sigma" as scale of the normal distribution
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. Equals observation noise for
+            normal distribution.
 
         Returns
         -------
@@ -1194,7 +1203,7 @@ class Normal(ModelBackendBase):
             Quantile at given level
 
         """
-        return norm.ppf(level, loc=yhat, scale=kwargs["sigma"])
+        return norm.ppf(level, loc=yhat, scale=scale)
 
     def preprocess(
         self: Self,
@@ -1251,7 +1260,10 @@ class Poisson(ModelBackendBase):
     link_pair = LINK_FUNC_MAP["log"]
 
     def quant_func(
-        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1262,6 +1274,8 @@ class Poisson(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. None for Poisson distribution.
 
         Returns
         -------
@@ -1325,7 +1339,10 @@ class NegativeBinomial(ModelBackendBase):
     link_pair = LINK_FUNC_MAP["log"]
 
     def quant_func(
-        self: Self, level: float, yhat: np.ndarray, **kwargs: dict[str, Any]
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1336,6 +1353,8 @@ class NegativeBinomial(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution.
 
         Returns
         -------
@@ -1345,8 +1364,8 @@ class NegativeBinomial(ModelBackendBase):
         """
         # Calculate success probability. Note that phi has the meaning of
         # number of successes
-        p = kwargs["phi"] / (kwargs["phi"] + yhat)
-        return nbinom.ppf(level, n=kwargs["phi"], p=p)
+        p = scale / (scale + yhat)
+        return nbinom.ppf(level, n=scale, p=p)
 
     def preprocess(
         self: Self,
@@ -1415,6 +1434,88 @@ class NegativeBinomial(ModelBackendBase):
         return stan_data, ini_params
 
 
+class Gamma(ModelBackendBase):
+    """
+    Implementation of model backend for gamma distribution
+    """
+
+    # These class attributes must be defined by each model backend
+    # Location of the stan file
+    stan_file = BASEPATH / "stan_models/gamma.stan"
+    # Kind of data (integer, float, ...). Is used for data validation
+    kind = "biuf"  # must be any combination of 'biuf'
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["log"]
+
+    def quant_func(
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
+        """
+        Quantile function of the underlying distribution
+
+        Parameters
+        ----------
+        level : float
+            Level of confidence in (0,1)
+        yhat : np.ndarray
+            Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution.
+
+        Returns
+        -------
+        np.ndarray
+            Quantile at given level
+
+        """
+        # Tell mypy that in case of Gamma distribution scale will be a float.
+        scale = cast(float, scale)
+        return gamma.ppf(level, yhat * scale, scale=1 / scale)
+
+    def preprocess(
+        self: Self,
+        stan_data: ModelInputData,
+        augmentation_config: Optional[BinomialPopulation] = None,
+    ) -> tuple[ModelInputData, ModelParams]:
+        """
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augmentation process. Currently,
+            it is only required for the BinomialConstantN model. For all other
+            models it defaults to None.
+
+        Returns
+        -------
+        ModelInputData
+            Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
+        """
+        ## -- 1. Augment stan_data -- ##
+        # Nothing to augment for Gamma model
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Apply inverse link function for y-value scaling. As the data are
+        # scaled using the natural logarithm, zeros need to be replaced.
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        y_scaled = self.link_pair.link(y_scaled)
+
+        # Call the parent class parameter estimation method
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params.scale = 1
+        return stan_data, ini_params
+
+
 # A TypeAlias for all existing Model Backends
 ModelBackend: TypeAlias = Union[
     BinomialConstantN, Normal, Poisson, NegativeBinomial
@@ -1427,6 +1528,7 @@ MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
     "poisson": Poisson,
     "normal": Normal,
     "negative binomial": NegativeBinomial,
+    "gamma": Gamma,
 }
 
 

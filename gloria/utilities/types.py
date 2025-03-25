@@ -15,6 +15,7 @@ Distribution: TypeAlias = Literal[
     "normal",
     "poisson",
     "negative binomial",
+    "gamma",
 ]
 
 # Mode in which regressors are added to the model
