@@ -7,15 +7,18 @@ serialization and deserialization
 # Standard Library
 import json
 from pathlib import Path
-from typing import Literal, Optional, cast
+from typing import Literal, Optional, Type, cast
 
 # Third Party
+import pandas as pd
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
+from typing_extensions import Self
 
 # Gloria
 from gloria.models import MODEL_MAP, BinomialPopulation
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _GLORIA_DEFAULTS
+from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution, DTypeKind, RegressorMode
 
 ### --- Class and Function Definitions --- ###
@@ -69,6 +72,7 @@ class GloriaConfig(BaseModel):
     n_changepoints: int = Field(
         ge=0, default=_GLORIA_DEFAULTS["n_changepoints"]
     )
+    changepoints: Optional[list[str]] = _GLORIA_DEFAULTS["changepoints"]
     changepoint_range: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["changepoint_range"]
     )
@@ -95,6 +99,28 @@ class GloriaConfig(BaseModel):
     )
     optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS["optimize_mode"]
     sample: bool = _BACKEND_DEFAULTS["sample"]
+
+    @field_validator("changepoints")
+    @classmethod
+    def validate_changepoints(
+        cls: Type[Self], changepoints: Optional[list[str]]
+    ) -> pd.Series:
+        """
+        Converts sampling period to a pandas Timedelta if it was passed as a
+        string instead.
+        """
+        # Third Party
+        from pandas._libs.tslibs.parsing import DateParseError
+
+        try:
+            # pd.to_datetime returns None if changepoints were None
+            changepoints = pd.to_datetime(pd.Series(changepoints))
+        except (ValueError, DateParseError) as e:
+            msg = "Could not parse input changepoints."
+            get_logger().error(msg)
+            raise ValueError(msg) from e
+
+        return changepoints
 
 
 class RunConfig(BaseModel):

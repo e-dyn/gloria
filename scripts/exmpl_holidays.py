@@ -88,10 +88,10 @@ if __name__ == "__main__":
         "ano_deviation", prior_scale=0.3, mode="additive"
     )
     protocol = CalendricData(
-        # country="US",
+        country="US",
         yearly_seasonality=False,
         monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "sigma": "3d"},
+        holiday_event={"event_type": "Gaussian", "sigma": "2d"},
     )
 
     model.add_protocol(protocol)

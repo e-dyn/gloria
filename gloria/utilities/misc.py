@@ -4,11 +4,14 @@ A collection of helper functions used througout the gloria code
 
 ### --- Module Imports --- ###
 # Standard Library
-from typing import Union, cast
+from typing import TYPE_CHECKING, Union, cast
 
 # Third Party
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from gloria.models import ModelInputData
 
 # Gloria
 from gloria.utilities.types import DTypeKind
@@ -135,6 +138,39 @@ def cast_series_to_kind(series: pd.Series, kind: DTypeKind) -> pd.Series:
         return series.astype(dtype)
     except ValueError as e:
         raise ValueError(f"Failed to cast Series to {dtype}.") from e
+
+
+def simple_poisson_model(stan_data: "ModelInputData") -> pd.Series:
+    """
+    Fits a simple poisson model that can be used for further estimations.
+
+    Parameters
+    ----------
+    stan_data : "ModelInputData"
+        Model agnostic input data provided by the Gloria interface
+
+    Returns
+    -------
+    pd.Series
+        Predicted values for the poisson model.
+    """
+    # Gloria
+    from gloria.models import Poisson
+
+    m_poisson = Poisson(model_name="poisson")
+    m_poisson.fit(
+        stan_data=stan_data,
+        optimize_mode="MLE",
+        sample=False,
+        augmentation_config=None,
+    )
+    result = m_poisson.predict(
+        t=stan_data.t,
+        X=stan_data.X,
+        interval_width=0.8,
+        n_samples=0,
+    )
+    return result.yhat
 
 
 def calculate_dispersion(

@@ -12,7 +12,7 @@ from gloria import Gloria, RunConfig, cast_series_to_kind
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config_browser_data"
-COMPARE_TO_PROPHET = False
+COMPARE_TO_PROPHET = True
 # Note: predicting after deserialization currently only works when there is no
 # external regressor
 INCLUDE_SERIALIZATION_STEP = True
@@ -116,15 +116,25 @@ if __name__ == "__main__":
             "n_changepoints": 10,
             "uncertainty_samples": 1000,
         }
-        model_prophet = Prophet(**params_prophet)
+        model_prophet = Prophet(**{**params_prophet, "scaling": "minmax"})
+
         for name, props in SEASONALITIES.items():
             props["period"] = pd.Timedelta(props["period"]).days
             model_prophet.add_seasonality(name, **props)
         df_prophet = df.rename(
             columns={timestamp_name: "ds", metric_name: "y"}
         )
+        data_prophet = data.rename(columns={timestamp_name: "ds"})
+        model_prophet.add_regressor(name="switch", mode="multiplicative")
+        df_prophet["switch"] = model.events["browser_switch"][
+            "regressor"
+        ].make_feature(df_prophet["ds"])[0]
+        data_prophet["switch"] = model.events["browser_switch"][
+            "regressor"
+        ].make_feature(data_prophet["ds"])[0]
+
         model_prophet.fit(df_prophet)
-        result_prophet = model_prophet.predict(data)
+        result_prophet = model_prophet.predict(data_prophet)
         result_prophet = result_prophet[mask]
 
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -154,14 +164,14 @@ if __name__ == "__main__":
 
     if COMPARE_TO_PROPHET:
         ax.plot(
-            result_prophet[timestamp_name],
+            result_prophet["ds"],
             result_prophet["trend"],
             "green",
             linestyle="--",
             label="trend prophet",
         )
         ax.plot(
-            result_prophet[timestamp_name],
+            result_prophet["ds"],
             result_prophet["yhat"],
             "green",
             linestyle="--",

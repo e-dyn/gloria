@@ -46,7 +46,7 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   vector[K] s_a;                // Indicator of additive features
   vector[K] s_m;                // Indicator of multiplicative features
-  real phi_est;
+  real scale_est;
 }
 
 transformed data {
@@ -60,13 +60,13 @@ parameters {
   real m;                       // Trend offset
   vector[S] delta;              // Trend rate adjustments
   vector[K] beta;               // Slope for y
-  real<lower = -10> phi_raw;
+  real<lower = -1> scale_raw;
 }
 
 transformed parameters {
   vector[T] trend;
   trend = linear_trend(k, m, delta, t, A, t_change);
-  real<lower = 0> scale = (phi_raw*phi_est*0.1 + phi_est);
+  real<lower = 0> scale = (scale_raw+1)*scale_est;
 }
 
 model {
@@ -75,13 +75,12 @@ model {
   m ~ normal(0, 5);
   delta ~ double_exponential(0, tau);
   beta ~ normal(0, sigmas);
-  phi_raw ~ std_normal();
+  scale_raw ~ std_normal();
   
   // Likelihood
-  y ~ neg_binomial_2_log_glm(
-    X_sa,
-    trend .* (1 + X_sm * beta),
-    beta,
-    scale
-  );
+  for (n in 1:num_elements(y)) {
+    real eta_n;
+    eta_n = trend[n] * (1 + X_sm[n] * beta) + X_sa[n] * beta;
+    y[n] ~ neg_binomial_2_log(eta_n, scale);
+  }
 }

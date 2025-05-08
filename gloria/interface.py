@@ -21,7 +21,6 @@ FUTURE IMPROVEMENTS:
     - Currently, many places Timedeltas are just accepted as string. It would
       be more natural if they are also accepted as pd.Timedelta
 
-
 ROBUSTNESS
     - Appropriate regressor scaling. Idea: (1) the piece-wise-linear estimation
       in calculate_initial_parameters also returns the residuals
@@ -36,6 +35,9 @@ ROBUSTNESS
       holidays. The data itself only show an effect at Christmas. It can be
       fixed by reducing event_prior_scale or or decreasing the duration of the
       event (Gaussian with 5d doesn't work, with 2d it works)
+    - Fitting Browser Data with a small number of changepoints and Poisson
+      model fails with 'Error evaluating model log probability: Non-finite
+      gradient.'
 
 For Documentation
     - Summarize differences in features and API between Gloria and Prophet. For
@@ -222,7 +224,7 @@ class Gloria(BaseModel):
 
         try:
             s_period = pd.Timedelta(sampling_period)
-        except DateParseError as e:
+        except (ValueError, DateParseError) as e:
             msg = "Could not parse input sampling period."
             get_logger().error(msg)
             raise ValueError(msg) from e

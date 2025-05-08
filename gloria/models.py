@@ -30,7 +30,7 @@ from typing_extensions import Self, TypeAlias
 # Inhouse Packages
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
-from gloria.utilities.misc import calculate_dispersion
+from gloria.utilities.misc import calculate_dispersion, simple_poisson_model
 from gloria.utilities.types import Distribution
 
 stan_logger = logging.getLogger("cmdstanpy")
@@ -395,13 +395,14 @@ class ModelBackendBase(ABC):
         k = (y_scaled[-1] - y_scaled[0]) / T
         m = y_scaled[0] - k * y_scaled[-1]
 
-        # Step 2: Fit the clinear trend with changepoints to estimate delta
+        # Step 2: Fit the clinear trend with changepoints to estimate delta.
         # self.piecewise_linear corresponds to the clinear function.
 
-        # trend_optimizer: an optimizable function that is used to find
-        # a set of parameters minimizing the residual sum of squares for the
-        # trend model.
         def trend_optimizer(x: np.ndarray) -> float:
+            """
+            An optimizable function that is used to find a set of parameters
+            minimizing the residual sum of squares for the trend model.
+            """
             return float(
                 (
                     (
@@ -471,18 +472,6 @@ class ModelBackendBase(ABC):
 
         jacobian = True if optimize_mode == "MAP" else False
 
-        # Scale regressors. The idea is to give each regressor a similar
-        # impact on the model, hence the normalization to its own root sum of
-        # squares. The additional normalization of the factor with respect to
-        # its median ensures that most regressors won't be rescaled but only
-        # the too weak or too strong.
-        if stan_data.X.size:
-            factor = np.sqrt((stan_data.X**2).sum(axis=0))
-
-            factor /= np.median(factor)
-
-            stan_data.X = stan_data.X / factor
-
         # The input stan_data only include data that all models have in common
         # The preprocess method adds additional data that are model dependent.
         # Additionally it estimates initial guesses for model parameters m, k,
@@ -490,6 +479,19 @@ class ModelBackendBase(ABC):
         self.stan_data, self.stan_inits = self.preprocess(
             stan_data, augmentation_config
         )
+
+        # Scale regressors. The goal is to give each regressor a similar impact
+        # on the model
+        if stan_data.X.size:
+            # Calculate the regressor strength as somewhat equivalent to a
+            # physical field strength (sqrt of a signal's delivered power)
+            reg_strength = np.sqrt((stan_data.X**2).sum(axis=0))
+            # Normalization of the strength with respect to its median ensures
+            # that most regressors won't be rescaled but only the too weak or
+            # too strong.
+            q = reg_strength / np.median(reg_strength)
+
+            stan_data.X = stan_data.X / q
 
         # If the user wishes also initialize beta via an MAP estimation
         get_logger().debug(
@@ -524,10 +526,10 @@ class ModelBackendBase(ABC):
             for k, v in self.stan_fit.stan_variables().items()
             if k != "trend"
         }
-        # Scale back both regressors and fit parameters
-        if stan_data.X.size:
-            self.stan_data.X *= factor
-            self.fit_params["beta"] /= factor
+
+        # !! Mind the order of first normal model re-scaling and subsequent
+        # regressor re-scaling. It is the inverse of first scaling the
+        # regressors and later the data as part of the normal-model Stan code.
 
         # In case of the normal model the data were normalized by the Stan
         # model. Therefore the optimized model parameters need to be scaled
@@ -538,6 +540,11 @@ class ModelBackendBase(ABC):
             for k in self.fit_params.keys():
                 self.fit_params[k] *= y_max - y_min
             self.fit_params["m"] += y_min
+
+        # Scale back both regressors and fit parameters
+        if stan_data.X.size:
+            self.stan_data.X *= q
+            self.fit_params["beta"] /= q
 
         return self.stan_fit
 
@@ -1402,22 +1409,11 @@ class NegativeBinomial(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        m_poisson = Poisson(model_name="poisson")
-        m_poisson.fit(
-            stan_data=stan_data,
-            optimize_mode="MLE",
-            sample=False,
-            augmentation_config=None,
-        )
-        result = m_poisson.predict(
-            t=stan_data.t,
-            X=stan_data.X,
-            interval_width=0.8,
-            n_samples=0,
-        )
+        y_model = simple_poisson_model(stan_data)
+
         dof = 2 + stan_data.S + stan_data.K
         _, phi = calculate_dispersion(
-            y_obs=stan_data.y, y_model=result.yhat, dof=dof
+            y_obs=stan_data.y, y_model=y_model, dof=dof
         )
 
         if phi < 0:
@@ -1427,7 +1423,7 @@ class NegativeBinomial(ModelBackendBase):
                 "Binomial model."
             )
             phi = abs(phi)
-        stan_data.phi_est = phi
+        stan_data.scale_est = phi
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. As the data are
@@ -1438,7 +1434,7 @@ class NegativeBinomial(ModelBackendBase):
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
         # The initial guess for dispersion parameter phi
-        ini_params.phi_raw = 0
+        ini_params.scale_raw = 0
         return stan_data, ini_params
 
 

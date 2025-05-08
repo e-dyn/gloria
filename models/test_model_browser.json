@@ -2,6 +2,7 @@
   "model": "poisson",
   "timestamp_name": "Date",
   "metric_name": "Visits",
+  "population_name": "",
   "n_changepoints": 25,
   "changepoint_range": 0.8,
   "seasonality_mode": "additive",
@@ -10964,19 +10965,22 @@
   "external_regressors": [],
   "events": [
     {
-      "name": "browser_switch",
-      "prior_scale": 10.0,
-      "mode": "multiplicative",
-      "regressor_type": "IntermittentEvent",
-      "event": {
-        "event_type": "SuperGaussian",
-        "sigma": "11 days 00:00:00",
-        "order": "2.5"
+      "regressor": {
+        "name": "browser_switch",
+        "prior_scale": 10.0,
+        "mode": "multiplicative",
+        "regressor_type": "IntermittentEvent",
+        "event": {
+          "event_type": "SuperGaussian",
+          "sigma": "11 days 00:00:00",
+          "order": 2.5
+        },
+        "t_list": [
+          "2024-03-11 00:00:00",
+          "2024-09-13 00:00:00"
+        ]
       },
-      "t_list": [
-        "2024-03-11 00:00:00",
-        "2024-09-13 00:00:00"
-      ]
+      "include": "auto"
     }
   ]
 }
