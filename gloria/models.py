@@ -20,7 +20,7 @@ from cmdstanpy import (
     install_cmdstan,
     set_cmdstan_path,
 )
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from scipy.optimize import minimize
 from scipy.special import expit, logit
 from scipy.stats import binom, gamma, nbinom, norm, poisson
@@ -105,14 +105,17 @@ class ModelParams(BaseModel):
     dependent parameters have to be added within the model
     """
 
+    model_config = ConfigDict(
+        # Allows setting extra attributes during initialization
+        extra="allow",
+        # So the model accepts pandas object as values
+        arbitrary_types_allowed=True,
+    )
+
     k: float = 0  # Base trend growth rate
     m: float = 0  # Trend offset
     delta: np.ndarray = np.array([])  # Trend rate adjustments, length S
     beta: np.ndarray = np.array([])  # Slope for y, length K
-
-    class Config:
-        arbitrary_types_allowed = True
-        extra = "allow"
 
 
 class ModelInputData(BaseModel):
@@ -120,6 +123,13 @@ class ModelInputData(BaseModel):
     A container for the input data of each model. Additional model-dependent
     parameters have to be added within the model
     """
+
+    model_config = ConfigDict(
+        # Allows setting extra attributes during initialization
+        extra="allow",
+        # So the model accepts pandas object as values
+        arbitrary_types_allowed=True,
+    )
 
     T: int = Field(ge=0, default=0)  # Number of time periods
     S: int = Field(ge=0, default=0)  # Number of changepoints
@@ -225,21 +235,19 @@ class ModelInputData(BaseModel):
             raise ValueError("s_m must be complimentary to s_a.")
         return s_m
 
-    class Config:
-        arbitrary_types_allowed = True
-        extra = "allow"
-
 
 class Uncertainty(BaseModel):
     """
     Small container class for holding trend uncertainties
     """
 
+    model_config = ConfigDict(
+        # So the model accepts pandas object as values
+        arbitrary_types_allowed=True,
+    )
+
     lower: np.ndarray
     upper: np.ndarray
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class ModelBackendBase(ABC):

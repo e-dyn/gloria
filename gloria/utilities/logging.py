@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Union
 
 # Third Party
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 # Gloria
 from gloria.utilities.constants import _GLORIA_PATH, _RUN_TIMESTAMP
@@ -21,6 +21,11 @@ from gloria.utilities.types import LogLevel
 
 
 class LoggingConfig(BaseModel):
+    model_config = ConfigDict(
+        # Use validation also when fields of an existing model are assigned
+        validate_assignment=True
+    )
+
     stream_level: LogLevel = "INFO"
     file_level: LogLevel = "DEBUG"
     log_path: Path = _GLORIA_PATH / "logfiles"
@@ -36,9 +41,6 @@ class LoggingConfig(BaseModel):
                 f"Cannot convert log_path input {log_path} to a path."
             ) from e
         return log_path
-
-    class Config:
-        validate_assignment = True
 
 
 log_config = LoggingConfig()

@@ -10,7 +10,7 @@ from typing import Any, Type, Union
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import Self
 
 ### --- Global Constants Definitions --- ###
@@ -22,9 +22,10 @@ class Event(BaseModel, ABC):
     Abstract base class for all events
     """
 
-    # All events will use some sort of pd.Timestamp or pd.Timedelta
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(
+        # All events will use some sort of pd.Timestamp or pd.Timedelta
+        arbitrary_types_allowed=True,
+    )
 
     @property
     def _event_type(self: Self):

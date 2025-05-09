@@ -1,4 +1,13 @@
 repos:
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.1.0
     hooks:

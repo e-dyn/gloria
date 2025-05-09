@@ -11,7 +11,7 @@ from typing import Any, Literal, Optional, Type
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Self
 
 # Gloria
@@ -28,13 +28,12 @@ class Regressor(BaseModel, ABC):
     respective feature matrix
     """
 
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     # class attributes that all regressors have in common
     name: str
     prior_scale: float = Field(gt=0)
     mode: Literal["additive", "multiplicative"]
-
-    class Config:
-        arbitrary_types_allowed = True
 
     @property
     def _regressor_type(self: Self) -> str:

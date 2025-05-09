@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Type
 
 # Third Party
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing_extensions import Self
 
 # Inhouse Packages
@@ -32,8 +32,9 @@ class Protocol(ABC, BaseModel):
     functionalities
     """
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
 
     @property
     def _protocol_type(self: Self) -> str:

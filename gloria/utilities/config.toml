@@ -1,6 +1,0 @@
-name = "MyApp"
-version = "1.0.0"
-debug = true
-
-[database]
-host = "localhost"

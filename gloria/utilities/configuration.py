@@ -12,7 +12,7 @@ from typing import Literal, Optional, Type, cast
 # Third Party
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import Self
 
 # Gloria
@@ -47,9 +47,7 @@ class MetricConfig(BaseModel):
 
     @field_validator("dtype_kind")
     @classmethod
-    def validate_model_kind(
-        cls, dtype_kind: str, info: FieldValidationInfo
-    ) -> str:
+    def validate_model_kind(cls, dtype_kind: str, info: ValidationInfo) -> str:
         """
         Validates that the specified dtype_kind matches any of the allowed type
         specific to the model.

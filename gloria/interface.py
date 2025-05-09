@@ -64,7 +64,13 @@ from typing import Any, Literal, Optional, Type, Union, cast
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+)
 from typing_extensions import Self
 
 # Gloria
@@ -95,7 +101,7 @@ from gloria.utilities.constants import (
 from gloria.utilities.errors import FittedError, NotFittedError
 from gloria.utilities.logging import get_logger
 from gloria.utilities.misc import time_to_integer
-from gloria.utilities.types import Distribution, RegressorMode
+from gloria.utilities.types import Distribution, RegressorMode, SeriesData
 
 
 ### --- Class and Function Definitions --- ###
@@ -168,6 +174,15 @@ class Gloria(BaseModel):
         Must be greater equal to 0, Default is 1000.
     """
 
+    model_config = ConfigDict(
+        # Allows setting extra attributes during initialization
+        extra="allow",
+        # So the model accepts pandas object as values
+        arbitrary_types_allowed=True,
+        # Use validation also when fields of an existing model are assigned
+        validate_assignment=True,
+    )
+
     model: Distribution = _GLORIA_DEFAULTS["model"]
     sampling_period: pd.Timedelta = _GLORIA_DEFAULTS["sampling_period"]
     timestamp_name: str = _GLORIA_DEFAULTS["timestamp_name"]
@@ -201,14 +216,6 @@ class Gloria(BaseModel):
     uncertainty_samples: int = Field(
         ge=0, default=_GLORIA_DEFAULTS["uncertainty_samples"]
     )
-
-    class Config:
-        # Allows setting extra attributes during initialization
-        extra = "allow"
-        # So the model accepts pandas object as values
-        arbitrary_types_allowed = True
-        # Use validation also when fields of an existing model are assigned
-        validate_assignment = True
 
     @field_validator("sampling_period", mode="before")
     @classmethod
@@ -256,6 +263,25 @@ class Gloria(BaseModel):
             )
         return population_name
 
+    @field_validator("changepoints", mode="before")
+    @classmethod
+    def validate_changepoints(
+        cls: Type[Self], changepoints: Optional[SeriesData]
+    ) -> pd.Series:
+        """
+        Converts changepoints input to pd.Series
+        """
+        if changepoints is None:
+            return changepoints
+
+        try:
+            changepoints = pd.Series(changepoints)
+        except Exception as e:
+            raise ValueError(
+                "Input changepoints cannot be converted to a pandas Series."
+            ) from e
+        return changepoints
+
     def __init__(
         self: Self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
     ) -> None:
@@ -275,6 +301,7 @@ class Gloria(BaseModel):
 
         # Sanitize provided Changepoints
         if self.changepoints is not None:
+            print(self.changepoints)
             self.changepoints = pd.Series(
                 pd.to_datetime(self.changepoints), name=self.timestamp_name
             )
