@@ -570,12 +570,10 @@ SIMPLE_ATTRIBUTES = [
     "population_name",
     "n_changepoints",
     "changepoint_range",
-    "seasonality_mode",
     "seasonality_prior_scale",
     "changepoint_prior_scale",
     "interval_width",
     "uncertainty_samples",
-    "modes",
     "prior_scales",
 ]
 

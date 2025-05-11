@@ -24,7 +24,6 @@ from gloria.regressors import IntermittentEvent
 from gloria.utilities.constants import _HOLIDAY
 from gloria.utilities.logging import get_logger
 from gloria.utilities.misc import infer_sampling_period
-from gloria.utilities.types import RegressorMode
 
 ### --- Global Constants Definitions --- ###
 
@@ -278,10 +277,10 @@ class Holiday(IntermittentEvent):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        timestamp series.
+        Create the feature matrix along with prior scales for a given timestamp
+        series.
 
         Parameters
         ----------
@@ -299,8 +298,6 @@ class Holiday(IntermittentEvent):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
 
         # Set list of all occurences of desired holiday
@@ -327,10 +324,8 @@ class CalendricData(Protocol):
 
     country: Optional[str] = None
     subdiv: Optional[str] = None
-    holiday_mode: Optional[RegressorMode] = cast(RegressorMode, None)
     holiday_prior_scale: Optional[float] = Field(gt=0, default=None)
     holiday_event: Event = BoxCar(duration=pd.Timedelta("1d"))
-    seasonality_mode: Optional[RegressorMode] = cast(RegressorMode, None)
     seasonality_prior_scale: Optional[float] = Field(gt=0, default=None)
     yearly_seasonality: Union[bool, str, int] = "auto"
     quarterly_seasonality: Union[bool, str, int] = False
@@ -400,8 +395,6 @@ class CalendricData(Protocol):
         # the Gloria model
         ps = self.holiday_prior_scale
         ps = model.event_prior_scale if ps is None else ps
-        mode = self.holiday_mode
-        mode = model.event_mode if mode is None else mode
 
         if self.country is not None:
             # Get all holidays that occur in the range of timestamps
@@ -421,7 +414,6 @@ class CalendricData(Protocol):
                 model.add_event(
                     name=holiday,
                     prior_scale=ps,
-                    mode=mode,
                     regressor_type="Holiday",
                     event=self.holiday_event,
                     country=self.country,
@@ -487,8 +479,6 @@ class CalendricData(Protocol):
         # from the Gloria model
         ps = self.seasonality_prior_scale
         ps = model.seasonality_prior_scale if ps is None else ps
-        mode = self.seasonality_mode
-        mode = model.seasonality_mode if mode is None else mode
 
         # The q'th fraction of the data has a sampling period below or equal
         # to the inferred period. Distinguishing between the inferred period
@@ -580,7 +570,6 @@ class CalendricData(Protocol):
                 period=str(period_loc),
                 fourier_order=fourier_order,
                 prior_scale=ps,
-                mode=mode,
             )
 
         return model

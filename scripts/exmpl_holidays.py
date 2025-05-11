@@ -18,29 +18,21 @@ COMPARE_TO_PROPHET = False
 INCLUDE_SERIALIZATION_STEP = False
 
 SEASONALITIES = {
-    "weekly": {
-        "period": "7d",
-        "fourier_order": 1,
-        "prior_scale": 0.1,
-        "mode": "additive",
-    },
+    "weekly": {"period": "7d", "fourier_order": 1, "prior_scale": 0.1},
     "monthly": {
         "period": f"{365.25/12}d",
         "fourier_order": 1,
         "prior_scale": 0.1,
-        "mode": "additive",
     },
     # 'quarterly': {
     #     'period': f'{365.25/4}d',
     #     'fourier_order': 3,
-    #     'prior_scale': 0.1,
-    #     'mode': 'additive'
+    #     'prior_scale': 0.1
     # },
     # 'yearly': {
     #     'period': '365.25d',
     #     'fourier_order': 10,
-    #     'prior_scale': 0.1,
-    #     'mode': 'additive'
+    #     'prior_scale': 0.1
     # }
 }
 
@@ -84,14 +76,12 @@ if __name__ == "__main__":
 
     # Add anomaly column as external regressor. Basically as if we knew where
     # anomalies will appear.
-    model.add_external_regressor(
-        "ano_deviation", prior_scale=0.3, mode="additive"
-    )
+    model.add_external_regressor("ano_deviation", prior_scale=0.3)
     protocol = CalendricData(
         country="US",
         yearly_seasonality=False,
         monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "sigma": "2d"},
+        holiday_event={"event_type": "Gaussian", "sigma": "5d"},
     )
 
     model.add_protocol(protocol)

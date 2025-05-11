@@ -142,8 +142,6 @@ class ModelInputData(BaseModel):
     )  # Times of trend changepoints as integers
     X: np.ndarray = np.array([[]])  # Regressors
     sigmas: np.ndarray = np.array([])  # Scale on seasonality prior
-    s_a: np.ndarray = np.array([])  # Indicator of additive features
-    s_m: np.ndarray = np.array([])  # Indicator of multiplicative features
 
     @field_validator("S")
     @classmethod
@@ -212,28 +210,6 @@ class ModelInputData(BaseModel):
         if not np.all(sigmas > 0):
             raise ValueError("All elements in sigmas must be greater than 0.")
         return sigmas
-
-    @field_validator("s_a")
-    @classmethod
-    def validate_s_a(cls, s_a: np.ndarray, info) -> np.ndarray:
-        if len(s_a.shape) != 1:
-            raise ValueError("s_a array must be 1d-ndarray.")
-        if info.data["K"] != len(s_a):
-            raise ValueError("Length of s_a does not equal specified K.")
-        if not all([s in [0, 1] for s in s_a]):
-            raise ValueError("All elements of s_a must be either 0 or 1.")
-        return s_a
-
-    @field_validator("s_m")
-    @classmethod
-    def validate_s_m(cls, s_m: np.ndarray, info) -> np.ndarray:
-        if len(s_m.shape) != 1:
-            raise ValueError("s_m array must be 1d-ndarray.")
-        if info.data["K"] != len(s_m):
-            raise ValueError("Length of s_m does not equal specified K.")
-        if not all((info.data["s_a"] + s_m) == 1):
-            raise ValueError("s_m must be complimentary to s_a.")
-        return s_m
 
 
 class Uncertainty(BaseModel):
@@ -762,10 +738,9 @@ class ModelBackendBase(ABC):
         # Otherwise calculate feature matrix for both additive and
         # multiplicative features
         beta = pars["beta"]
-        Xb_a = np.matmul(X, beta * self.stan_data.s_a)
-        Xb_m = np.matmul(X, beta * self.stan_data.s_m)
+        Xb = np.matmul(X, beta)
 
-        return trend, trend * (1 + Xb_m) + Xb_a
+        return trend, trend + Xb
 
     def predict_trend(
         self: Self, t: np.ndarray, pars: dict[str, Union[float, np.ndarray]]

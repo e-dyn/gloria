@@ -41,7 +41,6 @@ def test_default_model_init_defaults(default_model):
     assert default_model.external_regressors == {}
     assert default_model.seasonalities == {}
     assert default_model.events == {}
-    assert default_model.modes == {}
     assert default_model.prior_scales == {}
     assert default_model.protocols == []
     assert default_model.first_timestamp == pd.Timestamp(0)

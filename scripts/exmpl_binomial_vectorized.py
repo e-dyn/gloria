@@ -23,25 +23,21 @@ SEASONALITIES = {
         "period": "7d",
         "fourier_order": 1,
         "prior_scale": 0.1,
-        "mode": "additive",
     },
     "monthly": {
         "period": f"{365.25/12}d",
         "fourier_order": 1,
         "prior_scale": 0.1,
-        "mode": "additive",
     },
     # 'quarterly': {
     #     'period': f'{365.25/4}d',
     #     'fourier_order': 3,
     #     'prior_scale': 0.1,
-    #     'mode': 'additive'
     # },
     # 'yearly': {
     #     'period': '365.25d',
     #     'fourier_order': 10,
     #     'prior_scale': 0.1,
-    #     'mode': 'additive'
     # }
 }
 

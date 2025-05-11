@@ -6,7 +6,7 @@ Defintion of Regressor classes used by the Gloria Model
 # Standard Library
 from abc import ABC, abstractmethod
 from itertools import product
-from typing import Any, Literal, Optional, Type
+from typing import Any, Optional, Type
 
 # Third Party
 import numpy as np
@@ -33,7 +33,6 @@ class Regressor(BaseModel, ABC):
     # class attributes that all regressors have in common
     name: str
     prior_scale: float = Field(gt=0)
-    mode: Literal["additive", "multiplicative"]
 
     @property
     def _regressor_type(self: Self) -> str:
@@ -112,10 +111,10 @@ class Regressor(BaseModel, ABC):
     @abstractmethod
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        integer time vector
+        Create the feature matrix along with prior scales for a given integer
+        time vector
 
         Parameters
         ----------
@@ -138,8 +137,6 @@ class Regressor(BaseModel, ABC):
             Contains the feature matrix
         dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        dict : TYPE
-            A map for 'feature matrix column name' -> 'mode'
         """
         pass
 
@@ -170,10 +167,10 @@ class ExternalRegressor(Regressor):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        integer time vector
+        Create the feature matrix along with prior scales for a given integer
+        time vector
 
         Parameters
         ----------
@@ -190,8 +187,6 @@ class ExternalRegressor(Regressor):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
         if not isinstance(regressor, pd.Series):
             raise TypeError("External Regressor must be pandas Series.")
@@ -206,8 +201,7 @@ class ExternalRegressor(Regressor):
         column = f"{self._regressor_type}{_DELIM}{self.name}"
         X = pd.DataFrame({column: regressor.values})
         prior_scales = {column: self.prior_scale}
-        modes = {column: self.mode}
-        return X, prior_scales, modes
+        return X, prior_scales
 
 
 class Seasonality(Regressor):
@@ -260,10 +254,10 @@ class Seasonality(Regressor):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        integer time vector
+        Create the feature matrix along with prior scales for a given integer
+        time vector
 
         Parameters
         ----------
@@ -280,8 +274,6 @@ class Seasonality(Regressor):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
         # First construct column names, Note that in particular 'odd' and
         # 'even' must follow the same order as they are returned by
@@ -303,10 +295,9 @@ class Seasonality(Regressor):
             ),
             columns=columns,
         )
-        # Prepare prior_scales and modes
+        # Prepare prior_scales
         prior_scales = {col: self.prior_scale for col in columns}
-        modes = {col: self.mode for col in columns}
-        return X, prior_scales, modes
+        return X, prior_scales
 
     @staticmethod
     def fourier_series(
@@ -440,10 +431,10 @@ class SingleEvent(EventRegressor):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        timestamp series.
+        Create the feature matrix along with prior scales for a given timestamp
+        series.
 
         Parameters
         ----------
@@ -460,8 +451,6 @@ class SingleEvent(EventRegressor):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
 
         # First construct column name
@@ -471,10 +460,9 @@ class SingleEvent(EventRegressor):
         )
         # Create the feature matrix
         X = pd.DataFrame({column: self.event.generate(t, self.t_start)})
-        # Prepare prior_scales and modes
+        # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
-        modes = {column: self.mode}
-        return X, prior_scales, modes
+        return X, prior_scales
 
 
 class IntermittentEvent(EventRegressor):
@@ -559,10 +547,10 @@ class IntermittentEvent(EventRegressor):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        timestamp series.
+        Create the feature matrix along with prior scales for a given timestamp
+        series.
 
         Parameters
         ----------
@@ -579,8 +567,6 @@ class IntermittentEvent(EventRegressor):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
 
         # First construct column name
@@ -596,10 +582,9 @@ class IntermittentEvent(EventRegressor):
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_events})
-        # Prepare prior_scales and modes
+        # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
-        modes = {column: self.mode}
-        return X, prior_scales, modes
+        return X, prior_scales
 
 
 class PeriodicEvent(SingleEvent):
@@ -709,10 +694,10 @@ class PeriodicEvent(SingleEvent):
 
     def make_feature(
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
-    ) -> tuple[pd.DataFrame, dict, dict]:
+    ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales and modes for a given
-        timestamp series.
+        Create the feature matrix along with prior scales for a given timestamp
+        series.
 
         Parameters
         ----------
@@ -729,8 +714,6 @@ class PeriodicEvent(SingleEvent):
             Contains the feature matrix
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
-        modes : dict
-            A map for 'feature matrix column name' -> 'mode'
         """
 
         # First construct column name
@@ -749,10 +732,9 @@ class PeriodicEvent(SingleEvent):
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_events})
-        # Prepare prior_scales and modes
+        # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
-        modes = {column: self.mode}
-        return X, prior_scales, modes
+        return X, prior_scales
 
 
 # A map of Regressor class names to actual classes

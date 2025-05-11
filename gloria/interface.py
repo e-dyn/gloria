@@ -20,6 +20,7 @@ FUTURE IMPROVEMENTS:
       as internal tool.
     - Currently, many places Timedeltas are just accepted as string. It would
       be more natural if they are also accepted as pd.Timedelta
+    - Check whether event_prior_scale is serialized
 
 ROBUSTNESS
     - Appropriate regressor scaling. Idea: (1) the piece-wise-linear estimation
@@ -59,7 +60,7 @@ For Documentation
 ### --- Module Imports --- ###
 # Standard Library
 from pathlib import Path
-from typing import Any, Literal, Optional, Type, Union, cast
+from typing import Any, Literal, Optional, Type, Union
 
 # Third Party
 import numpy as np
@@ -101,7 +102,7 @@ from gloria.utilities.constants import (
 from gloria.utilities.errors import FittedError, NotFittedError
 from gloria.utilities.logging import get_logger
 from gloria.utilities.misc import time_to_integer
-from gloria.utilities.types import Distribution, RegressorMode, SeriesData
+from gloria.utilities.types import Distribution, SeriesData
 
 
 ### --- Class and Function Definitions --- ###
@@ -140,19 +141,11 @@ class Gloria(BaseModel):
         Proportion of history in which trend changepoints will be estimated.
         Must be in range [0,1]. Defaults to 0.8 for the first 80%. Not used if
         'changepoints' is specified.
-    seasonality_mode : Literal['additive', 'multiplicative'], optional
-        Whether seasonal components are treated as additive or multiplicative
-        features by default. Can be overwritten if a mode is explicitly
-        provided to the regressor. Default is 'additive'.
     seasonality_prior_scale : float, optional
         Parameter modulating the strength of the seasonality model. Larger
         values allow the model to fit larger seasonal fluctuations, smaller
         values dampen the seasonality. Can be specified for individual
         seasonalities using add_seasonality.
-    event_mode : Literal['additive', 'multiplicative'], optional
-        Whether event components are treated as additive or multiplicative
-        features by default. Can be overwritten if a mode is explicitly
-        provided to the regressor. Default is 'additive'.
     event_prior_scale : float, optional
         Parameter modulating the strength of additional event regressors.
         Larger values allow the model to fit larger event impact, smaller
@@ -195,14 +188,8 @@ class Gloria(BaseModel):
     changepoint_range: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["changepoint_range"]
     )
-    seasonality_mode: RegressorMode = cast(
-        RegressorMode, _GLORIA_DEFAULTS["seasonality_mode"]
-    )
     seasonality_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["seasonality_prior_scale"]
-    )
-    event_mode: RegressorMode = cast(
-        RegressorMode, _GLORIA_DEFAULTS["event_mode"]
     )
     event_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["event_prior_scale"]
@@ -317,8 +304,7 @@ class Gloria(BaseModel):
         self.external_regressors: dict[str, ExternalRegressor] = dict()
         self.seasonalities: dict[str, Seasonality] = dict()
         self.events: dict[str, dict[str, Any]] = dict()
-        # 2. Modes and prior scales assigned to the regressors
-        self.modes: dict[str, RegressorMode] = dict()
+        # 2. Prior scales assigned to the regressors
         self.prior_scales: dict[str, float] = dict()
         # 3. A list of all protocols applied to the model
         self.protocols: list[Protocol] = []
@@ -413,7 +399,6 @@ class Gloria(BaseModel):
         period: str,
         fourier_order: int,
         prior_scale: Optional[float] = None,
-        mode: Optional[Literal["additive", "multiplicative"]] = None,
     ) -> Self:
         """
         Add a seasonality to be used for fitting and predicting.
@@ -432,17 +417,13 @@ class Gloria(BaseModel):
             scale parameter. Decreasing the prior scale will add additional
             regularization. If None is given self.seasonality_prior_scale will
             be used (default). Must be greater than 0.
-        mode : Optional[Literal['additive', 'multiplicative']], optional
-            Whether regressor is treated as additive or multiplicative
-            feature. If None is provided (default), self.seasonality_mode is
-            used.
 
         Raises
         ------
         Exception
             Raised when method is called before fitting.
         ValueError
-            Raised when prior scale, mode, or period are not allowed values.
+            Raised when prior scale, or period are not allowed values.
 
         Returns
         -------
@@ -466,7 +447,7 @@ class Gloria(BaseModel):
                 " configuration."
             )
 
-        # Validate and set prior_scale, mode, and fourier_order
+        # Validate and set prior_scale and fourier_order
         if prior_scale is None:
             prior_scale = self.seasonality_prior_scale
         prior_scale = float(prior_scale)
@@ -474,10 +455,6 @@ class Gloria(BaseModel):
             raise ValueError("Prior scale must be > 0")
         if (fourier_order <= 0) or (not isinstance(fourier_order, int)):
             raise ValueError("Fourier Order must be an integer > 0")
-        if mode is None:
-            mode = self.seasonality_mode
-        if mode not in ["additive", "multiplicative"]:
-            raise ValueError('mode must be "additive" or "multiplicative"')
 
         # Create seasonality regressor and add it to the seasonality regressor
         # list
@@ -486,7 +463,6 @@ class Gloria(BaseModel):
             period=pd.to_timedelta(period) / self.sampling_period,
             fourier_order=fourier_order,
             prior_scale=prior_scale,
-            mode=mode,
         )
         return self
 
@@ -496,7 +472,6 @@ class Gloria(BaseModel):
         regressor_type: str,
         event: Union[Event, dict[str, Any]],
         prior_scale: Optional[float] = None,
-        mode: Optional[Literal["additive", "multiplicative"]] = None,
         include: Union[bool, Literal["auto"]] = "auto",
         **regressor_kwargs: Any,
     ) -> Self:
@@ -515,9 +490,6 @@ class Gloria(BaseModel):
             The regression coefficient is given a prior with the specified
             scale parameter. Decreasing the prior scale will add additional
             regularization.
-        mode : Optional[Literal['additive', 'multiplicative']], optional
-            Whether regressor is treated as additive or multiplicative
-            feature. If None is provided (default), self.event_mode is used.
         **regressor_kwargs : dict[str, Any]
             Additional keyword arguments necessary to create the event
             regressor.
@@ -527,7 +499,7 @@ class Gloria(BaseModel):
         Exception
             Raised in case the method is called on a fitted Gloria model.
         ValueError
-            Raised in case of invalid prior scales or event modes.
+            Raised in case of invalid prior scales.
 
         Returns
         -------
@@ -552,16 +524,12 @@ class Gloria(BaseModel):
                 " configuration."
             )
 
-        # Validate and set prior_scale, mode and include flag
+        # Validate and set prior_scale and include flag
         if prior_scale is None:
             prior_scale = self.event_prior_scale
         prior_scale = float(prior_scale)
         if prior_scale <= 0:
             raise ValueError("Prior scale must be > 0")
-        if mode is None:
-            mode = self.event_mode
-        if mode not in ["additive", "multiplicative"]:
-            raise ValueError('mode must be "additive" or "multiplicative"')
         if not (isinstance(include, bool) or include == "auto"):
             raise ValueError("include must be True, False, or 'auto'.")
 
@@ -574,7 +542,6 @@ class Gloria(BaseModel):
         regressor_dict = {
             "name": name,
             "prior_scale": prior_scale,
-            "mode": mode,
             "regressor_type": regressor_type,
             "event": event,
             **regressor_kwargs,
@@ -597,7 +564,6 @@ class Gloria(BaseModel):
         self: Self,
         name: str,
         prior_scale: float,
-        mode: Optional[Literal["additive", "multiplicative"]] = None,
     ) -> Self:
         """
         Add an external regressor to be used for fitting and predicting.
@@ -612,17 +578,13 @@ class Gloria(BaseModel):
             The regression coefficient is given a prior with the specified
             scale parameter. Decreasing the prior scale will add additional
             regularization. Must be greater than 0.
-        mode : Optional[Literal['additive', 'multiplicative']], optional
-            Whether regressor is treated as additive or multiplicative
-            feature. If None is provided (default), self.seasonality_mode is
-            used.
 
         Raises
         ------
         Exception
             Raised when method is called before fitting.
         ValueError
-            Raised when prior scale or mode are not allowed values.
+            Raised when prior scale value is not allowed.
 
         Returns
         -------
@@ -645,18 +607,14 @@ class Gloria(BaseModel):
                 f"'{name}' is an existing external regressor. Overwriting with"
                 " new configuration."
             )
-        # Validate and set prior_scale and mode
+        # Validate and set prior_scale
         prior_scale = float(prior_scale)
         if prior_scale <= 0:
             raise ValueError("Prior scale must be > 0")
-        if mode is None:
-            mode = self.seasonality_mode
-        if mode not in ["additive", "multiplicative"]:
-            raise ValueError("Mode must be 'additive' or 'multiplicative'")
 
         # Create Regressor and add it to the external regressor list
         self.external_regressors[name] = ExternalRegressor(
-            name=name, prior_scale=prior_scale, mode=mode
+            name=name, prior_scale=prior_scale
         )
         return self
 
@@ -989,11 +947,10 @@ class Gloria(BaseModel):
 
     def make_all_features(
         self: Self, data: Optional[pd.DataFrame] = None
-    ) -> tuple[pd.DataFrame, dict[str, float], dict[str, RegressorMode]]:
+    ) -> tuple[pd.DataFrame, dict[str, float]]:
         """
         Creates the feature matrix X containing all regressors used in the fit
-        and for prediction. Also returns prior scales and modes for all
-        features.
+        and for prediction. Also returns prior scales for all features.
 
         Parameters
         ----------
@@ -1010,9 +967,6 @@ class Gloria(BaseModel):
             corresponding to the timestamps
         prior_scales : dict[str,float]
             A dictionary mapping feature -> prior scale
-        modes : dict[str,str]
-            A dictionary mapping feature -> mode
-
         """
         # If no data were passed in, assume history as data. This is the case
         # if called during preprocessing
@@ -1077,15 +1031,13 @@ class Gloria(BaseModel):
             )
 
         # Make the features and save all feature matrices along with prior
-        # scales and modes.
+        # scales.
         X_lst = []
         prior_scales: dict[str, float] = dict()
-        modes: dict[str, RegressorMode] = dict()
         for make_feature in make_features:
-            X_loc, prior_scales_loc, modes_loc = make_feature()
+            X_loc, prior_scales_loc = make_feature()
             X_lst.append(X_loc)
             prior_scales = {**prior_scales, **prior_scales_loc}
-            modes = {**modes, **modes_loc}
 
         # Concat the single feature matrices to a single overall matrix
         if X_lst:
@@ -1093,7 +1045,7 @@ class Gloria(BaseModel):
         else:
             X = pd.DataFrame()
 
-        return X, prior_scales, modes
+        return X, prior_scales
 
     def preprocess(self: Self, data: pd.DataFrame) -> ModelInputData:
         """
@@ -1130,12 +1082,10 @@ class Gloria(BaseModel):
 
         # Create The feature matrix of all seasonal and external regressor
         # components
-        self.X, self.prior_scales, self.modes = self.make_all_features()
+        self.X, self.prior_scales = self.make_all_features()
 
         # Set changepoints according to changepoint parameters set by user
         self.set_changepoints()
-
-        mode_values = np.array(list(self.modes.values()))
 
         # Prepares the input data as used by the model backend
         input_data = ModelInputData(
@@ -1146,8 +1096,6 @@ class Gloria(BaseModel):
             y=np.asarray(self.history[self.metric_name]),
             t=np.asarray(self.history[_T_INT]),
             t_change=np.asarray(self.changepoints_int),
-            s_a=np.where(mode_values == "additive", 1, 0),
-            s_m=np.where(mode_values == "multiplicative", 1, 0),
             X=self.X.values,
             sigmas=np.array(list(self.prior_scales.values())),
         )
@@ -1273,7 +1221,7 @@ class Gloria(BaseModel):
         )
 
         # Create the regressor matrix at desired timestamps
-        X, _, _ = self.make_all_features(data)
+        X, _ = self.make_all_features(data)
 
         # Call the prediction method of the model backend
         prediction = self.model_backend.predict(

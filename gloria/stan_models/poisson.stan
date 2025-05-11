@@ -44,14 +44,10 @@ data {
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
-  vector[K] s_a;                // Indicator of additive features
-  vector[K] s_m;                // Indicator of multiplicative features
 }
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
-  matrix[T, K] X_sa = X .* rep_matrix(s_a', T);
-  matrix[T, K] X_sm = X .* rep_matrix(s_m', T);
 }
 
 parameters {
@@ -75,8 +71,8 @@ model {
   
   // Likelihood
   y ~ poisson_log_glm(
-    X_sa,
-    trend .* (1 + X_sm * beta),
+    X,
+    trend,
     beta
   );
 }
