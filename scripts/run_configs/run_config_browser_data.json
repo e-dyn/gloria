@@ -16,7 +16,6 @@
     "gloria_config": {
         "n_changepoints": 25,
         "changepoint_range": 0.8,
-        "seasonality_mode": "additive",
         "seasonality_prior_scale": 50.0,
         "changepoint_prior_scale": 0.05,
         "interval_width": 0.8,

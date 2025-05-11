@@ -7,7 +7,7 @@ serialization and deserialization
 # Standard Library
 import json
 from pathlib import Path
-from typing import Literal, Optional, Type, cast
+from typing import Literal, Optional, Type
 
 # Third Party
 import pandas as pd
@@ -19,7 +19,7 @@ from typing_extensions import Self
 from gloria.models import MODEL_MAP, BinomialPopulation
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _GLORIA_DEFAULTS
 from gloria.utilities.logging import get_logger
-from gloria.utilities.types import Distribution, DTypeKind, RegressorMode
+from gloria.utilities.types import Distribution, DTypeKind
 
 ### --- Class and Function Definitions --- ###
 
@@ -74,14 +74,8 @@ class GloriaConfig(BaseModel):
     changepoint_range: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["changepoint_range"]
     )
-    seasonality_mode: RegressorMode = cast(
-        RegressorMode, _GLORIA_DEFAULTS["seasonality_mode"]
-    )
     seasonality_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["seasonality_prior_scale"]
-    )
-    event_mode: RegressorMode = cast(
-        RegressorMode, _GLORIA_DEFAULTS["event_mode"]
     )
     event_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["event_prior_scale"]

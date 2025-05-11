@@ -19,9 +19,6 @@ Distribution: TypeAlias = Literal[
     "gamma",
 ]
 
-# Mode in which regressors are added to the model
-RegressorMode: TypeAlias = Literal["additive", "multiplicative"]
-
 # Allowed dtype kinds
 DTypeKind: TypeAlias = Literal["b", "i", "u", "f"]
 

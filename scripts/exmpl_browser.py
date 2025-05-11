@@ -18,12 +18,7 @@ COMPARE_TO_PROPHET = True
 INCLUDE_SERIALIZATION_STEP = True
 
 SEASONALITIES = {
-    "weekly": {
-        "period": "7d",
-        "fourier_order": 3,
-        "prior_scale": 0.1,
-        "mode": "additive",
-    },
+    "weekly": {"period": "7d", "fourier_order": 3, "prior_scale": 0.1},
 }
 
 ### --- Class and Function Definitions --- ###

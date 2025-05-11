@@ -44,14 +44,10 @@ data {
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
-  vector[K] s_a;                // Indicator of additive features
-  vector[K] s_m;                // Indicator of multiplicative features
 }
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
-  matrix[T, K] X_sa = X .* rep_matrix(s_a', T);
-  matrix[T, K] X_sm = X .* rep_matrix(s_m', T);
 }
 
 parameters {
@@ -78,7 +74,7 @@ model {
   // Likelihood
   for (n in 1:num_elements(y)) {
     real eta_n; 
-    eta_n = scale * exp(trend[n] * (1 + X_sm[n] * beta) + X_sa[n] * beta);
+    eta_n = scale * exp(trend[n] + X[n] * beta);
     y[n] ~ gamma(eta_n, scale);
   }
 }
