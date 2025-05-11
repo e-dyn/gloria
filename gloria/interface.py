@@ -1420,3 +1420,17 @@ class Gloria(BaseModel):
         """
         # Cf. to serialization module for details.
         return gs.model_from_json(model_json, return_as)
+
+    @staticmethod
+    def Foster():
+        with open(
+            Path(__file__).parent / "foster.txt", "r", encoding="utf8"
+        ) as f:
+            print(f.read(), end="\n\n")
+        print("  --------------------  ".center(70))
+        print("| Here, take a cookie. |".center(70))
+        print("  ====================  ".center(70))
+
+
+if __name__ == "__main__":
+    Gloria.Foster()

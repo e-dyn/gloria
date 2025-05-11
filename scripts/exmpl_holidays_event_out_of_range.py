@@ -56,7 +56,7 @@ SEASONALITIES = {
 
 ### --- Main Script --- ###
 if __name__ == "__main__":
-    basepath = Path(__file__).parent.parent
+    basepath = Path(__file__).parent
 
     config = RunConfig.load_json(basepath / f"run_configs/{CONFIG_FILE}.json")
 

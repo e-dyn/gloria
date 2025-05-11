@@ -10,7 +10,7 @@ from typing import Literal, TypedDict
 import pandas as pd
 
 # Local path of the gloria package
-_GLORIA_PATH = Path(__file__).parent.parent.parent
+_GLORIA_PATH = Path(__file__).parent.parent
 
 # The timestamp this module was loaded. Serves as unique ID for a single
 # python main-script run.

@@ -1,3 +1,6 @@
+# Standard Library
+from importlib.metadata import PackageNotFoundError, version
+
 # Gloria
 from gloria.api import (
     BoxCar,
@@ -55,4 +58,8 @@ __all__ = [
     "log_config",
 ]
 
-__version__ = "0.1.0-dev1"
+# Read the version dynamically from pyproject.toml
+try:
+    __version__ = version("gloria")
+except PackageNotFoundError:
+    __version__ = "unknown"
