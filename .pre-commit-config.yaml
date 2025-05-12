@@ -28,3 +28,4 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
+        exclude: '^(gloria/stan_models/|scripts/|stashed_stuff/|doc/).*'

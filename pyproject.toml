@@ -16,7 +16,7 @@ dependencies = [
     "scipy (<=1.13.1)",
     "matplotlib (<=3.9.4)",
     "cmdstanpy (>=1.2.5,<2.0.0)",
-    "holidays (>=0.67,<0.68)"
+    "holidays (>=0.67,<0.68)",
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -51,6 +51,7 @@ mypy = "^1.15.0"
 pandas-stubs = "<=2.2.2"
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
+sphinx = "<=7.4.7"
 
 
 [tool.poetry.group.spyder]
@@ -78,7 +79,7 @@ line-length = 79
 [tool.ruff]
 line-length = 79
 target-version = "py39"
-extend-exclude = ["scripts", "stashed_stuff"]
+extend-exclude = ["scripts", "stashed_stuff", "doc"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -120,9 +121,10 @@ skip = "gloria/stan_models/"
 [tool.mypy]
 ignore_missing_imports = true
 exclude = [
-    "gloria/stan_models/.*",
-    "scripts/.*",
-    "stashed_stuff/.*"
+    "gloria/stan_models(/.*)?",
+    "scripts(/.*)?",
+    "stashed_stuff(/.*)?",
+    "doc(/.*)?"
 ]
 
 [build-system]
