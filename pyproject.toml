@@ -101,7 +101,9 @@ extend-select = [
 
 ignore = [
     # unsorted __all__
-    "RUF022"
+    "RUF022",
+    # Subprocesses without Shell
+    "S603"
 ]
 
 [tool.ruff.per-file-ignores]
