@@ -17,6 +17,8 @@ Distribution: TypeAlias = Literal[
     "poisson",
     "negative binomial",
     "gamma",
+    "beta",
+    "beta-binomial constant n",
 ]
 
 # Allowed dtype kinds

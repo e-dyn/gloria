@@ -6,7 +6,7 @@
     },
     "metric_config": {
         "metric_name": "data",
-        "model": "normal",
+        "model": "gamma",
         "dtype_kind": "f",
         "augmentation_config": {
             "mode": "constant",

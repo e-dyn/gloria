@@ -44,7 +44,6 @@ data {
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
-  real scale_est;
 }
 
 transformed data {
@@ -56,13 +55,13 @@ parameters {
   real m;                       // Trend offset
   vector[S] delta;              // Trend rate adjustments
   vector[K] beta;               // Slope for y
-  real<lower = -1> scale_raw;
+  real<lower=0> kappa;          // Dispersion proxy
 }
 
 transformed parameters {
-  vector[T] trend;
-  trend = linear_trend(k, m, delta, t, A, t_change);
-  real<lower = 0> scale = (scale_raw+1)*scale_est;
+  vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
+  real scale = inv_square(kappa);   // Scale parameter for distribution
+  vector[T] eta = trend + X * beta;
 }
 
 model {
@@ -71,12 +70,10 @@ model {
   m ~ normal(0, 5);
   delta ~ double_exponential(0, tau);
   beta ~ normal(0, sigmas);
-  scale_raw ~ std_normal();
+  kappa ~ exponential(1.0);
   
   // Likelihood
   for (n in 1:num_elements(y)) {
-    real eta_n;
-    eta_n = trend[n] + X[n] * beta;
-    y[n] ~ neg_binomial_2_log(eta_n, scale);
+    y[n] ~ neg_binomial_2_log(eta[n], scale);
   }
 }
