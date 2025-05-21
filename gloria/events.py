@@ -5,15 +5,17 @@ Definition of Event base class and its implementations
 ### --- Module Imports --- ###
 # Standard Library
 from abc import ABC, abstractmethod
-from typing import Any, Type, Union
+from typing import Any, Type
 
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Self
 
+# Gloria
 ### --- Global Constants Definitions --- ###
+from gloria.utilities.types import Timedelta
 
 
 ### --- Class and Function Definitions --- ###
@@ -128,20 +130,7 @@ class BoxCar(Event):
     """
 
     # Duration of of boxcar window
-    duration: pd.Timedelta
-
-    @field_validator("duration", mode="before")
-    @classmethod
-    def validate_duration(
-        cls: Type[Self], duration: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(duration)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
+    duration: Timedelta
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -207,20 +196,7 @@ class Gaussian(Event):
     """
 
     # Duration of of boxcar window
-    sigma: pd.Timedelta
-
-    @field_validator("sigma", mode="before")
-    @classmethod
-    def validate_sigma(
-        cls: Type[Self], sigma: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(sigma)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
+    sigma: Timedelta
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -288,21 +264,8 @@ class SuperGaussian(Event):
     """
 
     # Duration of of boxcar window
-    sigma: pd.Timedelta
+    sigma: Timedelta
     order: float = Field(ge=1, default=1.0)
-
-    @field_validator("sigma", mode="before")
-    @classmethod
-    def validate_sigma(
-        cls: Type[Self], sigma: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(sigma)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -415,3 +378,6 @@ def event_from_dict(cls: Type[Event], event_dict: dict[str, Any]) -> Event:
 # always called as Event.from_dict(event_dict) with any dictionary as long as
 # it contains the event_type field.
 Event.from_dict = classmethod(event_from_dict)  # type: ignore
+
+if __name__ == "__main__":
+    event = BoxCar(duration="1 rrr")

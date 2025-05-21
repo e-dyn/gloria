@@ -102,7 +102,7 @@ from gloria.utilities.constants import (
 from gloria.utilities.errors import FittedError, NotFittedError
 from gloria.utilities.logging import get_logger
 from gloria.utilities.misc import time_to_integer
-from gloria.utilities.types import Distribution, SeriesData
+from gloria.utilities.types import Distribution, SeriesData, Timedelta
 
 
 ### --- Class and Function Definitions --- ###
@@ -177,7 +177,7 @@ class Gloria(BaseModel):
     )
 
     model: Distribution = _GLORIA_DEFAULTS["model"]
-    sampling_period: pd.Timedelta = _GLORIA_DEFAULTS["sampling_period"]
+    sampling_period: Timedelta = _GLORIA_DEFAULTS["sampling_period"]
     timestamp_name: str = _GLORIA_DEFAULTS["timestamp_name"]
     metric_name: str = _GLORIA_DEFAULTS["metric_name"]
     population_name: str = _GLORIA_DEFAULTS["population_name"]
@@ -204,31 +204,22 @@ class Gloria(BaseModel):
         ge=0, default=_GLORIA_DEFAULTS["uncertainty_samples"]
     )
 
-    @field_validator("sampling_period", mode="before")
+    @field_validator("sampling_period")
     @classmethod
     def validate_sampling_period(
-        cls: Type[Self], sampling_period: Union[pd.Timedelta, str]
+        cls: Type[Self], sampling_period: pd.Timedelta
     ) -> pd.Timedelta:
         """
         Converts sampling period to a pandas Timedelta if it was passed as a
         string instead.
         """
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
 
-        try:
-            s_period = pd.Timedelta(sampling_period)
-        except (ValueError, DateParseError) as e:
-            msg = "Could not parse input sampling period."
-            get_logger().error(msg)
-            raise ValueError(msg) from e
-
-        if s_period <= pd.Timedelta(0):
-            msg = "Sampling period must be positive and nonzero"
+        if sampling_period <= pd.Timedelta(0):
+            msg = "Sampling period must be positive and nonzero."
             get_logger().error(msg)
             raise ValueError(msg)
 
-        return s_period
+        return sampling_period
 
     @field_validator("population_name", mode="before")
     @classmethod
@@ -1378,7 +1369,3 @@ class Gloria(BaseModel):
         print("  --------------------  ".center(70))
         print("| Here, take a cookie. |".center(70))
         print("  ====================  ".center(70))
-
-
-if __name__ == "__main__":
-    Gloria.Foster()
