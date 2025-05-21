@@ -1,0 +1,19 @@
+{
+    "model": "normal",
+    "number of days": 400,
+    "sampling period": "1 d",
+    "included seasons": [
+        "weekly",
+        "monthly"
+    ],
+    "changepoint density": 0.02,
+    "anomaly density": 0.01,
+    "anomaly strength": 0.1,
+    "number of anomalies": 5,
+    "number of changepoints": 4,
+    "y_min": -3,
+    "y_max": 3,
+    "population N": 1000,
+    "sigma observed": 0.5,
+    "filename": "2025-05-19_normal_test_n01.csv"
+}

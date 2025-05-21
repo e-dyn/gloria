@@ -55,12 +55,13 @@ parameters {
   real m;                       // Trend offset
   vector[S] delta;              // Trend rate adjustments
   vector[K] beta;               // Slope for y
-  real<lower=0> scale;
+  real<lower=0> kappa;          // Dispersion proxy
 }
 
 transformed parameters {
-  vector[T] trend;
-  trend = linear_trend(k, m, delta, t, A, t_change);
+  vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
+  real<lower=0> scale = 1 / kappa;                  // Scale parameter for distribution
+  vector[T] eta = scale * exp(trend + X * beta);    // Relate expectation value to shape parameter
 }
 
 model {
@@ -69,12 +70,10 @@ model {
   m ~ normal(0, 5);
   delta ~ double_exponential(0, tau);
   beta ~ normal(0, sigmas);
-  scale ~ std_normal();
+  kappa ~ exponential(1.0);
   
   // Likelihood
   for (n in 1:num_elements(y)) {
-    real eta_n; 
-    eta_n = scale * exp(trend[n] + X[n] * beta);
-    y[n] ~ gamma(eta_n, scale);
+    y[n] ~ gamma(eta[n], scale);
   }
 }
