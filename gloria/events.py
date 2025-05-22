@@ -135,8 +135,7 @@ class BoxCar(Event):
     A BoxCar shaped event
     """
 
-    # Duration of of boxcar window
-    duration: Timedelta
+    width: Timedelta
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -156,7 +155,7 @@ class BoxCar(Event):
         pd.Series
             The output time series including the boxcar event with amplitude 1.
         """
-        mask = (timestamps >= t_start) & (timestamps < t_start + self.duration)
+        mask = (timestamps >= t_start) & (timestamps < t_start + self.width)
         return mask * 1
 
     def to_dict(self: Self) -> dict[str, Any]:
@@ -172,7 +171,7 @@ class BoxCar(Event):
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict["duration"] = str(self.duration)
+        event_dict["width"] = str(self.width)
         return event_dict
 
     @classmethod
@@ -191,8 +190,8 @@ class BoxCar(Event):
         BoxCar
             BoxCar instance with fields from event_dict
         """
-        # Convert duration string to pd.Timedelta
-        event_dict["duration"] = pd.Timedelta(event_dict["duration"])
+        # Convert width string to pd.Timedelta
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
         return cls(**event_dict)
 
 
@@ -447,8 +446,8 @@ class Exponential(Event):
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict["lead_width"] = str(self.duration)
-        event_dict["lag_width"] = str(self.duration)
+        event_dict["lead_width"] = str(self.lead_width)
+        event_dict["lag_width"] = str(self.lag_width)
         return event_dict
 
     @classmethod
