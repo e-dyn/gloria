@@ -1112,7 +1112,6 @@ class Gloria(BaseModel):
         ],
         sample: bool = _BACKEND_DEFAULTS["sample"],
         augmentation_config: Optional[BinomialPopulation] = None,
-        **kwargs: dict[str, Any],
     ) -> Self:
         """
         Fits the Gloria model
@@ -1134,9 +1133,6 @@ class Gloria(BaseModel):
             Configuration parameters for the augment_data method. Currently, it
             is only required for the BinomialConstantN model. For all other
             models it defaults to None.
-        **kwargs : dict[str, Any]
-            Keywoard arguments that will be augmented and then passed through
-            to the model backend
 
         Raises
         ------
@@ -1164,7 +1160,6 @@ class Gloria(BaseModel):
             optimize_mode=optimize_mode,
             sample=sample,
             augmentation_config=augmentation_config,
-            **kwargs,
         )
 
         return self

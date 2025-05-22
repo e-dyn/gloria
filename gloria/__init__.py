@@ -19,6 +19,7 @@ from gloria.api import (
     SingleEvent,
     SuperGaussian,
     cast_series_to_kind,
+    generate_cutoffs,
     get_holidays,
     infer_sampling_period,
     log_config,
@@ -56,6 +57,7 @@ __all__ = [
     "infer_sampling_period",
     "cast_series_to_kind",
     "log_config",
+    "generate_cutoffs",
 ]
 
 # Read the version dynamically from pyproject.toml

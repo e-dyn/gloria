@@ -425,7 +425,6 @@ class ModelBackendBase(ABC):
         ],
         sample: bool = _BACKEND_DEFAULTS["sample"],
         augmentation_config: Optional[BinomialPopulation] = None,
-        **kwargs: dict[str, Any],
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
         Calculates initial parameters and fits the model to the input data.
@@ -445,8 +444,6 @@ class ModelBackendBase(ABC):
             Configuration parameters for the augment_data method. Currently, it
             is only required for the BinomialConstantN model. For all other
             models it defaults to None.
-        **kwargs : dict[str, Any]
-            Additional arguments that are passed to the fit method
 
         Returns
         -------
@@ -493,10 +490,7 @@ class ModelBackendBase(ABC):
                 f"Starting Laplace sampling with {sample} " "samples."
             )
             self.stan_fit = self.model.laplace_sample(
-                data=stan_data.dict(),
-                mode=optimized_model,
-                jacobian=jacobian,
-                **kwargs,  # type: ignore
+                data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )
             self.sample = True
 
