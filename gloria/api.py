@@ -4,7 +4,7 @@ Define public API by import all functions and classes exposed to the end-user
 
 # Gloria
 # Events
-from gloria.events import BoxCar, Gaussian, SuperGaussian
+from gloria.events import BoxCar, Gaussian
 
 # Gloria forecaster
 from gloria.interface import Gloria
@@ -57,7 +57,6 @@ __all__ = [
     "PeriodicEvent",
     "BoxCar",
     "Gaussian",
-    "SuperGaussian",
     "get_holidays",
     "make_holiday_dataframe",
     "Holiday",

@@ -198,79 +198,11 @@ class BoxCar(Event):
 
 class Gaussian(Event):
     """
-    A Gaussian shaped event
+    A Gaussian shaped event with order parameter for generating flat-top
+    Gaussians
     """
 
-    # Duration of of boxcar window
-    sigma: Timedelta
-
-    def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
-    ) -> pd.Series:
-        """
-        Generate a time series with a single Gaussian event.
-
-        Parameters
-        ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable.
-        t_start : pd.Timestamp
-            Location of the Gaussian's maximum.
-
-        Returns
-        -------
-        pd.Series
-            The output time series including the Gaussian event with amplitude
-            1.
-        """
-        # normalize the input timestamps
-        t = (timestamps - t_start) / self.sigma
-        # Evaluate the Gaussian
-        return np.exp(-0.5 * t**2)
-
-    def to_dict(self: Self) -> dict[str, Any]:
-        """
-        Converts the Gaussian event to a serializable dictionary.
-
-        Returns
-        -------
-        dict[str, Any]
-            Dictionary containing all event fields including event type.
-        """
-        # Start with event type
-        event_dict = super().to_dict()
-        # Add additional fields
-        event_dict["sigma"] = str(self.sigma)
-        return event_dict
-
-    @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
-        """
-        Creates Gaussian event instance from a dictionary that holds the event
-        fields.
-
-        Parameters
-        ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
-
-        Returns
-        -------
-        BoxCar
-            BoxCar instance with fields from event_dict
-        """
-        # Convert sigma string to pd.Timedelta
-        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
-        return cls(**event_dict)
-
-
-class SuperGaussian(Event):
-    """
-    A super-Gaussian shaped event (or Higher Order Gaussian)
-    """
-
-    # Duration of of boxcar window
-    sigma: Timedelta
+    width: Timedelta
     order: float = Field(ge=1, default=1.0)
 
     def generate(
@@ -293,7 +225,7 @@ class SuperGaussian(Event):
             1.
         """
         # normalize the input timestamps
-        t = (timestamps - t_start) / self.sigma
+        t = (timestamps - t_start) / self.width
         # Evaluate the Gaussian
         return np.exp(-((0.5 * t**2) ** self.order))
 
@@ -309,7 +241,7 @@ class SuperGaussian(Event):
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict["sigma"] = str(self.sigma)
+        event_dict["width"] = str(self.width)
         event_dict["order"] = self.order
         return event_dict
 
@@ -330,7 +262,7 @@ class SuperGaussian(Event):
             BoxCar instance with fields from event_dict
         """
         # Convert sigma string to pd.Timedelta
-        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
         return cls(**event_dict)
 
 
@@ -478,7 +410,6 @@ class Exponential(Event):
 EVENT_MAP: dict[str, Type[Event]] = {
     "BoxCar": BoxCar,
     "Gaussian": Gaussian,
-    "SuperGaussian": SuperGaussian,
     "Exponential": Exponential,
 }
 
