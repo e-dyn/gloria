@@ -5,7 +5,9 @@ from importlib.metadata import PackageNotFoundError, version
 from gloria.api import (
     BoxCar,
     CalendricData,
+    Cauchy,
     DataConfig,
+    Exponential,
     ExternalRegressor,
     Gaussian,
     Gloria,
@@ -38,6 +40,8 @@ __all__ = [
     "PeriodicEvent",
     "BoxCar",
     "Gaussian",
+    "Cauchy",
+    "Exponential",
     "get_holidays",
     "make_holiday_dataframe",
     "Holiday",

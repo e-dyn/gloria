@@ -258,8 +258,75 @@ class Gaussian(Event):
 
         Returns
         -------
-        BoxCar
-            BoxCar instance with fields from event_dict
+        Gaussian
+            Gaussian instance with fields from event_dict
+        """
+        # Convert sigma string to pd.Timedelta
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
+        return cls(**event_dict)
+
+
+class Cauchy(Event):
+    """
+    A Cauchy distribution shaped event
+    """
+
+    width: Timedelta
+
+    def generate(
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
+        """
+        Generate a time series with a single Cauchy event.
+
+        Parameters
+        ----------
+        timestamps : pd.Series
+            The input timestamps as independent variable.
+        t_start : pd.Timestamp
+            Location of the Cauchy's maximum.
+
+        Returns
+        -------
+        pd.Series
+            The output time series including the Cauchy event with amplitude
+            1.
+        """
+        # normalize the input timestamps
+        t = (timestamps - t_start) / self.width
+        # Evaluate the Cauchy
+        return 1 / (4 * t**2 + 1)
+
+    def to_dict(self: Self) -> dict[str, Any]:
+        """
+        Converts the Cauchy event to a serializable dictionary.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary containing all event fields including event type.
+        """
+        # Start with event type
+        event_dict = super().to_dict()
+        # Add additional fields
+        event_dict["width"] = str(self.width)
+        return event_dict
+
+    @classmethod
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+        """
+        Creates Cauchy event instance from a dictionary that holds the event
+        fields.
+
+        Parameters
+        ----------
+        event_dict : dict[str, Any]
+            Dictionary containing all event fields
+
+        Returns
+        -------
+        Cauchy
+            Cauchy instance with fields from event_dict
         """
         # Convert sigma string to pd.Timedelta
         event_dict["width"] = pd.Timedelta(event_dict["width"])
@@ -339,12 +406,13 @@ class Exponential(Event):
         timestamps : pd.Series
             The input timestamps as independent variable
         t_start : pd.Timestamp
-            Location of the boxcar's rising edge
+            Location of the Exponential's maximum.
 
         Returns
         -------
         pd.Series
-            The output time series including the boxcar event with amplitude 1.
+            The output time series including the exponential event with
+            amplitude 1.
         """
         # Shift the input timestamps
         t = timestamps - t_start
@@ -411,6 +479,7 @@ EVENT_MAP: dict[str, Type[Event]] = {
     "BoxCar": BoxCar,
     "Gaussian": Gaussian,
     "Exponential": Exponential,
+    "Cauchy": Cauchy,
 }
 
 
