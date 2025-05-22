@@ -10,22 +10,8 @@ import pandas as pd
 from pydantic import BeforeValidator
 from typing_extensions import TypeAlias
 
-
-# Field validation functions
-def is_timedelta(timedelta: Union[pd.Timedelta, str]) -> pd.Timedelta:
-    # Third Party
-    from pandas._libs.tslibs.parsing import DateParseError
-
-    # Gloria
-    from gloria.utilities.logging import get_logger
-
-    try:
-        return pd.Timedelta(timedelta)
-    except (DateParseError, ValueError) as e:
-        msg = f"Could not parse input sampling period: {e}"
-        get_logger().error(msg)
-        raise ValueError(msg) from e
-
+# Gloria
+from gloria.utilities.misc import convert_to_timedelta
 
 # The strings representing implemented backend models
 Distribution: TypeAlias = Literal[
@@ -57,4 +43,4 @@ SeriesData: TypeAlias = Union[
     None,  # scalar types
 ]
 
-Timedelta = Annotated[pd.Timedelta, BeforeValidator(is_timedelta)]
+Timedelta = Annotated[pd.Timedelta, BeforeValidator(convert_to_timedelta)]
