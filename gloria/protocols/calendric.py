@@ -325,7 +325,7 @@ class CalendricData(Protocol):
     country: Optional[str] = None
     subdiv: Optional[str] = None
     holiday_prior_scale: Optional[float] = Field(gt=0, default=None)
-    holiday_event: Event = BoxCar(duration=pd.Timedelta("1d"))
+    holiday_event: Event = BoxCar(width=pd.Timedelta("1d"))
     seasonality_prior_scale: Optional[float] = Field(gt=0, default=None)
     yearly_seasonality: Union[bool, str, int] = "auto"
     quarterly_seasonality: Union[bool, str, int] = False

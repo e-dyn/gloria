@@ -23,14 +23,13 @@ from cmdstanpy import (
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from scipy.optimize import minimize
 from scipy.special import expit, logit
-from scipy.stats import binom, gamma, nbinom, norm, poisson
+from scipy.stats import beta, betabinom, binom, gamma, nbinom, norm, poisson
 from typing_extensions import Self, TypeAlias
 
 # Gloria
 # Inhouse Packages
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
-from gloria.utilities.misc import calculate_dispersion, simple_poisson_model
 from gloria.utilities.types import Distribution
 
 stan_logger = logging.getLogger("cmdstanpy")
@@ -64,8 +63,8 @@ LINK_FUNC_MAP = {
 class BinomialPopulation(BaseModel):
     """
     Configuration parameters used by the augment_data method of the model
-    BinomialConstantN to determine the population size. For more info cf the
-    method docstring.
+    BinomialConstantN and BetaBinomialConstantNto determine the population
+    size.
     """
 
     mode: Literal["constant", "factor", "scale"]
@@ -298,7 +297,9 @@ class ModelBackendBase(ABC):
                 f"Cannot find cmdstan version {_CMDSTAN_VERSION}"
                 ". Installing now."
             )
-            install_cmdstan(version=_CMDSTAN_VERSION, dir=str(models_path))
+            install_cmdstan(
+                version=_CMDSTAN_VERSION, dir=str(models_path), compiler=True
+            )
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
         self.model = CmdStanModel(stan_file=self.stan_file)
@@ -331,8 +332,9 @@ class ModelBackendBase(ABC):
             Model agnostic input data provided by the forecaster interface
         augmentation_config : Optional[BinomialPopulation], optional
             Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            it is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Raises
         ------
@@ -442,8 +444,9 @@ class ModelBackendBase(ABC):
             the Laplace approximation around the posterior mode.
         augmentation_config : Optional[BinomialPopulation], optional
             Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Returns
         -------
@@ -478,12 +481,22 @@ class ModelBackendBase(ABC):
         get_logger().debug(
             "Optimizing model parameters using" f" {optimize_mode}."
         )
-        optimized_model = self.model.optimize(
+        optimize_args = dict(
             data=stan_data.dict(),
             inits=self.stan_inits.dict(),
+            algorithm="BFGS",
             iter=int(1e4),
             jacobian=jacobian,
         )
+        try:
+            optimized_model = self.model.optimize(**optimize_args)
+        except RuntimeError:
+            # Fall back on Newton
+            get_logger().warning(
+                "Optimization terminated abnormally. Falling back to Newton."
+            )
+            optimize_args["algorithm"] = "Newton"
+            optimized_model = self.model.optimize(**optimize_args)
 
         if sample:
             get_logger().info(
@@ -1125,11 +1138,11 @@ class BinomialVectorizedN(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : BinomialPopulation
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
-
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
         Returns
         -------
         ModelInputData
@@ -1211,9 +1224,10 @@ class Normal(ModelBackendBase):
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
         augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Returns
         -------
@@ -1291,9 +1305,10 @@ class Poisson(ModelBackendBase):
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
         augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Returns
         -------
@@ -1373,9 +1388,10 @@ class NegativeBinomial(ModelBackendBase):
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
         augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Returns
         -------
@@ -1386,21 +1402,7 @@ class NegativeBinomial(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        y_model = simple_poisson_model(stan_data)
-
-        dof = 2 + stan_data.S + stan_data.K
-        _, phi = calculate_dispersion(
-            y_obs=stan_data.y, y_model=y_model, dof=dof
-        )
-
-        if phi < 0:
-            get_logger().warning(
-                "Found negative dispersion factor, indicating underdispersed "
-                "data. Setting phi = abs(phi). Consider using Poisson or "
-                "Binomial model."
-            )
-            phi = abs(phi)
-        stan_data.scale_est = phi
+        # Nothing to augment here
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. As the data are
@@ -1410,8 +1412,6 @@ class NegativeBinomial(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
-        # The initial guess for dispersion parameter phi
-        ini_params.scale_raw = 0
         return stan_data, ini_params
 
 
@@ -1470,9 +1470,10 @@ class Gamma(ModelBackendBase):
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
         augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN model. For all other
-            models it defaults to None.
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
 
         Returns
         -------
@@ -1493,13 +1494,258 @@ class Gamma(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
-        ini_params.scale = 1
+        return stan_data, ini_params
+
+
+class Beta(ModelBackendBase):
+    """
+    Implementation of model backend for beta distribution
+    """
+
+    # These class attributes must be defined by each model backend
+    # Location of the stan file
+    stan_file = BASEPATH / "stan_models/beta.stan"
+    # Kind of data (integer, float, ...). Is used for data validation
+    kind = "f"  # must be any combination of 'biuf'
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["logit"]
+
+    def quant_func(
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
+        """
+        Quantile function of the underlying distribution
+
+        Parameters
+        ----------
+        level : float
+            Level of confidence in (0,1)
+        yhat : np.ndarray
+            Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution.
+
+        Returns
+        -------
+        np.ndarray
+            Quantile at given level
+
+        """
+        # Calculate relation between standard beta distribution with parameters
+        # a and b and parametrization according to Stan's beta_proportion with
+        # parameters yhat and scale
+        a = yhat * scale
+        b = (1 - yhat) * scale
+        return beta.ppf(level, a, b)
+
+    def preprocess(
+        self: Self,
+        stan_data: ModelInputData,
+        augmentation_config: Optional[BinomialPopulation] = None,
+    ) -> tuple[ModelInputData, ModelParams]:
+        """
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : Optional[BinomialPopulation], optional
+            Configuration parameters for the augment_data method. Currently, it
+            is only required for the BinomialConstantN and
+            BetaBinomialConstantN model. For all other models it defaults to
+            None.
+
+        Returns
+        -------
+        ModelInputData
+            Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
+        """
+        ## -- 1. Augment stan_data -- ##
+        # Nothing to augment for Beta model
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Apply inverse link function for y-value scaling
+        y_scaled = self.link_pair.link(stan_data.y)
+
+        # Call the parent class parameter estimation method
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        return stan_data, ini_params
+
+
+class BetaBinomialConstantN(ModelBackendBase):
+    """
+    Implementation of model backend for beta- binomial distribution with
+    constant N
+    """
+
+    # These class attributes must be defined by each model backend
+    # Location of the stan file
+    stan_file = BASEPATH / "stan_models/beta_binomial_constant_n.stan"
+    # Kind of data (integer, float, ...). Is used for data validation
+    kind = "bu"  # must be any combination of 'biuf'
+    # Pair of 'link function'/'inverse link function'
+    link_pair = LINK_FUNC_MAP["logit"]
+
+    def yhat_func(
+        self: Self,
+        linked_arg: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
+        """
+        Produces the predicted values yhat
+
+        Parameters
+        ----------
+        linked_arg : np.ndarray
+            Linked GLM output
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. None for binomial constant n
+            model
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values
+
+        """
+        return self.stan_data.N * linked_arg  # type: ignore[attr-defined]
+
+    def quant_func(
+        self: Self,
+        level: float,
+        yhat: np.ndarray,
+        scale: Union[float, np.ndarray, None] = None,
+    ) -> np.ndarray:
+        """
+        Quantile function of the underlying distribution
+
+        Parameters
+        ----------
+        level : float
+            Level of confidence in (0,1)
+        yhat : np.ndarray
+            Predicted values.
+        scale : Union[float, np.ndarray, None]
+            Scale parameter of the distribution. None for binomial constant n
+            model
+
+        Returns
+        -------
+        np.ndarray
+            Quantile at given level
+
+        """
+        # Calculate success probability
+        p = yhat / self.stan_data.N
+        # Relate Stan model parameters to Scipy parameters for Beta-Binomial
+        a = p * scale
+        b = (1 - p) * scale
+        return betabinom.ppf(level, self.stan_data.N, a, b)  # type: ignore[attr-defined]
+
+    def preprocess(
+        self: Self,
+        stan_data: ModelInputData,
+        augmentation_config: Optional[BinomialPopulation] = None,
+    ) -> tuple[ModelInputData, ModelParams]:
+        """
+        Augment the input data for the stan model with model dependent data
+        and calculate initial guesses for model parameters.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface
+        augmentation_config : BinomialPopulation
+            Contains configuration parameters 'mode' and 'value' used to
+            determine the population size. Three modes are supported:
+            1. 'constant': value equals the population size
+            2. 'factor': the population size is the maximum of y times value
+            3. 'scale': the population size is a value optimized such that the
+                data are distributed around the expectation value N*p with
+                p = value and N = population size
+
+        Returns
+        -------
+        ModelInputData
+            Updated stan_data
+        ModelParams
+            Guesses for the model parameters depending on the data
+
+        """
+
+        ## -- 1. Augment stan_data -- ##
+        def distance_to_scale(f, y: np.ndarray) -> float:
+            """
+            This function yields the distance between desired scale and data
+            normalized to a fixed population size N.
+            """
+            N = f * y_max
+            p = y / N
+            return ((p - value) ** 2).sum()
+
+        if augmentation_config is None:
+            raise ValueError(
+                "Missing configuration argument for augmentation method."
+            )
+
+        # Prepare data
+        y = stan_data.y
+        y_max = y.max()
+        mode = augmentation_config.mode
+        value = augmentation_config.value
+        # Determine population size depending on mode
+        if mode == "constant":
+            if value < y_max:
+                raise ValueError(
+                    "In population mode 'constant' the population"
+                    f" value (={value}) cannot be smaller than "
+                    f"y_max (={y_max})"
+                )
+            population = value
+        elif mode == "factor":
+            population = int(np.ceil(y_max * value))
+        elif mode == "scale":
+            # Minimize distance_to_scale() with respect to the factor f. f
+            # determines the population size N via N = y_max * f.
+            res = minimize(
+                lambda f: distance_to_scale(f, y),
+                x0=1 / value,
+                bounds=[(1, None)],
+            )
+            population = int(np.ceil(res.x[0] * y_max))
+
+        # Estimate a constant population size N for the binomial model
+        stan_data.N = population  # type: ignore[attr-defined]
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Apply inverse link function for y-value scaling. Replacing the zeros
+        # with small values prevents underflow during scaling
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        y_scaled = self.link_pair.link(y_scaled / stan_data.N)  # type: ignore[attr-defined]
+
+        # Calculate the parameters
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
         return stan_data, ini_params
 
 
 # A TypeAlias for all existing Model Backends
 ModelBackend: TypeAlias = Union[
-    BinomialConstantN, Normal, Poisson, NegativeBinomial
+    BinomialConstantN,
+    BinomialVectorizedN,
+    Normal,
+    Poisson,
+    NegativeBinomial,
+    Gamma,
+    Beta,
+    BetaBinomialConstantN,
 ]
 
 # Map model names to respective model backend classes
@@ -1510,6 +1756,8 @@ MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
     "normal": Normal,
     "negative binomial": NegativeBinomial,
     "gamma": Gamma,
+    "beta": Beta,
+    "beta-binomial constant n": BetaBinomialConstantN,
 }
 
 

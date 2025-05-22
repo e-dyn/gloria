@@ -3,11 +3,29 @@ Package-wide used type aliases
 """
 
 # Standard Library
-from typing import Iterable, Literal, Mapping, Union
+from typing import Annotated, Iterable, Literal, Mapping, Union
 
 # Third Party
 import pandas as pd
+from pydantic import BeforeValidator
 from typing_extensions import TypeAlias
+
+
+# Field validation functions
+def is_timedelta(timedelta: Union[pd.Timedelta, str]) -> pd.Timedelta:
+    # Third Party
+    from pandas._libs.tslibs.parsing import DateParseError
+
+    # Gloria
+    from gloria.utilities.logging import get_logger
+
+    try:
+        return pd.Timedelta(timedelta)
+    except (DateParseError, ValueError) as e:
+        msg = f"Could not parse input sampling period: {e}"
+        get_logger().error(msg)
+        raise ValueError(msg) from e
+
 
 # The strings representing implemented backend models
 Distribution: TypeAlias = Literal[
@@ -17,6 +35,8 @@ Distribution: TypeAlias = Literal[
     "poisson",
     "negative binomial",
     "gamma",
+    "beta",
+    "beta-binomial constant n",
 ]
 
 # Allowed dtype kinds
@@ -36,3 +56,5 @@ SeriesData: TypeAlias = Union[
     bool,
     None,  # scalar types
 ]
+
+Timedelta = Annotated[pd.Timedelta, BeforeValidator(is_timedelta)]

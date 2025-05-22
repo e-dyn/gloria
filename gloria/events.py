@@ -5,15 +5,23 @@ Definition of Event base class and its implementations
 ### --- Module Imports --- ###
 # Standard Library
 from abc import ABC, abstractmethod
-from typing import Any, Type, Union
+from typing import Any, Type
 
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+)
 from typing_extensions import Self
 
+# Gloria
 ### --- Global Constants Definitions --- ###
+from gloria.utilities.types import Timedelta
 
 
 ### --- Class and Function Definitions --- ###
@@ -127,21 +135,7 @@ class BoxCar(Event):
     A BoxCar shaped event
     """
 
-    # Duration of of boxcar window
-    duration: pd.Timedelta
-
-    @field_validator("duration", mode="before")
-    @classmethod
-    def validate_duration(
-        cls: Type[Self], duration: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(duration)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
+    width: Timedelta
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -161,7 +155,7 @@ class BoxCar(Event):
         pd.Series
             The output time series including the boxcar event with amplitude 1.
         """
-        mask = (timestamps >= t_start) & (timestamps < t_start + self.duration)
+        mask = (timestamps >= t_start) & (timestamps < t_start + self.width)
         return mask * 1
 
     def to_dict(self: Self) -> dict[str, Any]:
@@ -177,7 +171,7 @@ class BoxCar(Event):
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict["duration"] = str(self.duration)
+        event_dict["width"] = str(self.width)
         return event_dict
 
     @classmethod
@@ -196,114 +190,20 @@ class BoxCar(Event):
         BoxCar
             BoxCar instance with fields from event_dict
         """
-        # Convert duration string to pd.Timedelta
-        event_dict["duration"] = pd.Timedelta(event_dict["duration"])
+        # Convert width string to pd.Timedelta
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
         return cls(**event_dict)
 
 
 class Gaussian(Event):
     """
-    A Gaussian shaped event
+    A Gaussian shaped event with order parameter for generating flat-top
+    Gaussians
     """
 
-    # Duration of of boxcar window
-    sigma: pd.Timedelta
-
-    @field_validator("sigma", mode="before")
-    @classmethod
-    def validate_sigma(
-        cls: Type[Self], sigma: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(sigma)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
-
-    def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
-    ) -> pd.Series:
-        """
-        Generate a time series with a single Gaussian event.
-
-        Parameters
-        ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable.
-        t_start : pd.Timestamp
-            Location of the Gaussian's maximum.
-
-        Returns
-        -------
-        pd.Series
-            The output time series including the Gaussian event with amplitude
-            1.
-        """
-        # normalize the input timestamps
-        t = (timestamps - t_start) / self.sigma
-        # Evaluate the Gaussian
-        return np.exp(-0.5 * t**2)
-
-    def to_dict(self: Self) -> dict[str, Any]:
-        """
-        Converts the Gaussian event to a serializable dictionary.
-
-        Returns
-        -------
-        dict[str, Any]
-            Dictionary containing all event fields including event type.
-        """
-        # Start with event type
-        event_dict = super().to_dict()
-        # Add additional fields
-        event_dict["sigma"] = str(self.sigma)
-        return event_dict
-
-    @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
-        """
-        Creates Gaussian event instance from a dictionary that holds the event
-        fields.
-
-        Parameters
-        ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
-
-        Returns
-        -------
-        BoxCar
-            BoxCar instance with fields from event_dict
-        """
-        # Convert sigma string to pd.Timedelta
-        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
-        return cls(**event_dict)
-
-
-class SuperGaussian(Event):
-    """
-    A super-Gaussian shaped event (or Higher Order Gaussian)
-    """
-
-    # Duration of of boxcar window
-    sigma: pd.Timedelta
+    width: Timedelta
     order: float = Field(ge=1, default=1.0)
 
-    @field_validator("sigma", mode="before")
-    @classmethod
-    def validate_sigma(
-        cls: Type[Self], sigma: Union[pd.Timedelta, str]
-    ) -> pd.Timedelta:
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            return pd.Timedelta(sigma)
-        except DateParseError as e:
-            raise ValueError("Could not parse input sampling period.") from e
-
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
@@ -324,7 +224,7 @@ class SuperGaussian(Event):
             1.
         """
         # normalize the input timestamps
-        t = (timestamps - t_start) / self.sigma
+        t = (timestamps - t_start) / self.width
         # Evaluate the Gaussian
         return np.exp(-((0.5 * t**2) ** self.order))
 
@@ -340,7 +240,7 @@ class SuperGaussian(Event):
         # Start with event type
         event_dict = super().to_dict()
         # Add additional fields
-        event_dict["sigma"] = str(self.sigma)
+        event_dict["width"] = str(self.width)
         event_dict["order"] = self.order
         return event_dict
 
@@ -357,11 +257,219 @@ class SuperGaussian(Event):
 
         Returns
         -------
-        BoxCar
-            BoxCar instance with fields from event_dict
+        Gaussian
+            Gaussian instance with fields from event_dict
         """
         # Convert sigma string to pd.Timedelta
-        event_dict["sigma"] = pd.Timedelta(event_dict["sigma"])
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
+        return cls(**event_dict)
+
+
+class Cauchy(Event):
+    """
+    A Cauchy distribution shaped event
+    """
+
+    width: Timedelta
+
+    def generate(
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
+        """
+        Generate a time series with a single Cauchy event.
+
+        Parameters
+        ----------
+        timestamps : pd.Series
+            The input timestamps as independent variable.
+        t_start : pd.Timestamp
+            Location of the Cauchy's maximum.
+
+        Returns
+        -------
+        pd.Series
+            The output time series including the Cauchy event with amplitude
+            1.
+        """
+        # normalize the input timestamps
+        t = (timestamps - t_start) / self.width
+        # Evaluate the Cauchy
+        return 1 / (4 * t**2 + 1)
+
+    def to_dict(self: Self) -> dict[str, Any]:
+        """
+        Converts the Cauchy event to a serializable dictionary.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary containing all event fields including event type.
+        """
+        # Start with event type
+        event_dict = super().to_dict()
+        # Add additional fields
+        event_dict["width"] = str(self.width)
+        return event_dict
+
+    @classmethod
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+        """
+        Creates Cauchy event instance from a dictionary that holds the event
+        fields.
+
+        Parameters
+        ----------
+        event_dict : dict[str, Any]
+            Dictionary containing all event fields
+
+        Returns
+        -------
+        Cauchy
+            Cauchy instance with fields from event_dict
+        """
+        # Convert sigma string to pd.Timedelta
+        event_dict["width"] = pd.Timedelta(event_dict["width"])
+        return cls(**event_dict)
+
+
+class Exponential(Event):
+    """
+    A Exponential decay shaped event
+    """
+
+    # Widths of both exponential decay wings
+    lead_width: Timedelta
+    lag_width: Timedelta
+
+    @field_validator("lead_width")
+    @classmethod
+    def validate_lead_width(
+        cls: Type[Self], lead_width: Timedelta
+    ) -> Timedelta:
+        """
+        If lead width is below zero, sets to zero and warn user
+        """
+        if lead_width < Timedelta(0):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lead width of exponential decay < 0 interpreted as lag decay."
+                " Setting lead_width = 0."
+            )
+            lead_width = Timedelta(0)
+        return lead_width
+
+    @field_validator("lag_width")
+    @classmethod
+    def validate_lag_width(
+        cls: Type[Self],
+        lag_width: Timedelta,
+        other_fields: ValidationInfo,
+    ) -> Timedelta:
+        """
+        If lag width is below zero, sets to zero and warn user. Also check
+        whether lag_width = lag_width = 0 and issue warning.
+        """
+        if lag_width < Timedelta(0):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lag width of exponential decay event < 0 interpreted as lead"
+                " decay. Setting lag_width = 0."
+            )
+            lag_width = Timedelta(0)
+
+        if (lag_width == Timedelta(0)) & (
+            other_fields.data["lead_width"] == Timedelta(0)
+        ):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lead and lag width of exponential decay event = 0 - likely"
+                " numerical issues during fitting."
+            )
+
+        return lag_width
+
+    def generate(
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
+        """
+        Generate a time series with a two-sided exponential decay event.
+
+        Parameters
+        ----------
+        timestamps : pd.Series
+            The input timestamps as independent variable
+        t_start : pd.Timestamp
+            Location of the Exponential's maximum.
+
+        Returns
+        -------
+        pd.Series
+            The output time series including the exponential event with
+            amplitude 1.
+        """
+        # Shift the input timestamps
+        t = timestamps - t_start
+
+        mask_lead = timestamps < t_start
+        mask_lag = timestamps >= t_start
+
+        # Create event and fill with zeros
+        y = np.zeros_like(timestamps, dtype=float)
+
+        # Add the one-sided lead exponential
+        if self.lead_width > pd.Timedelta(0):
+            arg = np.log(2) * np.asarray(t[mask_lead] / self.lead_width)
+            y[mask_lead] += np.exp(arg)
+        # Add the one-sided lag exponential
+        if self.lag_width > pd.Timedelta(0):
+            arg = np.log(2) * np.asarray(t[mask_lag] / self.lag_width)
+            y[mask_lag] += np.exp(-arg)
+
+        return y
+
+    def to_dict(self: Self) -> dict[str, Any]:
+        """
+        Converts the Expponential event to a serializable dictionary.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary containing all event fields including event type
+
+        """
+        # Start with event type
+        event_dict = super().to_dict()
+        # Add additional fields
+        event_dict["lead_width"] = str(self.lead_width)
+        event_dict["lag_width"] = str(self.lag_width)
+        return event_dict
+
+    @classmethod
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+        """
+        Creates Exponential event instance from a dictionary that holds the
+        event fields.
+
+        Parameters
+        ----------
+        event_dict : dict[str, Any]
+            Dictionary containing all event fields
+
+        Returns
+        -------
+        Exponential
+            Exponential instance with fields from event_dict
+        """
+        # Convert lead_width string to pd.Timedelta
+        event_dict["lead_width"] = pd.Timedelta(event_dict["lead_width"])
+        # Convert lag_width string to pd.Timedelta
+        event_dict["lag_width"] = pd.Timedelta(event_dict["lag_width"])
         return cls(**event_dict)
 
 
@@ -369,7 +477,8 @@ class SuperGaussian(Event):
 EVENT_MAP: dict[str, Type[Event]] = {
     "BoxCar": BoxCar,
     "Gaussian": Gaussian,
-    "SuperGaussian": SuperGaussian,
+    "Exponential": Exponential,
+    "Cauchy": Cauchy,
 }
 
 
