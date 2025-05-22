@@ -10,7 +10,13 @@ from typing import Any, Type
 # Third Party
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+)
 from typing_extensions import Self
 
 # Gloria
@@ -328,11 +334,152 @@ class SuperGaussian(Event):
         return cls(**event_dict)
 
 
+class Exponential(Event):
+    """
+    A Exponential decay shaped event
+    """
+
+    # Widths of both exponential decay wings
+    lead_width: Timedelta
+    lag_width: Timedelta
+
+    @field_validator("lead_width")
+    @classmethod
+    def validate_lead_width(
+        cls: Type[Self], lead_width: Timedelta
+    ) -> Timedelta:
+        """
+        If lead width is below zero, sets to zero and warn user
+        """
+        if lead_width < Timedelta(0):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lead width of exponential decay < 0 interpreted as lag decay."
+                " Setting lead_width = 0."
+            )
+            lead_width = Timedelta(0)
+        return lead_width
+
+    @field_validator("lag_width")
+    @classmethod
+    def validate_lag_width(
+        cls: Type[Self],
+        lag_width: Timedelta,
+        other_fields: ValidationInfo,
+    ) -> Timedelta:
+        """
+        If lag width is below zero, sets to zero and warn user. Also check
+        whether lag_width = lag_width = 0 and issue warning.
+        """
+        if lag_width < Timedelta(0):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lag width of exponential decay event < 0 interpreted as lead"
+                " decay. Setting lag_width = 0."
+            )
+            lag_width = Timedelta(0)
+
+        if (lag_width == Timedelta(0)) & (
+            other_fields.data["lead_width"] == Timedelta(0)
+        ):
+            # Gloria
+            from gloria.utilities.logging import get_logger
+
+            get_logger().warning(
+                "Lead and lag width of exponential decay event = 0 - likely"
+                " numerical issues during fitting."
+            )
+
+        return lag_width
+
+    def generate(
+        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+    ) -> pd.Series:
+        """
+        Generate a time series with a two-sided exponential decay event.
+
+        Parameters
+        ----------
+        timestamps : pd.Series
+            The input timestamps as independent variable
+        t_start : pd.Timestamp
+            Location of the boxcar's rising edge
+
+        Returns
+        -------
+        pd.Series
+            The output time series including the boxcar event with amplitude 1.
+        """
+        # Shift the input timestamps
+        t = timestamps - t_start
+
+        mask_lead = timestamps < t_start
+        mask_lag = timestamps >= t_start
+
+        # Create event and fill with zeros
+        y = np.zeros_like(timestamps, dtype=float)
+
+        # Add the one-sided lead exponential
+        if self.lead_width > pd.Timedelta(0):
+            arg = np.log(2) * np.asarray(t[mask_lead] / self.lead_width)
+            y[mask_lead] += np.exp(arg)
+        # Add the one-sided lag exponential
+        if self.lag_width > pd.Timedelta(0):
+            arg = np.log(2) * np.asarray(t[mask_lag] / self.lag_width)
+            y[mask_lag] += np.exp(-arg)
+
+        return y
+
+    def to_dict(self: Self) -> dict[str, Any]:
+        """
+        Converts the Expponential event to a serializable dictionary.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary containing all event fields including event type
+
+        """
+        # Start with event type
+        event_dict = super().to_dict()
+        # Add additional fields
+        event_dict["lead_width"] = str(self.duration)
+        event_dict["lag_width"] = str(self.duration)
+        return event_dict
+
+    @classmethod
+    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+        """
+        Creates Exponential event instance from a dictionary that holds the
+        event fields.
+
+        Parameters
+        ----------
+        event_dict : dict[str, Any]
+            Dictionary containing all event fields
+
+        Returns
+        -------
+        Exponential
+            Exponential instance with fields from event_dict
+        """
+        # Convert lead_width string to pd.Timedelta
+        event_dict["lead_width"] = pd.Timedelta(event_dict["lead_width"])
+        # Convert lag_width string to pd.Timedelta
+        event_dict["lag_width"] = pd.Timedelta(event_dict["lag_width"])
+        return cls(**event_dict)
+
+
 # A map of Event class names to actual classes
 EVENT_MAP: dict[str, Type[Event]] = {
     "BoxCar": BoxCar,
     "Gaussian": Gaussian,
     "SuperGaussian": SuperGaussian,
+    "Exponential": Exponential,
 }
 
 
@@ -378,6 +525,3 @@ def event_from_dict(cls: Type[Event], event_dict: dict[str, Any]) -> Event:
 # always called as Event.from_dict(event_dict) with any dictionary as long as
 # it contains the event_type field.
 Event.from_dict = classmethod(event_from_dict)  # type: ignore
-
-if __name__ == "__main__":
-    event = BoxCar(duration="1 rrr")
