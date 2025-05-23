@@ -569,6 +569,9 @@ class IntermittentEvent(EventRegressor):
             A map for 'feature matrix column name' -> 'prior_scale'
         """
 
+        # Drop index to ensure t aligns with all_events
+        t = t.reset_index(drop=True)
+
         # First construct column name
         column = (
             f"{self._regressor_type}{_DELIM}{self.event._event_type}"
@@ -577,11 +580,13 @@ class IntermittentEvent(EventRegressor):
 
         # Loop through all start times in t_list, and accumulate the events
         all_events = pd.Series(0, index=range(t.shape[0]))
+
         for t_start in self.t_list:
             all_events += self.event.generate(t, t_start)
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_events})
+
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
         return X, prior_scales
@@ -715,6 +720,9 @@ class PeriodicEvent(SingleEvent):
         prior_scales : dict
             A map for 'feature matrix column name' -> 'prior_scale'
         """
+
+        # Drop index to ensure t aligns with all_events
+        t = t.reset_index(drop=True)
 
         # First construct column name
         column = (
