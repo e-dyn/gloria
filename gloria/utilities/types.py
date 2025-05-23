@@ -43,4 +43,8 @@ SeriesData: TypeAlias = Union[
     None,  # scalar types
 ]
 
+# Annotaded Timedelta type for validation
 Timedelta = Annotated[pd.Timedelta, BeforeValidator(convert_to_timedelta)]
+
+# Timedelta like type including strings
+TimedeltaLike = Union[pd.Timedelta, str]

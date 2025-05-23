@@ -1251,6 +1251,7 @@ class Normal(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
+        ini_params.sigma = 1
         return stan_data, ini_params
 
 

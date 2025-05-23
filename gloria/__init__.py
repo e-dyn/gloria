@@ -20,6 +20,7 @@ from gloria.api import (
     Seasonality,
     SingleEvent,
     cast_series_to_kind,
+    cross_validation,
     generate_cutoffs,
     get_holidays,
     gloria_copy,
@@ -30,6 +31,7 @@ from gloria.api import (
     model_from_json,
     model_to_dict,
     model_to_json,
+    single_cutoff_forecast,
     time_to_integer,
 )
 
@@ -62,6 +64,8 @@ __all__ = [
     "log_config",
     "generate_cutoffs",
     "gloria_copy",
+    "single_cutoff_forecast",
+    "cross_validation",
 ]
 
 # Read the version dynamically from pyproject.toml

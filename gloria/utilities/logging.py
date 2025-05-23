@@ -250,7 +250,7 @@ def get_logger() -> logging.Logger:
                     [
                         " System Info ".center(50, "-"),
                         collect_sysinfo(),
-                        " Exection Log ".center(50, "-"),
+                        " Execution Log ".center(50, "-"),
                     ]
                 )
                 + "\n\n"
