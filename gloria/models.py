@@ -375,6 +375,10 @@ class ModelBackendBase(ABC):
 
         t = stan_data.t
 
+        # For models where y is unsigned, a cast to a signed type is necessary.
+        # Otherwise the subtraction in calculating k can cause an overflow.
+        y_scaled = y_scaled.copy().astype(float)
+
         # Step 1: Estimation of k and m, such that a straight line passes from
         # first and last data point
         T = t[-1] - t[0]
@@ -1246,9 +1250,9 @@ class Normal(ModelBackendBase):
         # is the identity-function.
 
         # Call the parent class parameter estimation method
+        print(stan_data.y.dtype)
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
-        # The initial guess for the noise necessary for normal distribution
-        ini_params.sigma_obs = 0.5  # type: ignore[attr-defined]
+        print(stan_data.y.dtype)
         return stan_data, ini_params
 
 
