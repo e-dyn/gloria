@@ -22,6 +22,7 @@ from gloria.api import (
     cast_series_to_kind,
     generate_cutoffs,
     get_holidays,
+    gloria_copy,
     infer_sampling_period,
     log_config,
     make_holiday_dataframe,
@@ -60,6 +61,7 @@ __all__ = [
     "cast_series_to_kind",
     "log_config",
     "generate_cutoffs",
+    "gloria_copy",
 ]
 
 # Read the version dynamically from pyproject.toml

@@ -587,7 +587,7 @@ class ModelBackendBase(ABC):
                 - '_linked' versions of all quantities except for 'observed'.
         """
 
-        if self.fit_params is None:
+        if self.fit_params == dict():
             raise ValueError("Can't predict prior to fit.")
 
         # Get optimized parameters (or their samples) from fit
@@ -1250,9 +1250,7 @@ class Normal(ModelBackendBase):
         # is the identity-function.
 
         # Call the parent class parameter estimation method
-        print(stan_data.y.dtype)
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
-        print(stan_data.y.dtype)
         return stan_data, ini_params
 
 

@@ -304,6 +304,8 @@ class Gloria(BaseModel):
         self.first_timestamp: pd.Timestamp = pd.Timestamp(0)
         # 5. A matrix of all regressors (columns) X timestamps (rows)
         self.X: pd.DataFrame = pd.DataFrame()
+        # 6. Dictionary holding kwargs passed to fit method
+        self.fit_kwargs: dict[str, Any] = {}
 
     @property
     def is_fitted(self: Self) -> bool:
@@ -1139,6 +1141,12 @@ class Gloria(BaseModel):
             raise FittedError(
                 "Gloria object can only be fit once. Instantiate a new object."
             )
+
+        self.fit_kwargs = dict(
+            optimize_mode=optimize_mode,
+            sample=sample,
+            augmentation_config=augmentation_config,
+        )
 
         # Prepare the model and input data
         get_logger().debug("Starting to preprocess input data.")
