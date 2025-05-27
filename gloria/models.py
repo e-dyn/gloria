@@ -375,6 +375,10 @@ class ModelBackendBase(ABC):
 
         t = stan_data.t
 
+        # For models where y is unsigned, a cast to a signed type is necessary.
+        # Otherwise the subtraction in calculating k can cause an overflow.
+        y_scaled = y_scaled.copy().astype(float)
+
         # Step 1: Estimation of k and m, such that a straight line passes from
         # first and last data point
         T = t[-1] - t[0]
@@ -427,7 +431,6 @@ class ModelBackendBase(ABC):
         ],
         sample: bool = _BACKEND_DEFAULTS["sample"],
         augmentation_config: Optional[BinomialPopulation] = None,
-        **kwargs: dict[str, Any],
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
         Calculates initial parameters and fits the model to the input data.
@@ -448,8 +451,6 @@ class ModelBackendBase(ABC):
             is only required for the BinomialConstantN and
             BetaBinomialConstantN model. For all other models it defaults to
             None.
-        **kwargs : dict[str, Any]
-            Additional arguments that are passed to the fit method
 
         Returns
         -------
@@ -506,10 +507,7 @@ class ModelBackendBase(ABC):
                 f"Starting Laplace sampling with {sample} " "samples."
             )
             self.stan_fit = self.model.laplace_sample(
-                data=stan_data.dict(),
-                mode=optimized_model,
-                jacobian=jacobian,
-                **kwargs,  # type: ignore
+                data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )
             self.sample = True
 
@@ -589,7 +587,7 @@ class ModelBackendBase(ABC):
                 - '_linked' versions of all quantities except for 'observed'.
         """
 
-        if self.fit_params is None:
+        if self.fit_params == dict():
             raise ValueError("Can't predict prior to fit.")
 
         # Get optimized parameters (or their samples) from fit
@@ -1253,8 +1251,7 @@ class Normal(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
-        # The initial guess for the noise necessary for normal distribution
-        ini_params.sigma_obs = 0.5  # type: ignore[attr-defined]
+        ini_params.sigma = 2
         return stan_data, ini_params
 
 
@@ -1756,7 +1753,7 @@ ModelBackend: TypeAlias = Union[
 
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
-    "binomial constant n": BinomialConstantN,
+    "biomial constant n": BinomialConstantN,
     "binomial vectorized n": BinomialVectorizedN,
     "poisson": Poisson,
     "normal": Normal,

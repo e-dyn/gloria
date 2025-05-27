@@ -14,7 +14,7 @@
         }
     },
     "gloria_config": {
-        "n_changepoints": 10,
+        "n_changepoints": 2,
         "changepoint_range": 0.8,
         "seasonality_prior_scale": 10.0,
         "event_prior_scale": 2,

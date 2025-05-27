@@ -304,6 +304,8 @@ class Gloria(BaseModel):
         self.first_timestamp: pd.Timestamp = pd.Timestamp(0)
         # 5. A matrix of all regressors (columns) X timestamps (rows)
         self.X: pd.DataFrame = pd.DataFrame()
+        # 6. Dictionary holding kwargs passed to fit method
+        self.fit_kwargs: dict[str, Any] = {}
 
     @property
     def is_fitted(self: Self) -> bool:
@@ -1103,7 +1105,6 @@ class Gloria(BaseModel):
         ],
         sample: bool = _BACKEND_DEFAULTS["sample"],
         augmentation_config: Optional[BinomialPopulation] = None,
-        **kwargs: dict[str, Any],
     ) -> Self:
         """
         Fits the Gloria model
@@ -1125,9 +1126,6 @@ class Gloria(BaseModel):
             Configuration parameters for the augment_data method. Currently, it
             is only required for the BinomialConstantN model. For all other
             models it defaults to None.
-        **kwargs : dict[str, Any]
-            Keywoard arguments that will be augmented and then passed through
-            to the model backend
 
         Raises
         ------
@@ -1144,6 +1142,12 @@ class Gloria(BaseModel):
                 "Gloria object can only be fit once. Instantiate a new object."
             )
 
+        self.fit_kwargs = dict(
+            optimize_mode=optimize_mode,
+            sample=sample,
+            augmentation_config=augmentation_config,
+        )
+
         # Prepare the model and input data
         get_logger().debug("Starting to preprocess input data.")
         input_data = self.preprocess(data)
@@ -1155,7 +1159,6 @@ class Gloria(BaseModel):
             optimize_mode=optimize_mode,
             sample=sample,
             augmentation_config=augmentation_config,
-            **kwargs,
         )
 
         return self

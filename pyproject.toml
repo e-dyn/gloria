@@ -4,11 +4,10 @@ version = "0.1.0.dev1"
 description = "Gloria fosters a new vision of Prophet's time series forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
-    {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"},
-    {name = "Sami Chabani", email = "s.chabani@e-dynamics.de"}
+    {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"}
 ]
 readme = "README.md"
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.9,<3.13"
 dependencies = [
     "pandas (>=2.2.3,<3.0.0)",
     "numpy (<=2.0.2)",
@@ -17,6 +16,7 @@ dependencies = [
     "matplotlib (<=3.9.4)",
     "cmdstanpy (>=1.2.5,<2.0.0)",
     "holidays (>=0.67,<0.68)",
+    "sktime (>=0.37.0,<0.38.0)",
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -26,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
@@ -49,9 +48,9 @@ ruff = "^0.9.9"
 isort = "^6.0.1"
 mypy = "^1.15.0"
 pandas-stubs = "<=2.2.2"
+sphinx = "<=7.4.7"
 pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
-sphinx = "<=7.4.7"
 
 
 [tool.poetry.group.spyder]
@@ -69,9 +68,6 @@ filterwarnings = [
     # Caused by some pydantic code outside of Gloria
     "ignore:The truth value of an empty array is ambiguous.*:DeprecationWarning"
 ]
-
-[tool.poetry.plugins."pytest11"]
-pytest_cov = "pytest_cov"
 
 [tool.black]
 line-length = 79

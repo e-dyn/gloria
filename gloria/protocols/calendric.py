@@ -346,7 +346,9 @@ class CalendricData(Protocol):
             if isinstance(holiday_event, dict):
                 return Event.from_dict(holiday_event)
         except Exception as e:
-            raise ValueError("Creating event from dictionary failed.") from e
+            raise ValueError(
+                f"Creating event from dictionary failed: {e}"
+            ) from e
         return holiday_event
 
     @field_validator(

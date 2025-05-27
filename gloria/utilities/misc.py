@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
+    # Gloria
     from gloria.models import ModelInputData
+    from gloria.utilities.types import DTypeKind
 
-# Gloria
-from gloria.utilities.types import DTypeKind
 
 ### --- Class and Function Definitions --- ###
 
@@ -96,7 +96,7 @@ def infer_sampling_period(timestamps: pd.Series, q=0.5) -> pd.Timedelta:
     return timestamps.diff().quantile(q)
 
 
-def cast_series_to_kind(series: pd.Series, kind: DTypeKind) -> pd.Series:
+def cast_series_to_kind(series: pd.Series, kind: "DTypeKind") -> pd.Series:
     """
     Casts a pandas Series to a dtype based on the given dtype kind.
 
@@ -212,3 +212,40 @@ def calculate_dispersion(
     # Calculate Stan's dispersion factor
     phi = (y_model / (alpha - 1)).mean()
     return alpha, phi
+
+
+def convert_to_timedelta(timedelta: Union[pd.Timedelta, str]) -> pd.Timedelta:
+    """
+    Takes Timedelta or Timedelta like string and converts it to a Timedelta.
+    If any errors occur, they will be logged and raised as ValueError so the
+    function can be used as field validator for pydantic models.
+
+    Parameters
+    ----------
+    timedelta : Union[pd.Timedelta, str]
+        The input timedelta
+
+    Raises
+    ------
+    ValueError
+        Raised if the input was a string that could not be converted to a
+        Timedelta.
+
+    Returns
+    -------
+    pd.Timedelta
+        Converted Timedelta
+
+    """
+    # Third Party
+    from pandas._libs.tslibs.parsing import DateParseError
+
+    # Gloria
+    from gloria.utilities.logging import get_logger
+
+    try:
+        return pd.Timedelta(timedelta)
+    except (DateParseError, ValueError) as e:
+        msg = f"Could not parse input sampling period: {e}"
+        get_logger().error(msg)
+        raise ValueError(msg) from e

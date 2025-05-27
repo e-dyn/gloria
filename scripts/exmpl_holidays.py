@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     timestamp_name = config.data_config.timestamp_name
     metric_name = config.metric_config.metric_name
-    df = pd.read_csv(basepath / config.data_config.data_source)
+    df = pd.read_csv(basepath / config.data_config.data_source).iloc[:400, :]
     df[timestamp_name] = pd.to_datetime(df[timestamp_name])
     df[metric_name] = cast_series_to_kind(
         df[metric_name], config.metric_config.dtype_kind
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         country="US",
         yearly_seasonality=False,
         monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "sigma": "5d"},
+        holiday_event={"event_type": "Gaussian", "width": "5d"},
     )
 
     model.add_protocol(protocol)
