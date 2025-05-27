@@ -31,6 +31,7 @@ from gloria.api import (
     model_from_json,
     model_to_dict,
     model_to_json,
+    performance_metrics,
     single_cutoff_forecast,
     time_to_integer,
 )
@@ -66,6 +67,7 @@ __all__ = [
     "gloria_copy",
     "single_cutoff_forecast",
     "cross_validation",
+    "performance_metrics",
 ]
 
 # Read the version dynamically from pyproject.toml

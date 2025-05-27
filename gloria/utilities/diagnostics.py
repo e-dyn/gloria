@@ -6,8 +6,16 @@ Utilities for evaluating prophet models and tuning hyperparameters
 from typing import Optional, Union
 
 # Third Party
+import numpy as np
+
 ### --- Module Imports --- ###
 import pandas as pd
+from sktime.performance_metrics.forecasting import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    median_absolute_percentage_error,
+)
 
 # Gloria
 from gloria.interface import Gloria
@@ -16,6 +24,24 @@ from gloria.utilities.errors import NotFittedError
 from gloria.utilities.logging import get_logger
 from gloria.utilities.misc import convert_to_timedelta
 from gloria.utilities.types import TimedeltaLike
+
+### --- Global Constants Definitions --- ###
+PERFORMANCE_METRICS_MAP = {
+    "mse": lambda g, m: mean_squared_error(g[m], g["yhat"]),
+    "rmse": lambda g, m: mean_squared_error(g[m], g["yhat"], square_root=True),
+    "mae": lambda g, m: mean_absolute_error(g[m], g["yhat"]),
+    "mape": lambda g, m: mean_absolute_percentage_error(g[m], g["yhat"]),
+    "smape": lambda g, m: mean_absolute_percentage_error(
+        g[m], g["yhat"], symmetric=True
+    ),
+    "mdape": lambda g, m: median_absolute_percentage_error(g[m], g["yhat"]),
+    "smdape": lambda g, m: median_absolute_percentage_error(
+        g[m], g["yhat"], symmetric=True
+    ),
+    "coverage": lambda g, m: (
+        (g[m] >= g["observed_lower"]) & (g[m] <= g["observed_upper"])
+    ).mean(),
+}
 
 
 ### --- Class and Function Definitions --- ###
@@ -327,19 +353,108 @@ def cross_validation(
     return pd.concat(predicts, axis=0).reset_index(drop=True)
 
 
-def iamfunc(x: int) -> str:
+def performance_metrics(
+    df: pd.DataFrame,
+    metric_name: str,
+    timestamp_name: str,
+    horizon_period: TimedeltaLike,
+    performance_metrics: Optional[list[str]] = None,
+) -> pd.DataFrame:
     """
+    Compute performance metrics from cross-validation results.
 
+    Computes a suite of performance metrics on the output of cross-validation.
+    By default the following metrics are included:
+    'mse': mean squared error
+    'rmse': root mean squared error
+    'mae': mean absolute error
+    'mape': mean absolute percent error
+    'smape': symmetric mean absolute percentage error
+    'mdape': median absolute percent error
+    'smdape': symmetric median absolute percent error
+    'coverage': coverage of the upper and lower intervals
 
     Parameters
     ----------
-    x : int
-        DESCRIPTION.
+    df : pd.DataFrame
+        The dataframe returned by cross_validation.
+    metric_name : str
+        The name of the metric column.
+    timestamp_name : str
+        The name of the timestamp column.
+    horizon_period : TimedeltaLike
+        Predictions will be aggregated in steps of horizon_period starting from
+        the cutoff. E.g., if horizon_period = "3d", predictions between cutoff
+        and third day after cutoff will be summarized under 3 day horizon,
+        predictions between third and sixth day under 6 day horizon etc.
+    performance_metrics : Optional[list[str]], optional
+        The list of performance metrics that will be evaluated. If none is
+        provided, all available metrics will be used. The default is None.
 
     Returns
     -------
-    str
-        DESCRIPTION.
+    result : pd.DataFrame
+        The result data frame with horizon as index and all performance metrics
+        as columns. The additional column 'count' measures the number of
+        predictions the performance metrics were calculated with.
 
     """
-    return ""
+
+    # Validate metrics list
+    if performance_metrics is None:
+        # If none were provided, use all available metrics
+        performance_metrics = list(PERFORMANCE_METRICS_MAP.keys())
+    else:
+        # If some were provided, validate them
+
+        # Which of them are valid (= metrics known to Gloria)
+        valid_metrics = set(performance_metrics).intersection(
+            PERFORMANCE_METRICS_MAP.keys()
+        )
+        # All other metrics are invalid. Issue a warning
+        invalid_metrics = set(performance_metrics) - (
+            PERFORMANCE_METRICS_MAP.keys()
+        )
+        if invalid_metrics:
+            im_str = ", ".join([f"'{im}'" for im in invalid_metrics])
+            get_logger().warn(
+                f"The performance metric(s) {im_str} are not known to Gloria "
+                "and will be ignored."
+            )
+        # Look whether any metrics are duplicated and inform the user
+        duplicates = set(
+            m for m in valid_metrics if performance_metrics.count(m) > 1
+        )
+        if duplicates:
+            dm_str = ", ".join([f"'{im}'" for im in duplicates])
+            get_logger().warn(
+                f"Duplicates found for the performance metric(s) {dm_str}. "
+                "These will be evaluated only once."
+            )
+        # Bring metrics back to requested order
+        performance_metrics = sorted(
+            valid_metrics, key=lambda x: performance_metrics.index(x)
+        )
+    # Validation finished
+
+    # Ensure horizon_period is a valid Timedelta object
+    horizon_period = convert_to_timedelta(horizon_period)
+
+    df_loc = df.copy()
+
+    # Compute the forecast horizon in steps of horizon_period
+    df_loc["horizon"] = (
+        np.ceil((df_loc[timestamp_name] - df_loc["cutoff"]) / horizon_period)
+        * horizon_period
+    )
+
+    # Add count column to show how many predictions the metric is based on
+    result = df_loc.groupby("horizon").agg(count=("yhat", "count"))
+
+    # Evaluate all metrics
+    for pm in performance_metrics:
+        result[pm] = df_loc.groupby("horizon")[
+            [metric_name, "yhat", "observed_lower", "observed_upper"]
+        ].apply(PERFORMANCE_METRICS_MAP[pm], metric_name)
+
+    return result

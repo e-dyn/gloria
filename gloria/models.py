@@ -1251,7 +1251,7 @@ class Normal(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
-        ini_params.sigma = 1
+        ini_params.sigma = 2
         return stan_data, ini_params
 
 
@@ -1753,7 +1753,7 @@ ModelBackend: TypeAlias = Union[
 
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
-    "binomial constant n": BinomialConstantN,
+    "biomial constant n": BinomialConstantN,
     "binomial vectorized n": BinomialVectorizedN,
     "poisson": Poisson,
     "normal": Normal,
