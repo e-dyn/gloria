@@ -60,7 +60,7 @@ For Documentation
 ### --- Module Imports --- ###
 # Standard Library
 from pathlib import Path
-from typing import Any, Literal, Optional, Type, Union
+from typing import Any, Collection, Literal, Optional, Type, Union
 
 # Third Party
 import numpy as np
@@ -90,6 +90,7 @@ from gloria.regressors import (
     Regressor,
     Seasonality,
 )
+from gloria.utilities.configuration import model_from_toml
 
 # Inhouse Packages
 from gloria.utilities.constants import (
@@ -1362,6 +1363,18 @@ class Gloria(BaseModel):
         """
         # Cf. to serialization module for details.
         return gs.model_from_json(model_json, return_as)
+
+    @staticmethod
+    def from_toml(
+        toml_path: Union[str, Path],
+        ignore: Union[Collection[str], str] = set(),
+        **kwargs: dict[str, Any],
+    ) -> "Gloria":
+        """
+        Alias for `gloria.utilities.configuration.model_from_toml`.
+        """
+        # Cf. model_from_toml for details.
+        return model_from_toml(toml_path, ignore, **kwargs)
 
     @staticmethod
     def Foster():

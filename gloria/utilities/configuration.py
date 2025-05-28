@@ -7,7 +7,15 @@ serialization and deserialization
 # Standard Library
 import json
 from pathlib import Path
-from typing import Any, Collection, Literal, Optional, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Literal,
+    Optional,
+    Type,
+    Union,
+)
 
 # Third Party
 import pandas as pd
@@ -16,8 +24,12 @@ from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import Self
 
+# Conditional import of Gloria for static type checking. Otherwise Gloria is
+# forward-declared as 'Gloria' to avoid circular imports
+if TYPE_CHECKING:
+    from gloria.interface import Gloria
+
 # Gloria
-from gloria.interface import Gloria
 from gloria.models import MODEL_MAP, BinomialPopulation
 from gloria.protocols.protocol_base import get_protocol_map
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _GLORIA_DEFAULTS
@@ -30,7 +42,7 @@ def model_from_toml(
     toml_path: Union[str, Path],
     ignore: Union[Collection[str], str] = set(),
     **kwargs: dict[str, Any],
-) -> Gloria:
+) -> "Gloria":
     """
     Instantiate a Gloria model from a TOML configuration file and augment it
     with optional external regressors, seasonalities, events, and protocols.
@@ -76,6 +88,9 @@ def model_from_toml(
     2. Values found in the TOML [model] table
     3. Gloria`s own defaults
     """
+    # Gloria
+    from gloria.interface import Gloria
+
     # Remove keys from kwargs that are no valid Gloria fields
     kwargs = {k: v for k, v in kwargs.items() if k in Gloria.model_fields}
 
@@ -95,8 +110,8 @@ def model_from_toml(
         }
 
     # Load configuration file
-    with open(toml_path, mode="rb") as fp:
-        config = tomli.load(fp)
+    with open(toml_path, mode="rb") as file:
+        config = tomli.load(file)
 
     # Give precedence to individial settings in kwargs
     model_config = config["model"] | kwargs
