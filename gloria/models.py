@@ -1753,7 +1753,7 @@ ModelBackend: TypeAlias = Union[
 
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
-    "biomial constant n": BinomialConstantN,
+    "binomial constant n": BinomialConstantN,
     "binomial vectorized n": BinomialVectorizedN,
     "poisson": Poisson,
     "normal": Normal,

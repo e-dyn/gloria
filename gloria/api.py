@@ -32,6 +32,7 @@ from gloria.utilities.configuration import (
     GloriaConfig,
     MetricConfig,
     RunConfig,
+    model_from_toml,
 )
 from gloria.utilities.diagnostics import (
     cross_validation,
@@ -87,4 +88,5 @@ __all__ = [
     "single_cutoff_forecast",
     "cross_validation",
     "performance_metrics",
+    "model_from_toml",
 ]

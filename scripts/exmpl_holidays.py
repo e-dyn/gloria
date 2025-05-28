@@ -15,7 +15,7 @@ CONFIG_FILE = "run_config"
 COMPARE_TO_PROPHET = False
 # Note: predicting after deserialization currently only works when there is no
 # external regressor
-INCLUDE_SERIALIZATION_STEP = False
+INCLUDE_SERIALIZATION_STEP = True
 
 SEASONALITIES = {
     "weekly": {"period": "7d", "fourier_order": 1, "prior_scale": 0.1},

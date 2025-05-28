@@ -7,21 +7,128 @@ serialization and deserialization
 # Standard Library
 import json
 from pathlib import Path
-from typing import Literal, Optional, Type
+from typing import Any, Collection, Literal, Optional, Type, Union
 
 # Third Party
 import pandas as pd
+import tomli
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from typing_extensions import Self
 
 # Gloria
+from gloria.interface import Gloria
 from gloria.models import MODEL_MAP, BinomialPopulation
+from gloria.protocols.protocol_base import get_protocol_map
 from gloria.utilities.constants import _BACKEND_DEFAULTS, _GLORIA_DEFAULTS
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution, DTypeKind
 
+
 ### --- Class and Function Definitions --- ###
+def model_from_toml(
+    toml_path: Union[str, Path],
+    ignore: Union[Collection[str], str] = set(),
+    **kwargs: dict[str, Any],
+) -> Gloria:
+    """
+    Instantiate a Gloria model from a TOML configuration file and augment it
+    with optional external regressors, seasonalities, events, and protocols.
+
+    The TOML file is expected to have the following top-level tables /
+    arrays-of-tables (all are optional except [model]):
+
+    * [model] - keyword arguments passed directly to Gloria`s constructor.
+    * [[external_regressors]] - one table per regressor; each is forwarded to
+    Gloria.add_external_regressor().
+    * [[seasonalities]] - one table per seasonality; each is
+    forwarded to Gloria.add_seasonality().
+    * [[events]] - one table per event; each is forwarded to
+    Gloria.add_event().
+    * [[protocols]] - one table per protocol. Each table **must** contain a
+    ``type`` key that maps to a protocol class name; the remaining keys are
+    passed to that class before calling `Gloria.add_protocol`.
+
+    Parameters
+    ----------
+    toml_path : Union[str, Path]
+        Path to the TOML file containing the model specification.
+    ignore : Union[Sequence[str],str], optional
+        Which top-level sections of the file to skip. Valid values are
+        "external_regressors", "seasonalities", "events", and`"protocols". The
+        special value "all" suppresses every optional section. May be given as
+        a single string or any iterable of strings.
+    **kwargs : dict[str, Any]
+        Keyword arguments that override or extend the [model] table. Only keys
+        that are valid fields of Gloria (i.e. that appear in
+        Gloria.model_fields) are retained; others are silently dropped.
+
+    Returns
+    -------
+    Gloria
+        A fully initialised Gloria instance.
+
+    Notes
+    -----
+    Precedence order for constructor arguments is:
+
+    1. Values supplied via **kwargs
+    2. Values found in the TOML [model] table
+    3. Gloria`s own defaults
+    """
+    # Remove keys from kwargs that are no valid Gloria fields
+    kwargs = {k: v for k, v in kwargs.items() if k in Gloria.model_fields}
+
+    # Make sure ignore is a set
+    if isinstance(ignore, str):
+        ignore = {ignore}
+    else:
+        ignore = set(ignore)
+
+    # Extend set by all possible attributes if 'all' in ignore
+    if "all" in ignore:
+        ignore = set(ignore) | {
+            "external_regressors",
+            "seasonalities",
+            "events",
+            "protocols",
+        }
+
+    # Load configuration file
+    with open(toml_path, mode="rb") as fp:
+        config = tomli.load(fp)
+
+    # Give precedence to individial settings in kwargs
+    model_config = config["model"] | kwargs
+
+    # Create Gloria model
+    m = Gloria(**model_config)
+
+    # Add external regressors
+    if "external_regressors" not in ignore:
+        for er in config.get("external_regressors", []):
+            m.add_external_regressor(**er)
+
+    # Add seasonalities
+    if "seasonalities" not in ignore:
+        for season in config.get("seasonalities", []):
+            m.add_seasonality(**season)
+
+    # Add events
+    if "events" not in ignore:
+        for event in config.get("events", []):
+            # Create and add the protocol with the remaining configurations
+            m.add_event(**event)
+
+    # Add protocols
+    if "protocols" not in ignore:
+        for protocol in config.get("protocols", []):
+            # Get protocol class using the 'type' key in of the protocol config
+            ProtocolClass = get_protocol_map()[protocol.pop("type")]
+            # Create and add the protocol with the remaining configurations
+            m.add_protocol(ProtocolClass(**protocol))
+
+    return m
 
 
 class DataConfig(BaseModel):

@@ -29,6 +29,7 @@ from gloria.api import (
     make_holiday_dataframe,
     model_from_dict,
     model_from_json,
+    model_from_toml,
     model_to_dict,
     model_to_json,
     performance_metrics,
@@ -68,6 +69,7 @@ __all__ = [
     "single_cutoff_forecast",
     "cross_validation",
     "performance_metrics",
+    "model_from_toml",
 ]
 
 # Read the version dynamically from pyproject.toml
