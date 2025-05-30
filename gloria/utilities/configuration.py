@@ -143,6 +143,9 @@ def model_from_toml(
             # Create and add the protocol with the remaining configurations
             m.add_protocol(ProtocolClass(**protocol))
 
+    # Save fit and predict tables for later use
+    m._config = {k: v for k, v in config.items() if k in ("fit", "predict")}
+
     return m
 
 
