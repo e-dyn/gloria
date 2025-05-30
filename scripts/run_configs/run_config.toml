@@ -11,6 +11,12 @@ changepoint_prior_scale = 0.05
 interval_width = 0.8
 uncertainty_samples = 1000
 
+[fit]
+data = "data/simulated/2025-02-19_binomial_test_n02.csv"
+read = "csv"
+optimize_mode = "MLE"
+sample = true
+
 [[external_regressors]]
 name = "ano_deviation"
 prior_scale = 0.3

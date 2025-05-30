@@ -5,6 +5,7 @@ serialization and deserialization
 
 ### --- Module Imports --- ###
 # Standard Library
+import inspect
 import json
 from pathlib import Path
 from typing import (
@@ -65,7 +66,7 @@ def model_from_toml(
     ----------
     toml_path : Union[str, Path]
         Path to the TOML file containing the model specification.
-    ignore : Union[Sequence[str],str], optional
+    ignore : Union[Collection[str],str], optional
         Which top-level sections of the file to skip. Valid values are
         "external_regressors", "seasonalities", "events", and`"protocols". The
         special value "all" suppresses every optional section. May be given as
@@ -112,8 +113,14 @@ def model_from_toml(
 
     # Remove keys from kwargs and config that are no valid Gloria fields
     kwargs = {k: v for k, v in kwargs.items() if k in Gloria.model_fields}
+
+    if "model" not in config:
+        get_logger().info("Model table missing from TOML configuration file.")
+
     model_config = {
-        k: v for k, v in config["model"].items() if k in Gloria.model_fields
+        k: v
+        for k, v in config.get("model", dict()).items()
+        if k in Gloria.model_fields
     }
 
     # Give precedence to individial settings in kwargs
@@ -147,9 +154,140 @@ def model_from_toml(
             m.add_protocol(ProtocolClass(**protocol))
 
     # Save fit and predict tables for later use
-    m._config = {k: v for k, v in config.items() if k in ("fit", "predict")}
+    m._config = {
+        k: filter_config_parameter(k, v)
+        for k, v in config.items()
+        if k in ("fit", "predict")
+    }
 
     return m
+
+
+def filter_config_parameter(
+    method: str, config: dict[str, Any]
+) -> dict[str, Any]:
+    """
+    Extract the subset of configuration options that are valid for
+    ``Gloria.fit`` or ``Gloria.predict``.
+
+    The function inspects the desired ``Gloria`` method signature and returns a
+    new dictionary that contains only those key-value pairs from *config* whose
+    keys match the accepted parameter names.
+
+    Parameters
+    ----------
+    method : str
+        Name of the ``Gloria`` method whose accepted parameters should be
+        included.
+    config : dict[str, Any]
+        Arbitrary keyword arguments intended for ``Gloria``. Keys that do not
+        appear in the target method`s signature are silently discarded.
+
+    Raises
+    ------
+    ValueError
+        If *method* is not exactly ``'fit'`` or ``'predict'``.
+
+    Returns
+    -------
+    dict[str, Any]
+        A filtered copy of *config* containing only the parameters that the
+        specified ``Gloria`` method accepts.
+
+    Examples
+    --------
+    >>> cfg = {
+    ...     'sample': True,
+    ...     'optimize_method': 'MLE',
+    ...     'the_answer': 42,  # not an accepted parameter
+    ... }
+    >>> filter_config_parameter('predict', cfg)
+    {'sample': True, 'optimize_method': 'MLE'}
+
+    """
+    # Validate method input
+    if method not in ("fit", "predict"):
+        raise ValueError(
+            "Parameter 'method' must be either 'fit' or 'predict'."
+        )
+
+    # Get available input parameters for the method
+    # Gloria
+    from gloria.interface import Gloria
+
+    accepted_pars = [
+        par
+        for par in inspect.signature(getattr(Gloria, method)).parameters.keys()
+        if par != "self"
+    ]
+
+    return {k: v for k, v in config.items() if k in accepted_pars}
+
+
+def assemble_config(
+    method: str,
+    model: "Gloria",
+    toml_path: Optional[Union[str, Path]] = None,
+    **kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Build the effective configuration dictionary for ``Gloria.fit`` or
+    ``Gloria.predict``.
+
+    The final configuration is composed in three layers, each one overriding
+    the previous:
+
+    1. **Model defaults** - the baseline stored in ``model._config[method]``.
+    2. **TOML file** - if *toml_path* is given, key-value pairs from the file
+       are merged into the baseline.
+    3. **Keyword overrides** - additional arguments supplied directly to
+       :pyfunc:`assemble_config` via *kwargs* take highest precedence.
+
+
+    Parameters
+    ----------
+    method : str
+        Name of the ``Gloria`` method the configuration is intended for.
+    model : "Gloria"
+        Instance whose internal default configuration should be taken as
+        baseline.
+    toml_path : Optional[Union[str, Path]], optional
+        Path to a TOML file that contains configuration sections keyed by the
+        *method* name. If *None*, this layer is skipped. The default is None.
+    **kwargs : dict[str, Any]
+        Arbitrary keyword arguments that override earlier layers. Unsupported
+        keys are ignored silently.
+
+    Returns
+    -------
+    dict[str, Any]
+        The fully assembled configuration dictionary that can be passed
+        directly to the desired ``Gloria`` method.
+
+    """
+
+    # Baseline with internal model configurations, if available.
+    config = model._config.get(method, dict())
+
+    # 1. Update with TOML config
+    if toml_path is not None:
+        # Load configuration file
+        with open(toml_path, mode="rb") as file:
+            toml_config = tomli.load(file)
+
+        # Get method table of config file
+        toml_config = toml_config.get(method, dict())
+        # Overwrite config with keys in TOML config
+        config = config | toml_config
+
+    # 2. Update with kwarg config
+    # Overwrite config with keys in TOML config
+    config = config | kwargs
+
+    # Remove keys that have no corresponding arguments in the method
+    config = filter_config_parameter(method, config)
+
+    return config
 
 
 class DataConfig(BaseModel):
