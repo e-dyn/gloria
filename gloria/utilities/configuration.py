@@ -88,12 +88,6 @@ def model_from_toml(
     2. Values found in the TOML [model] table
     3. Gloria`s own defaults
     """
-    # Gloria
-    from gloria.interface import Gloria
-
-    # Remove keys from kwargs that are no valid Gloria fields
-    kwargs = {k: v for k, v in kwargs.items() if k in Gloria.model_fields}
-
     # Make sure ignore is a set
     if isinstance(ignore, str):
         ignore = {ignore}
@@ -113,8 +107,17 @@ def model_from_toml(
     with open(toml_path, mode="rb") as file:
         config = tomli.load(file)
 
+    # Gloria
+    from gloria.interface import Gloria
+
+    # Remove keys from kwargs and config that are no valid Gloria fields
+    kwargs = {k: v for k, v in kwargs.items() if k in Gloria.model_fields}
+    model_config = {
+        k: v for k, v in config["model"].items() if k in Gloria.model_fields
+    }
+
     # Give precedence to individial settings in kwargs
-    model_config = config["model"] | kwargs
+    model_config = model_config | kwargs
 
     # Create Gloria model
     m = Gloria(**model_config)

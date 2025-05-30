@@ -307,6 +307,8 @@ class Gloria(BaseModel):
         self.X: pd.DataFrame = pd.DataFrame()
         # 6. Dictionary holding kwargs passed to fit method
         self.fit_kwargs: dict[str, Any] = {}
+        # 7. Configurations for fit and predict
+        self._config: dict[str, Any] = {}
 
     @property
     def is_fitted(self: Self) -> bool:
