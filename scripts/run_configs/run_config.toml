@@ -1,0 +1,38 @@
+[model]
+model = "binomial constant n"
+sampling_period = "1d"
+timestamp_name = "ds"
+metric_name = "y"
+n_changepoints = 2
+changepoint_range = 0.8
+seasonality_prior_scale = 10.0
+event_prior_scale = 2
+changepoint_prior_scale = 0.05
+interval_width = 0.8
+uncertainty_samples = 1000
+
+[load_data]
+source = "data/simulated/2025-02-19_binomial_test_n02.csv"
+dtype_kind = "u"
+
+[fit]
+optimize_mode = "MLE"
+sample = false
+[fit.augmentation_config]
+mode = "scale"
+value = 0.5
+
+[[external_regressors]]
+name = "ano_deviation"
+prior_scale = 0.3
+
+[[protocols]]
+type = "CalendricData"
+country = "US"
+subdiv = ""
+monthly_seasonality = "auto"
+yearly_seasonality = false
+
+  [protocols.holiday_event]
+  event_type = "Gaussian"
+  width = "5d"

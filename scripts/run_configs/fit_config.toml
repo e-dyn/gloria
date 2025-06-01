@@ -1,0 +1,4 @@
+[fit]
+optimize_mode = "MAP"
+sample = true
+

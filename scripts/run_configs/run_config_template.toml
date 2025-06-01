@@ -1,0 +1,56 @@
+[model]
+model = "binomial constant n"
+sampling_period = "1d"
+timestamp_name = "ds"
+metric_name = "y"
+n_changepoints = 2
+changepoint_range = 0.8
+seasonality_prior_scale = 10.0
+event_prior_scale = 2
+changepoint_prior_scale = 0.05
+interval_width = 0.8
+uncertainty_samples = 1000
+
+[fit]
+optimize_mode = "MLE"
+sample = false
+[fit.augmentation_config]
+mode = "scale"
+value = 0.5
+
+[[external_regressors]]
+name = "ano_deviation"
+prior_scale = 0.3
+
+[[seasonalities]]
+name = "Lunar Cycle"
+period = "29.53 d"
+fourier_order = 3
+prior_scale = 0.1
+
+[[seasonalities]]
+name = "Big Ben"
+period = "4 s"
+fourier_order = 1
+prior_scale = 2
+
+[[protocols]]
+type = "CalendricData"
+country = "DE"
+subdiv = ""
+weekly_seasonality = false
+
+  [protocols.holiday_event]
+  event_type = "Gaussian"
+  width = "5d"
+
+[[events]]
+include = false
+regressor_type = "SingleEvent"
+name = "Big Bang"
+prior_scale = 0.001
+t_start = "1-1-1970"
+
+  [events.event]
+  event_type = "BoxCar"
+  width = "1ns"
