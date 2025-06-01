@@ -27,13 +27,7 @@ from gloria.regressors import (
 )
 
 # Configuration
-from gloria.utilities.configuration import (
-    DataConfig,
-    GloriaConfig,
-    MetricConfig,
-    RunConfig,
-    model_from_toml,
-)
+from gloria.utilities.configuration import model_from_toml
 from gloria.utilities.diagnostics import (
     cross_validation,
     generate_cutoffs,
@@ -71,10 +65,6 @@ __all__ = [
     "make_holiday_dataframe",
     "Holiday",
     "CalendricData",
-    "RunConfig",
-    "GloriaConfig",
-    "MetricConfig",
-    "DataConfig",
     "model_to_dict",
     "model_from_dict",
     "model_to_json",

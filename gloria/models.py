@@ -28,7 +28,7 @@ from typing_extensions import Self, TypeAlias
 
 # Gloria
 # Inhouse Packages
-from gloria.utilities.constants import _BACKEND_DEFAULTS, _CMDSTAN_VERSION
+from gloria.utilities.constants import _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
@@ -77,6 +77,11 @@ class BinomialPopulation(BaseModel):
         Validates the value pass along with the population size estimation
         method.
         """
+        # Safeguard if validation of mode already failed
+        if "mode" not in info.data:
+            raise ValueError(
+                "Can't validate 'value' field as 'mode' was invalid."
+            )
         if info.data["mode"] == "constant":
             if not isinstance(value, int):
                 raise ValueError(
@@ -426,10 +431,8 @@ class ModelBackendBase(ABC):
     def fit(
         self: Self,
         stan_data: ModelInputData,
-        optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS[
-            "optimize_mode"
-        ],
-        sample: bool = _BACKEND_DEFAULTS["sample"],
+        optimize_mode: Literal["MAP", "MLE"],
+        sample: bool,
         augmentation_config: Optional[BinomialPopulation] = None,
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
@@ -503,9 +506,7 @@ class ModelBackendBase(ABC):
             optimized_model = self.model.optimize(**optimize_args)
 
         if sample:
-            get_logger().info(
-                f"Starting Laplace sampling with {sample} " "samples."
-            )
+            get_logger().info("Starting Laplace sampling.")
             self.stan_fit = self.model.laplace_sample(
                 data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )

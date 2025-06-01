@@ -4,10 +4,13 @@ Constant definitions used throughout the Gloria code
 
 # Standard Library
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 # Third Party
 import pandas as pd
+
+# Gloria
+from gloria.utilities.types import DTypeKind
 
 # Local path of the gloria package
 _GLORIA_PATH = Path(__file__).parent.parent
@@ -34,12 +37,33 @@ _GLORIA_DEFAULTS = dict(
 )
 
 
-class BackendDefaults(TypedDict):
+class FitDefaults(TypedDict):
     optimize_mode: Literal["MAP", "MLE"]
     sample: bool
+    augmentation_config: dict[str, Any]
 
 
-_BACKEND_DEFAULTS: BackendDefaults = {"optimize_mode": "MAP", "sample": True}
+_FIT_DEFAULTS: FitDefaults = {
+    "optimize_mode": "MAP",
+    "sample": False,
+    "augmentation_config": dict(mode="scale", value=0.5),
+}
+
+
+class PredictDefaults(TypedDict):
+    periods: int
+    include_history: bool
+
+
+_PREDICT_DEFAULTS: PredictDefaults = {"periods": 1, "include_history": True}
+
+
+class LoadDataDefaults(TypedDict):
+    source: str
+    dtype_kind: DTypeKind
+
+
+_LOAD_DATA_DEFAULTS: LoadDataDefaults = {"source": "", "dtype_kind": "f"}
 
 ### --- Column Name Construction --- ##
 

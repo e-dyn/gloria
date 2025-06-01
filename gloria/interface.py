@@ -60,7 +60,7 @@ For Documentation
 ### --- Module Imports --- ###
 # Standard Library
 from pathlib import Path
-from typing import Any, Collection, Literal, Optional, Type, Union
+from typing import Any, Collection, Literal, Optional, Type, Union, cast
 
 # Third Party
 import numpy as np
@@ -79,7 +79,6 @@ import gloria.utilities.serialize as gs
 from gloria.events import Event
 from gloria.models import (
     MODEL_MAP,
-    BinomialPopulation,
     ModelInputData,
     get_model_backend,
 )
@@ -90,19 +89,25 @@ from gloria.regressors import (
     Regressor,
     Seasonality,
 )
-from gloria.utilities.configuration import model_from_toml
+from gloria.utilities.configuration import (
+    assemble_config,
+    convert_augmentation_config,
+    model_from_toml,
+)
 
 # Inhouse Packages
 from gloria.utilities.constants import (
-    _BACKEND_DEFAULTS,
     _DELIM,
     _DTYPE_KIND,
+    _FIT_DEFAULTS,
     _GLORIA_DEFAULTS,
+    _LOAD_DATA_DEFAULTS,
+    _PREDICT_DEFAULTS,
     _T_INT,
 )
 from gloria.utilities.errors import FittedError, NotFittedError
 from gloria.utilities.logging import get_logger
-from gloria.utilities.misc import time_to_integer
+from gloria.utilities.misc import cast_series_to_kind, time_to_integer
 from gloria.utilities.types import Distribution, SeriesData, Timedelta
 
 
@@ -308,7 +313,13 @@ class Gloria(BaseModel):
         # 6. Dictionary holding kwargs passed to fit method
         self.fit_kwargs: dict[str, Any] = {}
         # 7. Configurations for fit and predict
-        self._config: dict[str, Any] = {}
+        self._config: dict[str, Any] = {
+            "fit": _FIT_DEFAULTS.copy(),
+            "predict": _PREDICT_DEFAULTS.copy(),
+            "load_data": _LOAD_DATA_DEFAULTS.copy(),
+        }
+        # Convert augmentation config
+        self._config["fit"] = convert_augmentation_config(self._config["fit"])
 
     @property
     def is_fitted(self: Self) -> bool:
@@ -1103,14 +1114,12 @@ class Gloria(BaseModel):
     def fit(
         self: Self,
         data: pd.DataFrame,
-        optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS[
-            "optimize_mode"
-        ],
-        sample: bool = _BACKEND_DEFAULTS["sample"],
-        augmentation_config: Optional[BinomialPopulation] = None,
+        toml_path: Optional[Union[str, Path]] = None,
+        **kwargs: dict[str, Any],
     ) -> Self:
         """
-        Fits the Gloria model
+        Fits the Gloria model.
+
 
         Parameters
         ----------
@@ -1119,6 +1128,15 @@ class Gloria(BaseModel):
             name self.timestamp_name and a numeric column with name
             self.metric_name. If external regressors were added to the model,
             the respective columns must be present as well.
+        toml_path : Optional[Union[str, Path]], optional
+            Path to a TOML file that contains configuration sections keyed by
+            [fit]. If *None*, this layer is skipped. The default is None.
+        **kwargs :dict[str, Any]
+            Arbitrary keyword arguments. Only the ones listed under *Other
+            parameters* will be used
+
+        Other Parameters
+        ----------------
         optimize_mode : Literal['MAP', 'MLE'], optional
             If 'MAP' (default), the optimization step yiels the Maximum A
             Posteriori, if 'MLE' the Maximum Likehood Estimate
@@ -1139,16 +1157,36 @@ class Gloria(BaseModel):
         -------
         Gloria
             Updated Gloria object
+
+        Notes
+        -----
+        The configuration of the fit method is composed in four layers, each
+        one overriding the previous:
+
+        1. **Model defaults** - the baseline stored in _FIT_DEFAULTS as part of
+           constants.py.
+        2. **Global TOML file** - key-value pairs in the [fit] table of the
+           TOML file passed to Gloria.from_toml if the current Gloria instance
+           was created this way.
+        2. **Local TOML file** - key-value pairs in the [fit] table of the
+           TOML file provided for *toml_path*.
+        3. **Keyword overrides** - additional arguments supplied directly to
+           the method via *kwargs* take highest precedence.
         """
         if self.is_fitted:
             raise FittedError(
                 "Gloria object can only be fit once. Instantiate a new object."
             )
 
+        # Assemble overall config from different layers
+        config = assemble_config(
+            method="fit", model=self, toml_path=toml_path, **kwargs
+        )
+
         self.fit_kwargs = dict(
-            optimize_mode=optimize_mode,
-            sample=sample,
-            augmentation_config=augmentation_config,
+            optimize_mode=config["optimize_mode"],
+            sample=config["sample"],
+            augmentation_config=config["augmentation_config"],
         )
 
         # Prepare the model and input data
@@ -1159,32 +1197,91 @@ class Gloria(BaseModel):
         get_logger().debug("Handing over preprocessed data to model backend.")
         self.model_backend.fit(
             input_data,
-            optimize_mode=optimize_mode,
-            sample=sample,
-            augmentation_config=augmentation_config,
+            optimize_mode=config["optimize_mode"],
+            sample=config["sample"],
+            augmentation_config=config["augmentation_config"],
         )
 
         return self
 
-    def predict(self: Self, data: pd.DataFrame) -> pd.DataFrame:
+    def predict(
+        self: Self,
+        data: Optional[pd.DataFrame] = None,
+        toml_path: Optional[Union[str, Path]] = None,
+        **kwargs: dict[str, Any],
+    ) -> pd.DataFrame:
         """
         Predict using the fitted Gloria model.
 
         Parameters
         ----------
-        data : pd.DataFrame
+        data : Optional[pd.DataFrame], optional
             Input dataframe. It must contain at least a timestamp column named
             according to the models timestamp_name as well as the external
-            regressor columns associated with the model.
+            regressor columns associated with the model. The default is None.
+        toml_path : Optional[Union[str, Path]], optional
+            Path to a TOML file that contains configuration sections keyed by
+            [predict]. If *None*, this layer is skipped. The default is None.
+        **kwargs :dict[str, Any]
+            Arbitrary keyword arguments. Only the ones listed under *Other
+            parameters* will be used
+
+
+        Other Parameters
+        ----------------
+        periods : int
+            Number of periods to forecast forward.
+        include_history : bool, optional
+            Boolean to include the historical dates in the data frame for
+            predictions. The default is True.
 
         Returns
         -------
         prediction : pd.DataFrame
             A dataframe containing timestamps, predicted metric, trend, and
             lower and upper bounds.
+
+        Notes
+        -----
+        The kwargs ``periods`` and ``include_history`` are used to invoke the
+        ``make_fute_dataframe`` method as part of the prediction method. Note
+        that this onlyworks if the model does not have any external regressors.
+        Also, if data were explicitly provided, these take precedence.
+
+        The configuration of the predict method is composed in four layers,
+        each one overriding the previous:
+
+        1. **Model defaults** - the baseline stored in _PREDICT_DEFAULTS as
+           part of constants.py.
+        2. **Global TOML file** - key-value pairs in the [predict] table of the
+           TOML file passed to Gloria.from_toml if the current Gloria instance
+           was created this way.
+        2. **Local TOML file** - key-value pairs in the [predict] table of the
+           TOML file provided for *toml_path*.
+        3. **Keyword overrides** - additional arguments supplied directly to
+           the method via *kwargs* take highest precedence.
         """
         if not self.is_fitted:
             raise NotFittedError("Can only predict using a fitted model.")
+
+        # If there is no data input for the prediction, try to make a new
+        # future dataframe
+        if data is None:
+            if len(self.external_regressors) > 0:
+                raise ValueError(
+                    "If the model has external regressors, data must be "
+                    "explicitly provided."
+                )
+            # Assemble overall config from different layers
+            config = assemble_config(
+                method="predict", model=self, toml_path=toml_path, **kwargs
+            )
+            # Make future dataframe
+            data = self.make_future_dataframe(**config)
+
+        # At this point 'data' is a pd.DataFrame. Let MyPy know
+        data = cast(pd.DataFrame, data)
+
         # Validate and extract population to pass it to predict
         N_vec = None
         if self.model == "binomial vectorized n":
@@ -1284,6 +1381,57 @@ class Gloria(BaseModel):
         return pd.DataFrame({self.timestamp_name: new_timestamps}).reset_index(
             drop=True
         )
+
+    def load_data(
+        self: Self,
+        toml_path: Optional[Union[str, Path]] = None,
+        **kwargs: dict[str, Any],
+    ) -> pd.DataFrame:
+        """
+        Load and configure the time-series data required by the model.
+
+        Parameters
+        ----------
+        toml_path : Optional[Union[str, Path]], optional
+            Path to a TOML file that contains configuration sections keyed by
+            [load_data]. If *None*, this layer is skipped. The default is
+            None.
+        **kwargs :dict[str, Any]
+            Arbitrary keyword arguments. Only the ones listed under *Other
+            parameters* will be used
+
+        Other Parameters
+        ----------------
+        source : Union[str, Path]
+            Path to the data source file (Must be csv).
+        dtype_kind : bool, optional
+            A dtype kind string. Supported kinds are 'u', 'i', 'f', 'b'. The
+            data's metric column will be cast to this kind.
+
+        Returns
+        -------
+        data : TYPE
+            A ready-to-be-modeled pd.DataFrame
+
+        """
+
+        # Assemble overall config from different layers
+        config = assemble_config(
+            method="load_data", model=self, toml_path=toml_path, **kwargs
+        )
+
+        # Read data
+        data = pd.read_csv(config["source"])
+
+        # Convert timestamp column to actual timestamps
+        data[self.timestamp_name] = pd.to_datetime(data[self.timestamp_name])
+
+        # Convert data to type required by model
+        data[self.metric_name] = cast_series_to_kind(
+            data[self.metric_name], config["dtype_kind"]
+        )
+
+        return data
 
     def to_dict(self: Self) -> dict[str, Any]:
         """

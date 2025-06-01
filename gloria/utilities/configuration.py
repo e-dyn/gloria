@@ -5,25 +5,17 @@ serialization and deserialization
 
 ### --- Module Imports --- ###
 # Standard Library
-import inspect
-import json
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Collection,
-    Literal,
     Optional,
-    Type,
     Union,
 )
 
 # Third Party
-import pandas as pd
 import tomli
-from pydantic import BaseModel, Field, field_validator
-from pydantic_core.core_schema import ValidationInfo
-from typing_extensions import Self
 
 # Conditional import of Gloria for static type checking. Otherwise Gloria is
 # forward-declared as 'Gloria' to avoid circular imports
@@ -31,14 +23,35 @@ if TYPE_CHECKING:
     from gloria.interface import Gloria
 
 # Gloria
-from gloria.models import MODEL_MAP, BinomialPopulation
+from gloria.models import BinomialPopulation
 from gloria.protocols.protocol_base import get_protocol_map
-from gloria.utilities.constants import _BACKEND_DEFAULTS, _GLORIA_DEFAULTS
 from gloria.utilities.logging import get_logger
-from gloria.utilities.types import Distribution, DTypeKind
 
 
 ### --- Class and Function Definitions --- ###
+def convert_augmentation_config(dict_in: dict[str, Any]) -> dict[str, Any]:
+    """
+    Turns augmentation_config in a fit configuration dictionary into an actual
+    BinomialPopulation object.
+
+    Parameters
+    ----------
+    dict_in : dict[str, Any]
+        Dictionary containing configurations for the fit method.
+
+    Returns
+    -------
+    dict[str, Any]
+        Updated dictionary
+
+    """
+    if "augmentation_config" in dict_in:
+        dict_in["augmentation_config"] = BinomialPopulation(
+            **dict_in["augmentation_config"]
+        )
+    return dict_in
+
+
 def model_from_toml(
     toml_path: Union[str, Path],
     ignore: Union[Collection[str], str] = set(),
@@ -153,14 +166,30 @@ def model_from_toml(
             # Create and add the protocol with the remaining configurations
             m.add_protocol(ProtocolClass(**protocol))
 
-    # Save fit and predict tables for later use
-    m._config = {
-        k: filter_config_parameter(k, v)
-        for k, v in config.items()
-        if k in ("fit", "predict")
-    }
+    # Update model's config with fit, predict, and load_data tables
+    fit_config = filter_config_parameter("fit", config.get("fit", dict()))
+    predict_config = filter_config_parameter(
+        "predict", config.get("predict", dict())
+    )
+    load_config = filter_config_parameter(
+        "load_data", config.get("load_data", dict())
+    )
+
+    # Convert augmentation config if there is any
+    fit_config = convert_augmentation_config(fit_config)
+
+    m._config["fit"] = m._config["fit"] | fit_config
+    m._config["predict"] = m._config["predict"] | predict_config
+    m._config["load_data"] = m._config["load_data"] | load_config
 
     return m
+
+
+ACCEPTED_PARS = {
+    "fit": ("optimize_mode", "sample", "augmentation_config"),
+    "predict": ("periods", "include_history"),
+    "load_data": ("dtype_kind", "source"),
+}
 
 
 def filter_config_parameter(
@@ -168,11 +197,7 @@ def filter_config_parameter(
 ) -> dict[str, Any]:
     """
     Extract the subset of configuration options that are valid for
-    ``Gloria.fit`` or ``Gloria.predict``.
-
-    The function inspects the desired ``Gloria`` method signature and returns a
-    new dictionary that contains only those key-value pairs from *config* whose
-    keys match the accepted parameter names.
+    ``Gloria.fit`` or ``Gloria.predict`` methods.
 
     Parameters
     ----------
@@ -206,22 +231,13 @@ def filter_config_parameter(
 
     """
     # Validate method input
-    if method not in ("fit", "predict"):
+    if method not in ("fit", "predict", "load_data"):
         raise ValueError(
-            "Parameter 'method' must be either 'fit' or 'predict'."
+            "Parameter 'method' must be either 'fit', 'predict', 'load_data'."
         )
 
     # Get available input parameters for the method
-    # Gloria
-    from gloria.interface import Gloria
-
-    accepted_pars = [
-        par
-        for par in inspect.signature(getattr(Gloria, method)).parameters.keys()
-        if par != "self"
-    ]
-
-    return {k: v for k, v in config.items() if k in accepted_pars}
+    return {k: v for k, v in config.items() if k in ACCEPTED_PARS[method]}
 
 
 def assemble_config(
@@ -232,7 +248,7 @@ def assemble_config(
 ) -> dict[str, Any]:
     """
     Build the effective configuration dictionary for ``Gloria.fit`` or
-    ``Gloria.predict``.
+    ``Gloria.predict`` or ``load_data``.
 
     The final configuration is composed in three layers, each one overriding
     the previous:
@@ -277,10 +293,24 @@ def assemble_config(
 
         # Get method table of config file
         toml_config = toml_config.get(method, dict())
+
+        # Validate augmentation config if there is any
+        if method == "fit" and "augmentation_config" in toml_config:
+            toml_config["augmentation_config"] = BinomialPopulation(
+                **toml_config["augmentation_config"]
+            )
+
         # Overwrite config with keys in TOML config
         config = config | toml_config
 
     # 2. Update with kwarg config
+
+    # Validate augmentation config if there is any
+    if method == "fit" and "augmentation_config" in kwargs:
+        kwargs["augmentation_config"] = BinomialPopulation(
+            **kwargs["augmentation_config"]
+        )
+
     # Overwrite config with keys in TOML config
     config = config | kwargs
 
@@ -288,115 +318,3 @@ def assemble_config(
     config = filter_config_parameter(method, config)
 
     return config
-
-
-class DataConfig(BaseModel):
-    """
-    Configuration of the input data
-    """
-
-    data_source: str
-    sampling_period: str
-    timestamp_name: str
-
-
-class MetricConfig(BaseModel):
-    """
-    Configuration of the Metric column of the input data
-    """
-
-    metric_name: str
-    population_name: Optional[str] = None
-    model: Distribution
-    dtype_kind: DTypeKind
-    augmentation_config: Optional[BinomialPopulation] = None
-
-    @field_validator("dtype_kind")
-    @classmethod
-    def validate_model_kind(cls, dtype_kind: str, info: ValidationInfo) -> str:
-        """
-        Validates that the specified dtype_kind matches any of the allowed type
-        specific to the model.
-        """
-        allowed_types = list(MODEL_MAP[info.data["model"]].kind)
-        if dtype_kind not in allowed_types:
-            type_list = ", ".join([f"'{s}'" for s in allowed_types])
-            raise TypeError(
-                f"dtype_kind was set to '{dtype_kind}', but must be any of"
-                f" {type_list} for selected model '{info.data['model']}'."
-            )
-        return dtype_kind
-
-
-class GloriaConfig(BaseModel):
-    """
-    Configuration of the Gloria model
-    """
-
-    n_changepoints: int = Field(
-        ge=0, default=_GLORIA_DEFAULTS["n_changepoints"]
-    )
-    changepoints: Optional[list[str]] = _GLORIA_DEFAULTS["changepoints"]
-    changepoint_range: float = Field(
-        gt=0, lt=1, default=_GLORIA_DEFAULTS["changepoint_range"]
-    )
-    seasonality_prior_scale: float = Field(
-        gt=0, default=_GLORIA_DEFAULTS["seasonality_prior_scale"]
-    )
-    event_prior_scale: float = Field(
-        gt=0, default=_GLORIA_DEFAULTS["event_prior_scale"]
-    )
-    changepoint_prior_scale: float = Field(
-        gt=0, default=_GLORIA_DEFAULTS["changepoint_prior_scale"]
-    )
-    interval_width: float = Field(
-        gt=0, lt=1, default=_GLORIA_DEFAULTS["interval_width"]
-    )
-    uncertainty_samples: int = Field(
-        ge=0, default=_GLORIA_DEFAULTS["uncertainty_samples"]
-    )
-    optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS["optimize_mode"]
-    sample: bool = _BACKEND_DEFAULTS["sample"]
-
-    @field_validator("changepoints")
-    @classmethod
-    def validate_changepoints(
-        cls: Type[Self], changepoints: Optional[list[str]]
-    ) -> pd.Series:
-        """
-        Converts sampling period to a pandas Timedelta if it was passed as a
-        string instead.
-        """
-        # Third Party
-        from pandas._libs.tslibs.parsing import DateParseError
-
-        try:
-            # pd.to_datetime returns None if changepoints were None
-            changepoints = pd.to_datetime(pd.Series(changepoints))
-        except (ValueError, DateParseError) as e:
-            msg = "Could not parse input changepoints."
-            get_logger().error(msg)
-            raise ValueError(msg) from e
-
-        return changepoints
-
-
-class RunConfig(BaseModel):
-    """
-    Overall Configuration class
-    """
-
-    data_config: DataConfig
-    metric_config: MetricConfig
-    gloria_config: GloriaConfig
-
-    def to_json(self, path: Path):
-        config_dict = self.model_dump()
-        with open(path, "w") as file:
-            json.dump(config_dict, file, indent=4)
-
-    @classmethod
-    def load_json(cls, path: Path):
-        with open(path, "r") as file:
-            data = json.load(file)
-        return cls(**data)

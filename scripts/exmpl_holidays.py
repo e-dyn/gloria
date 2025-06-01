@@ -5,10 +5,12 @@ from pathlib import Path
 # Third Party
 import matplotlib.pyplot as plt
 import pandas as pd
+import tomli
 
 # Gloria
 # Inhouse Packages
-from gloria import CalendricData, Gloria, RunConfig, cast_series_to_kind
+from gloria import CalendricData, Gloria, cast_series_to_kind
+from gloria.utilities.configuration import assemble_config
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
@@ -43,57 +45,11 @@ SEASONALITIES = {
 if __name__ == "__main__":
     basepath = Path(__file__).parent
 
-    config = RunConfig.load_json(basepath / f"run_configs/{CONFIG_FILE}.json")
-
-    timestamp_name = config.data_config.timestamp_name
-    metric_name = config.metric_config.metric_name
-    df = pd.read_csv(basepath / config.data_config.data_source).iloc[:400, :]
-    df[timestamp_name] = pd.to_datetime(df[timestamp_name])
-    df[metric_name] = cast_series_to_kind(
-        df[metric_name], config.metric_config.dtype_kind
+    model = Gloria.from_toml(
+        toml_path=basepath / f"run_configs/{CONFIG_FILE}.toml"
     )
-
-    gloria_pars = {
-        **{k: v for k, v in config.data_config if k != "data_source"},
-        **{
-            k: v
-            for k, v in config.metric_config
-            if k not in ["dtype_kind", "augmentation_config"]
-        },
-        **{
-            k: v
-            for k, v in config.gloria_config
-            if k not in ["optimize_mode", "sample"]
-        },
-    }
-    fit_pars = {
-        k: v
-        for k, v in config.gloria_config
-        if k in ["optimize_mode", "sample"]
-    }
-
-    model = Gloria(**gloria_pars)
-
-    # Add anomaly column as external regressor. Basically as if we knew where
-    # anomalies will appear.
-    model.add_external_regressor("ano_deviation", prior_scale=0.3)
-    protocol = CalendricData(
-        country="US",
-        yearly_seasonality=False,
-        monthly_seasonality="auto",
-        holiday_event={"event_type": "Gaussian", "width": "5d"},
-    )
-
-    model.add_protocol(protocol)
-    # Standard Library
-    import time
-
-    t0 = time.time()
-    model.fit(
-        df,
-        **fit_pars,
-        augmentation_config=config.metric_config.augmentation_config,
-    )
+    df = model.load_data()
+    model.fit(df)
 
     # Demonstration of model serialization and deserialization work flow
     if INCLUDE_SERIALIZATION_STEP:
@@ -108,9 +64,12 @@ if __name__ == "__main__":
         drop=True
     )
     result = model.predict(data)
+
+    timestamp_name = model.timestamp_name
+    metric_name = model.metric_name
     mask = (
         (result[timestamp_name] - result[timestamp_name].min())
-        / pd.Timedelta(config.data_config.sampling_period)
+        / model.sampling_period
     ).apply(float.is_integer)
     result = result[mask]
 
