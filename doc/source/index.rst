@@ -6,12 +6,15 @@
 Gloria documentation
 ====================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+**Version**: |version|
+
+Gloria is a timeseries forecasting tool inspired by `Prophet <https://facebook.github.io/prophet/>`_. It extends Prophet's use of generalized linear models (GLMs) to handle a wide variety of data types and constraints in a statistically coherent way through appropriate distributions such as binomial, Poisson, beta, and others.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
+   
+   installation
+   overview
 
