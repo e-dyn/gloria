@@ -10,11 +10,9 @@ Gloria documentation
 
 Gloria is a timeseries forecasting tool inspired by `Prophet <https://facebook.github.io/prophet/>`_. It extends Prophet's use of generalized linear models (GLMs) to handle a wide variety of data types and constraints in a statistically coherent way through appropriate distributions such as binomial, Poisson, beta, and others.
 
-
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+   :maxdepth: 2
    
    installation
    overview
-
+   api/index

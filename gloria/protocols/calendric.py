@@ -445,19 +445,21 @@ class CalendricData(Protocol):
 
         Whether and how the seasonalities are added depends on the mode
         specified in the <name>_seasonality field:
-            - True: The seasonality is added using the default maximum order
-            - False: the seasonality won't be added
-            - 'auto': The seasonality will be added according to the rule set
-              described below
-            - integer >= 1: the seasonality will be added with the integer used
-              as maximum order
 
-        In 'auto' mode the logic is as follows
-            2. Each seasonality is only added, if the data span at least two
-               full cycles of the fundamental period.
-            3. The maximum order is determined by the default maximum order or
-               the highest order that satisfies the Nyquist sampling theorem,
-               whichever is smaller.
+          - True: The seasonality is added using the default maximum order
+          - False: the seasonality won't be added
+          - 'auto': The seasonality will be added according to the rule set
+            described below
+          - integer >= 1: the seasonality will be added with the integer used
+            as maximum order
+
+        In 'auto' mode the logic is as follows:
+
+          1. Each seasonality is only added, if the data span at least two
+             full cycles of the fundamental period.
+          2. The maximum order is determined by the default maximum order or
+             the highest order that satisfies the Nyquist sampling theorem,
+             whichever is smaller.
 
         Note on quarterly seasonality:
         Quarterly is a full subset of yearly. Therefore it will only be added

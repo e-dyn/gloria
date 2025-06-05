@@ -100,8 +100,9 @@ def cast_series_to_kind(series: pd.Series, kind: "DTypeKind") -> pd.Series:
     """
     Casts a pandas Series to a dtype based on the given dtype kind.
 
-    Parameters:
+    Parameters
     ----------
+
     series : pd.Series
         The pandas Series to be cast.
     kind : str
@@ -111,13 +112,15 @@ def cast_series_to_kind(series: pd.Series, kind: "DTypeKind") -> pd.Series:
         - 'f': floating-point (default to float64)
         - 'b': boolean (default to bool)
 
-    Returns:
+    Returns
     -------
+
     pd.Series
         The pandas Series cast to the corresponding dtype.
 
-    Raises:
+    Raises
     ------
+
     ValueError
         If an unsupported dtype kind is provided.
     """

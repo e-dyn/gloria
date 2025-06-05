@@ -59,11 +59,13 @@ if __name__ == "__main__":
         # And load it
         model_new = Gloria.from_json(model_json=model_path, return_as="model")
 
-    data = model.make_future_dataframe(periods=0)
-    data = pd.concat([data, df["ano_deviation"]], axis=1).reset_index(
-        drop=True
+    data = model.make_future_dataframe(periods=100)
+    data = (
+        pd.concat([data, df["ano_deviation"]], axis=1)
+        .reset_index(drop=True)
+        .fillna(0)
     )
-    result = model.predict(data)
+    result, X = model.predict(data)
 
     timestamp_name = model.timestamp_name
     metric_name = model.metric_name
