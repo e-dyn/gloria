@@ -132,6 +132,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -211,6 +218,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -263,8 +277,20 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.to_json.html">gloria.Gloria.to_json</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../configuration.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_toml.html">gloria.model_from_toml</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_dict.html">gloria.model_from_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_json.html">gloria.model_from_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_dict.html">gloria.model_to_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_json.html">gloria.model_to_json</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Miscellaneous</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.cast_series_to_kind.html">gloria.cast_series_to_kind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.infer_sampling_period.html">gloria.infer_sampling_period</a></li>
 </ul>
 </details></li>
 </ul>
@@ -354,7 +380,7 @@ regularization. Must be large than 0.</p></li>
 excluded from the model during <a class="reference internal" href="gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>, if its overlap with the
 data is negligible. this behaviour can be overwritten by setting
 <code class="docutils literal notranslate"><span class="pre">include</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
-<li><p><strong>**regressor_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Additional keyword arguments necessary to create the event
+<li><p><strong>**regressor_kwargs</strong> (<em>Any</em>) – Additional keyword arguments necessary to create the event
 regressor specified by <code class="docutils literal notranslate"><span class="pre">regressor_type</span></code>.</p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>

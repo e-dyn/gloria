@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Configuration &#8212; Gloria 0.1.0.dev1 documentation</title>
+    <title>Miscellaneous &#8212; Gloria 0.1.0.dev1 documentation</title>
   
   
   
@@ -46,8 +46,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/misc';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="gloria.model_from_toml" href="api/gloria.model_from_toml.html" />
-    <link rel="prev" title="gloria.Gloria.to_json" href="api/gloria.Gloria.to_json.html" />
+    <link rel="next" title="gloria.cast_series_to_kind" href="api/gloria.cast_series_to_kind.html" />
+    <link rel="prev" title="gloria.model_to_json" href="api/gloria.model_to_json.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0.dev1" />
@@ -132,6 +132,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     API Reference
@@ -211,6 +218,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     API Reference
@@ -263,8 +277,20 @@
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.Gloria.to_json.html">gloria.Gloria.to_json</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Configuration</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="configuration.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.model_from_toml.html">gloria.model_from_toml</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.model_from_dict.html">gloria.model_from_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.model_from_json.html">gloria.model_from_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.model_to_dict.html">gloria.model_to_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.model_to_json.html">gloria.model_to_json</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Miscellaneous</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.cast_series_to_kind.html">gloria.cast_series_to_kind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.infer_sampling_period.html">gloria.infer_sampling_period</a></li>
 </ul>
 </details></li>
 </ul>
@@ -310,7 +336,7 @@
     
     <li class="breadcrumb-item"><a href="index.html" class="nav-link">API Reference</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Configuration</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Miscellaneous</span></li>
   </ul>
 </nav>
 </div>
@@ -327,14 +353,17 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h1>
+  <section id="miscellaneous">
+<h1>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">#</a></h1>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.model_from_toml.html#gloria.model_from_toml" title="gloria.model_from_toml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_from_toml</span></code></a>(toml_path[, ignore])</p></td>
-<td><p>Instantiate and configure a Gloria object from a TOML configuration file.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.cast_series_to_kind.html#gloria.cast_series_to_kind" title="gloria.cast_series_to_kind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast_series_to_kind</span></code></a>(series, kind)</p></td>
+<td><p>Cast a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> to a canonical NumPy dtype chosen by its one-letter <em>dtype kind</em> code.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api/gloria.infer_sampling_period.html#gloria.infer_sampling_period" title="gloria.infer_sampling_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_sampling_period</span></code></a>(timestamps[, q])</p></td>
+<td><p>Estimates an upper bound for the sampling period of a time series.</p></td>
 </tr>
 </tbody>
 </table>
@@ -353,20 +382,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="api/gloria.Gloria.to_json.html"
+       href="api/gloria.model_to_json.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">gloria.Gloria.to_json</p>
+        <p class="prev-next-title">gloria.model_to_json</p>
       </div>
     </a>
     <a class="right-next"
-       href="api/gloria.model_from_toml.html"
+       href="api/gloria.cast_series_to_kind.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">gloria.model_from_toml</p>
+        <p class="prev-next-title">gloria.cast_series_to_kind</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -8,4 +8,6 @@ This page describes the intentionally compact public API of Gloria, which is exp
    :maxdepth: 1
    
    gloria
+   configuration
+   serialize
    misc

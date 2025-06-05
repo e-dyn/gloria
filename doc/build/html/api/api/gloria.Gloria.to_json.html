@@ -46,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gloria.to_json';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Configuration" href="../misc.html" />
+    <link rel="next" title="Configuration" href="../configuration.html" />
     <link rel="prev" title="gloria.Gloria.to_dict" href="gloria.Gloria.to_dict.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -132,6 +132,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -211,6 +218,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -263,8 +277,20 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">gloria.Gloria.to_json</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../configuration.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_toml.html">gloria.model_from_toml</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_dict.html">gloria.model_from_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_json.html">gloria.model_from_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_dict.html">gloria.model_to_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_json.html">gloria.model_to_json</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Miscellaneous</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.cast_series_to_kind.html">gloria.cast_series_to_kind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.infer_sampling_period.html">gloria.infer_sampling_period</a></li>
 </ul>
 </details></li>
 </ul>
@@ -335,25 +361,28 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Gloria.to_json">
 <span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gloria.to_json" title="Link to this definition">#</a></dt>
-<dd><p>Converts Gloria model to a JSON string.</p>
+<dd><p>Converts Gloria object to a JSON string.</p>
 <p>Only works on fitted Gloria objects. If desired the model is
 additionally dumped to a .json-file.</p>
-<p>The method calls <code class="xref py py-func docutils literal notranslate"><span class="pre">model_to_json()</span></code> on <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
+<p>The method calls <a class="reference internal" href="gloria.model_to_json.html#gloria.model_to_json" title="gloria.model_to_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">model_to_json()</span></code></a> on <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filepath</strong> (<em>Optional</em><em>[</em><em>Path</em><em>]</em><em>, </em><em>optional</em>) – Filepath of the target .json-file. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) no output-
 file will be written.</p></li>
-<li><p><strong>**kwargs</strong> (<em>TYPE</em>) – Keyword arguments which are passed through to <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dump" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dump()</span></code></a> and
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – Keyword arguments which are passed through to <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dump" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dump()</span></code></a> and
 <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a></p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>JSON string containing the model data of the fitted Gloria object.</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – In case the given filepath does not have .json extension.</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON string containing the model data of the fitted Gloria object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -380,7 +409,7 @@ file will be written.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="../misc.html"
+       href="../configuration.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>

@@ -1,4 +1,4 @@
-Configuration
+Miscellaneous
 =============
 
 .. currentmodule:: gloria
@@ -8,5 +8,6 @@ Functions
 .. autosummary::
    :toctree: api/
 
-   model_from_toml
+   cast_series_to_kind
+   infer_sampling_period
 

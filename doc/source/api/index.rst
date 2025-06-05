@@ -9,4 +9,5 @@ This page describes the intentionally compact public API of Gloria, which is exp
    
    gloria
    configuration
+   serialize
    misc

@@ -28,7 +28,7 @@ to clone and install the package in one step. To verify it is correctly installe
 Installing CmdStan
 ------------------
 
-Gloria's backend employs the statistical programming language `Stan <https://mc-stan.org/>`_ and uses `CmdStan <https://mc-stan.org/docs/cmdstan-guide/>`_ as interface. As of now, Gloria needs to have a full installation of CmdStan, which will be automatically triggered once you create a Gloria model for the first time. However, prior to that a C++ toolchain consisting of a modern C++ compiler and GNU-Make utility need to be installed. Depending on your system, do one of the following (borrowed from `CmdStanPy C++ Toolchain Requirements <https://mc-stan.org/cmdstanpy/installation.html>`_)
+Gloria's backend employs the statistical programming language `Stan <https://mc-stan.org/>`_ and uses `CmdStan <https://mc-stan.org/docs/cmdstan-guide/>`_ as interface. As of now, Gloria needs to have a full installation of CmdStan, which will be automatically triggered once you create a Gloria model for the first time. However, prior to that a C++ toolchain consisting of a modern C++ compiler and GNU-Make utility need to be installed. Depending on your system, do one of the following [#f2]_
 
 .. tab:: Windows
     
@@ -56,3 +56,4 @@ Now you need a little patience while the CmdStan Toolchain and CmdStan itself ar
 .. rubric:: Footnotes
 
 .. [#f1] The package installer *pip* is typically installed along with Python, in particular if it was installed via `python.org <https://www.python.org/>`_. If pip is not installed, you can follow the instructions found `here <https://pip.pypa.io/en/stable/installation/>`_.
+.. [#f2] Borrowed from `CmdStanPy C++ Toolchain Requirements <https://mc-stan.org/cmdstanpy/installation.html>`_

@@ -1,6 +1,6 @@
 """
 Definition of functions and constants used for serializing and deserializing
-fitted Gloria models.
+fitted Gloria objects.
 """
 
 ### --- Module Imports --- ###
@@ -393,21 +393,37 @@ def set_dict(dict_in: dict[str, Any]) -> dict[str, Any]:
 
 def model_to_dict(model: "Gloria") -> dict[str, Any]:
     """
-    Takes a fitted Gloria model an converts it into a dictionary of json-
-    serializable data.
+    Converts Gloria object to a dictionary of JSON serializable types.
+
+    Only works on fitted Gloria objects.
 
     Parameters
     ----------
     model : Gloria
-        The fitted Gloria object.
+        A fitted :class:`Gloria` object.
 
     Returns
     -------
     dict[str, Any]
-        JSON serializable dictionary containing data of Gloria model.
+        JSON serializable dictionary containing data of Gloria object.
+
+
+    .. seealso::
+
+        :meth:`Gloria.to_dict`
+            An alias that calls ``model_to_dict`` on ``self``
+        :func:`~gloria.model_from_dict`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_dict``.
+        :func:`~gloria.model_to_json`
+            Additionaly dumps the dictionary to a JSON string or file.
+        :func:`~gloria.model_from_json`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_json``.
+
     """
     if not model.is_fitted:
-        raise NotFittedError("Only fitted Gloria models can be serialized.")
+        raise NotFittedError("Only fitted Gloria objects can be serialized.")
 
     # Convert all attributes listed in GLORIA_ATTRIBUTES using the pre-defined
     # serialization functions.
@@ -421,8 +437,10 @@ def model_to_dict(model: "Gloria") -> dict[str, Any]:
 
 def model_from_dict(model_dict: dict[str, Any]) -> "Gloria":
     """
-    Takes a dictionary as returned by model_to_dict() and restores the original
-    Gloria model.
+    Restores a fitted Gloria model from a dictionary.
+
+    The input dictionary must be the output of :func:`model_to_dict` or
+    :meth:`Gloria.to_dict`.
 
     Parameters
     ----------
@@ -433,6 +451,19 @@ def model_from_dict(model_dict: dict[str, Any]) -> "Gloria":
     -------
     model : Gloria
         Input data converted to Gloria object.
+
+
+    .. seealso::
+
+        :meth:`Gloria.from_dict`
+            An alias as static method.
+        :func:`~gloria.model_to_dict`
+            Converts Gloria object to a dictionary of JSON serializable types.
+        :func:`~gloria.model_to_json`
+            Converts the fitted Gloria object into a JSON string or file.
+        :func:`~gloria.model_from_json`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_json``.
     """
     # Do not import Gloria in global namespace as this would cause circular
     # imports
@@ -462,21 +493,24 @@ def model_from_dict(model_dict: dict[str, Any]) -> "Gloria":
 def model_to_json(
     model: "Gloria",
     filepath: Optional[Union[Path, str]] = None,
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> str:
     """
-    Serialises a fitted Gloria object and returns it as string. If desired the
-    model is also dumped to a .json-file
+    Converts a Gloria object to a JSON string.
+
+    Only works on fitted Gloria objects. If desired the model is
+    additionally dumped to a .json-file.
 
     Parameters
     ----------
     model : Gloria
         The fitted Gloria object.
     filepath : Optional[Union[Path, str]], optional
-        Filepath of the target .json-file. The default is None, in which case
-        no file will be written.
-    **kwargs : dict[str, Any]
-        Keyword arguments which are passed through to json.dump()
+        Filepath of the target .json-file. If ``None`` (default) no output-
+        file will be written.
+    **kwargs : Any
+        Keyword arguments which are passed through to :func:`json.dump` and
+        :func:`json.dumps`
 
     Raises
     ------
@@ -486,7 +520,24 @@ def model_to_json(
     Returns
     -------
     str
-        Json string containing the model data.
+        JSON string containing the model data of the fitted Gloria object.
+
+
+
+
+    .. seealso::
+
+        :meth:`Gloria.to_json`
+            An alias that calls ``model_to_json`` on ``self``
+        :func:`~gloria.model_from_json`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_json``.
+        :func:`~gloria.model_to_dict`
+            Converts the fitted Gloria object to a dictionary of JSON
+            serializable types.
+        :func:`~gloria.model_from_dict`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_dict``.
 
     """
     # Convert model to json-serializavle dictionary
@@ -511,28 +562,45 @@ def model_from_json(
     model_json: Union[Path, str], return_as: Literal["dict", "model"] = "model"
 ) -> Union[dict[str, Any], "Gloria"]:
     """
-    Takes a serialized Gloria model in json-format and converts it to a Gloria
-    instance or dictionary.
+    Restores a fitted Gloria model from a json string or file.
+
+    The input json string must be the output of :func:`model_to_json` or
+    :meth:`Gloria.to_json`. If the input is a json-file, its contents is
+    first read to a json string.
 
     Parameters
     ----------
     model_json : Union[Path, str]
-        Filepath of .json-model file or string containing the data
+        Filepath of .json-model file or string containing the data.
     return_as : Literal['dict', 'model'], optional
-        If 'dict', the model is returned in dictionary format, if 'model' it
-        is returned as Gloria instance. The default is 'model'.
+        If ``dict`` (default), the model is returned in dictionary format,
+        if ``model`` as fitted Gloria object.
 
     Raises
     ------
     ValueError
         Two ValueErrors are possible:
         1. In case the given filepath does not have .json extension
-        2. If return_as is neither 'dict' nor 'model'
+        2. If ``return_as`` is neither ``"dict"`` nor ``"model"``
 
     Returns
     -------
     Union[dict[str, Any], Gloria]
         Gloria object or dictionary representing it based on input json data.
+
+
+    .. seealso::
+
+        :meth:`Gloria.from_json`
+            An alias static method.
+        :func:`~gloria.model_to_json`
+            Converts the fitted Gloria object into a JSON string or file.
+        :func:`~gloria.model_to_dict`
+            Converts the fitted Gloria object to a dictionary of JSON
+            serializable types.
+        :func:`~gloria.model_from_dict`
+            Reconstructs the fitted Gloria object from the output of
+            ``model_to_dict``.
     """
     # If json-data are a Path object, read the file
     if isinstance(model_json, Path):

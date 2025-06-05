@@ -132,6 +132,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -211,6 +218,13 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/installation.html">
+    Installation
+  </a>
+</li>
+
+
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
@@ -263,8 +277,20 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.to_json.html">gloria.Gloria.to_json</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../configuration.html">Configuration</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_toml.html">gloria.model_from_toml</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_dict.html">gloria.model_from_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_from_json.html">gloria.model_from_json</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_dict.html">gloria.model_to_dict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.model_to_json.html">gloria.model_to_json</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Miscellaneous</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.cast_series_to_kind.html">gloria.cast_series_to_kind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.infer_sampling_period.html">gloria.infer_sampling_period</a></li>
 </ul>
 </details></li>
 </ul>
@@ -335,9 +361,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Gloria.to_dict">
 <span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gloria.to_dict" title="Link to this definition">#</a></dt>
-<dd><p>Converts Gloria model to a dictionary of JSON serializable types.</p>
+<dd><p>Converts Gloria object to a dictionary of JSON serializable types.</p>
 <p>Only works on fitted Gloria objects.</p>
-<p>The method calls <code class="xref py py-func docutils literal notranslate"><span class="pre">model_to_dict()</span></code> on <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
+<p>The method calls <a class="reference internal" href="gloria.model_to_dict.html#gloria.model_to_dict" title="gloria.model_to_dict"><code class="xref py py-func docutils literal notranslate"><span class="pre">model_to_dict()</span></code></a> on <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>JSON serializable dictionary containing data of Gloria model.</p>

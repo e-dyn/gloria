@@ -1505,7 +1505,7 @@ class Gloria(BaseModel):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts Gloria model to a dictionary of JSON serializable types.
+        Converts Gloria object to a dictionary of JSON serializable types.
 
         Only works on fitted Gloria objects.
 
@@ -1520,9 +1520,11 @@ class Gloria(BaseModel):
         # Cf. to serialization module for details.
         return gs.model_to_dict(self)
 
-    def to_json(self: Self, filepath: Optional[Path] = None, **kwargs) -> str:
+    def to_json(
+        self: Self, filepath: Optional[Path] = None, **kwargs: Any
+    ) -> str:
         """
-        Converts Gloria model to a JSON string.
+        Converts Gloria object to a JSON string.
 
         Only works on fitted Gloria objects. If desired the model is
         additionally dumped to a .json-file.
@@ -1534,14 +1536,21 @@ class Gloria(BaseModel):
         filepath : Optional[Path], optional
             Filepath of the target .json-file. If ``None`` (default) no output-
             file will be written.
-        **kwargs : TYPE
+        **kwargs : Any
             Keyword arguments which are passed through to :func:`json.dump` and
             :func:`json.dumps`
+
+        Raises
+        ------
+        ValueError
+            In case the given filepath does not have .json extension.
 
         Returns
         -------
         str
             JSON string containing the model data of the fitted Gloria object.
+
+
         """
         # Cf. to serialization module for details.
         return gs.model_to_json(self, filepath=filepath, **kwargs)
@@ -1586,10 +1595,17 @@ class Gloria(BaseModel):
         Parameters
         ----------
         model_json : Union[Path, str]
-            Filepath of .json-model file or string containing the data
+            Filepath of .json-model file or string containing the data.
         return_as : Literal['dict', 'model'], optional
             If ``dict`` (default), the model is returned in dictionary format,
             if ``model`` as fitted Gloria object.
+
+        Raises
+        ------
+        ValueError
+            Two ValueErrors are possible:
+            1. In case the given filepath does not have .json extension
+            2. If ``return_as`` is neither ``"dict"`` nor ``"model"``
 
         Returns
         -------
