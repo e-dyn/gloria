@@ -13,5 +13,5 @@ Gloria is a timeseries forecasting tool inspired by `Prophet <https://facebook.g
 .. toctree::
    :maxdepth: 2
    
-   get_started/installation
+   get_started/index
    api/index

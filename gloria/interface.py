@@ -1355,7 +1355,7 @@ class Gloria(BaseModel):
             0, self.timestamp_name, np.asarray(data[self.timestamp_name])
         )
 
-        return prediction, X
+        return prediction
 
     def make_future_dataframe(
         self: Self, periods: int = 1, include_history: bool = True

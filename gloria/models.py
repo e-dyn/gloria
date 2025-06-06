@@ -1588,7 +1588,7 @@ class Beta(ModelBackendBase):
 
 class BetaBinomialConstantN(ModelBackendBase):
     """
-    Implementation of model backend for beta- binomial distribution with
+    Implementation of model backend for beta-binomial distribution with
     constant N
     """
 
