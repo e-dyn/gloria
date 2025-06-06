@@ -8,7 +8,6 @@ import pandas as pd
 # Gloria
 # Inhouse Packages
 from gloria import CalendricData, Gloria, RunConfig, cast_series_to_kind
-from gloria.plot import plot, plot_components
 
 ### --- Global Constants Definitions --- ###
 CONFIG_FILE = "run_config"
@@ -73,14 +72,14 @@ if __name__ == "__main__":
     protocol = CalendricData(
         country="DE",
         yearly_seasonality=False,
-        quarterly_seasonality=False,
+        quarterly_seasonality=True,
         monthly_seasonality="auto",
         weekly_seasonality=True,
         holiday_event={"event_type": "Gaussian", "sigma": "3d"},
     )
 
     model.add_protocol(protocol)
-    # model.add_external_regressor("ano_deviation", 3.0)
+    model.add_external_regressor("ano_deviation", 3.0)
     # Standard Library
     import time
 
@@ -92,11 +91,14 @@ if __name__ == "__main__":
     )
 
     data = model.make_future_dataframe(periods=100)
-    # data = pd.concat([data, df["ano_deviation"]], axis=1).reset_index(
-    #     drop=True
-    # ).fillna(0)
+    data = (
+        pd.concat([data, df["ano_deviation"]], axis=1)
+        .reset_index(drop=True)
+        .fillna(0)
+    )
 
     result = model.predict(data)
 
-    plot(model, result, include_legend=True, show_changepoints=True)
-    plot_components(model, result, weekly_start=1)
+    # plot(model, result, include_legend=True, show_changepoints=False)
+    model.plot(result, include_legend=True, show_changepoints=False)
+    model.plot_components(result, weekly_start=1)
