@@ -164,9 +164,41 @@ def make_holiday_dataframe(
 
 class Holiday(IntermittentEvent):
     """
-    An EventRegressor that produces recurring events coinciding with a holiday.
+    A regressor to model events coinciding with public holidays.
 
-    Note that the name-field of the regressor must equal the desired holiday.
+    The regressor is added to the :class:`Gloria` model either using
+    :meth:`~Gloria.add_event` or by adding the :class:`CalendricData` protocoll
+    via :meth:`Gloria.add_protocol` and does not need to be handled directly by
+    the user.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor. Note that the
+        ``name`` must equal the desired public holiday name as registered in
+        the `holiday <https://holidays.readthedocs.io/en/latest/>`_ package.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger a larger impact of the event, smaller
+        values dampen the impact. Must be larger than zero.
+    event : Event
+        The event that periodically occurs. Allowed event types are described
+        in the :ref:`ref-events` section.
+    t_list : list[:class:`pandas.Timestamp`]
+        A list of timestamps at which ``event`` occurs. The exact meaning of
+        each timestamp in the list depends on implementation details of the
+        underlying ``event``, but typically refers to its mode.
+
+        .. note::
+            A user provided ``t_list`` will be ignored and overwritten with an
+            automatically generated list of holiday occurrences.
+    country : str
+        The `ISO 3166-1 alpha-2 code <https://tinyurl.com/msw8fajk>`_ of the
+        holiday`s country.
+    subdiv : str | None
+        The `ISO 3166-2 code <https://tinyurl.com/2b432nrx>`_ code of the
+        country`s subdivision, if applicable.
+
     """
 
     # Country the holiday stems from
@@ -176,12 +208,14 @@ class Holiday(IntermittentEvent):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Holiday regressor to a serializable dictionary.
+        Converts the periodic event regressor to a JSON-serializable
+        dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "Holiday"`` item.
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
@@ -195,8 +229,10 @@ class Holiday(IntermittentEvent):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates Holiday regressor instance from a dictionary that holds the
-        regressor fields.
+        Creates an Holiday object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
@@ -207,7 +243,7 @@ class Holiday(IntermittentEvent):
         -------
         PeriodicEvent
             PeriodicEvent regressor instance with fields from
-            regressor_dict
+            ``regressor_dict``
         """
         # Ensure that regressor dictionary contains all required fields.
         cls.check_for_missing_keys(regressor_dict)
@@ -217,18 +253,18 @@ class Holiday(IntermittentEvent):
 
     def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
         """
-        Calculate all timestamps of holiday occurences within the range of
+        Yields a list of timestamps of holiday occurrences within the range of
         input timestamps.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A pandas series of :class:`pandas.Timestamp`.
 
         Returns
         -------
-        t_list : list[pd.Timestamp]
+        t_list : list[:class:`pandas.Timestamp`]
+            A list of timestamps of holiday occurrences.
 
         """
         # A temporary timestamp name
@@ -250,18 +286,18 @@ class Holiday(IntermittentEvent):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range.
+        Calculate fraction of overall events occurring within a timerange.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp`.
 
         Returns
         -------
         impact : float
-            Fraction of overall events within the timestamp range
+            Fraction of overall events occurring between minimum and maximum
+            date of ``t``.
 
         """
         # Set list of all occurences of desired holiday
@@ -279,25 +315,25 @@ class Holiday(IntermittentEvent):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given timestamp
-        series.
+        Create the feature matrix for the holiday regressor.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
-        regressor : pd.Series
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp` at which the regressor has to
+            be evaluated
+        regressor : :class:`pandas.Series`
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
-
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`Holiday`.
 
         Returns
         -------
-        X : pd.DataFrame
-            Contains the feature matrix
+        X : :class:`pandas.DataFrame`
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``.
         """
 
         # Set list of all occurences of desired holiday

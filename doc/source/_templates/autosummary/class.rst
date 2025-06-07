@@ -17,6 +17,18 @@
     'validate_sampling_period'
 ] %}
 
+{% set non_inherited_attributes = attributes 
+    | reject('in', inherited_members) 
+    | reject('in', excluded_members) 
+    | select('in', members) 
+    | list %}
+    
+{% set non_inherited_methods = methods 
+    | reject('in', inherited_members) 
+    | reject('in', excluded_members) 
+    | select('in', members) 
+    | list %}
+
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
@@ -24,34 +36,23 @@
    {% block methods %}
 
    {% block attributes %}
-   {% if attributes %}
+   {% if non_inherited_attributes %}
    .. rubric:: {{ _('Attributes') }}
 
    .. autosummary::
-   {% for item in attributes%}
-      {% if item in members 
-         and item not in excluded_members 
-         and item not in inherited_members %}
+   {% for item in non_inherited_attributes %}
         ~{{ name }}.{{ item }}
-      {% endif %}
-   {%- endfor %}
+   {% endfor %}
    {% endif %}
    {% endblock %}
 
-   {% if methods %}
+   {% if non_inherited_methods %}
    .. rubric:: {{ _('Methods') }}
 
    .. autosummary::
-   {% for item in methods%}      
-      {% if item in members 
-         and item not in excluded_members 
-         and item not in inherited_members %}
+   {% for item in non_inherited_methods %}      
         ~{{ name }}.{{ item }}
-      {% endif %}
-   {%- endfor %}
+   {% endfor %}
    {% endif %}
    {% endblock %}
-   
-   
-   
    

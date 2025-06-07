@@ -4,7 +4,7 @@ Serialization
 .. currentmodule:: gloria
 
 Functions
------------
+---------
 .. autosummary::
    :toctree: api/
 
