@@ -580,12 +580,13 @@ class ModelBackendBase(ABC):
         result : pd.DataFrame
             Dataframe containing all predicted metrics, including
             uncertainties. The columns include:
-                - yhat/trend: mean predicted value for overall model or trend
-                - yhat/trend_upper/lower: uncertainty intervals for mean
-                  predicted values with respect to specified interval_width
-                - observed_upper/lower: uncertainty intervals for observed
-                  values
-                - '_linked' versions of all quantities except for 'observed'.
+
+            * yhat/trend: mean predicted value for overall model or trend
+            * yhat/trend_upper/lower: uncertainty intervals for mean
+              predicted values with respect to specified interval_width
+            * observed_upper/lower: uncertainty intervals for observed
+              values
+            * '_linked' versions of all quantities except for 'observed'.
         """
 
         if self.fit_params == dict():
@@ -991,6 +992,7 @@ class BinomialConstantN(ModelBackendBase):
         augmentation_config : BinomialPopulation
             Contains configuration parameters 'mode' and 'value' used to
             determine the population size. Three modes are supported:
+
             1. 'constant': value equals the population size
             2. 'factor': the population size is the maximum of y times value
             3. 'scale': the population size is a value optimized such that the
@@ -1586,7 +1588,7 @@ class Beta(ModelBackendBase):
 
 class BetaBinomialConstantN(ModelBackendBase):
     """
-    Implementation of model backend for beta- binomial distribution with
+    Implementation of model backend for beta-binomial distribution with
     constant N
     """
 
@@ -1670,6 +1672,7 @@ class BetaBinomialConstantN(ModelBackendBase):
         augmentation_config : BinomialPopulation
             Contains configuration parameters 'mode' and 'value' used to
             determine the population size. Three modes are supported:
+
             1. 'constant': value equals the population size
             2. 'factor': the population size is the maximum of y times value
             3. 'scale': the population size is a value optimized such that the

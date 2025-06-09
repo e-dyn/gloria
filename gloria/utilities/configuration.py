@@ -58,22 +58,27 @@ def model_from_toml(
     **kwargs: dict[str, Any],
 ) -> "Gloria":
     """
-    Instantiate a Gloria model from a TOML configuration file and augment it
-    with optional external regressors, seasonalities, events, and protocols.
+    Instantiate and configure a Gloria object from a TOML configuration file.
 
     The TOML file is expected to have the following top-level tables /
-    arrays-of-tables (all are optional except [model]):
+    arrays-of-tables (all are optional except ``[model]``):
 
-    * [model] - keyword arguments passed directly to Gloria`s constructor.
-    * [[external_regressors]] - one table per regressor; each is forwarded to
-    Gloria.add_external_regressor().
-    * [[seasonalities]] - one table per seasonality; each is
-    forwarded to Gloria.add_seasonality().
-    * [[events]] - one table per event; each is forwarded to
-    Gloria.add_event().
-    * [[protocols]] - one table per protocol. Each table **must** contain a
-    ``type`` key that maps to a protocol class name; the remaining keys are
-    passed to that class before calling `Gloria.add_protocol`.
+    * ``[model]`` - keyword arguments passed directly to the :class:`Gloria`
+      constructor.
+    * ``[[external_regressors]]`` - one table per regressor; each is forwarded
+      to :meth:`~Gloria.add_external_regressor`.
+    * ``[[seasonalities]]`` - one table per seasonality; each is
+      forwarded to :meth:`~Gloria.add_seasonality`.
+    * ``[[events]]`` - one table per event; each is forwarded to
+      :meth:`~Gloria.add_event`.
+    * ``[[protocols]]`` - one table per protocol. Each table **must** contain a
+      ``type`` key that maps to a protocol class name; the remaining keys are
+      passed to that class before calling :meth:`~Gloria.add_protocol`.
+
+    Defaults as defined in :class:`Gloria` constructor or respective methods
+    are used for all keys not provided in the TOML file. ``kwargs`` can be used
+    to overwrite keys found in the ``[model]`` table.
+
 
     Parameters
     ----------
@@ -81,26 +86,33 @@ def model_from_toml(
         Path to the TOML file containing the model specification.
     ignore : Union[Collection[str],str], optional
         Which top-level sections of the file to skip. Valid values are
-        "external_regressors", "seasonalities", "events", and`"protocols". The
-        special value "all" suppresses every optional section. May be given as
-        a single string or any iterable of strings.
+        ``"external_regressors"``, ``"seasonalities"``, ``"events"``, and
+        ``"protocols"``. The special value ``"all"`` suppresses every optional
+        section. May be given as a single string or any iterable of strings.
     **kwargs : dict[str, Any]
-        Keyword arguments that override or extend the [model] table. Only keys
-        that are valid fields of Gloria (i.e. that appear in
+        Keyword arguments that override or extend the ``[model]`` table. Only
+        keys that are valid fields of Gloria (i.e. that appear in
         Gloria.model_fields) are retained; others are silently dropped.
 
     Returns
     -------
     Gloria
-        A fully initialised Gloria instance.
+        A fully initialized Gloria instance.
+
+
+    .. seealso::
+
+        :meth:`~Gloria.from_toml`
+            An alias
 
     Notes
     -----
-    Precedence order for constructor arguments is:
+    Precedence order for :class:`Gloria` constructor arguments from highest to
+    lowest is:
 
-    1. Values supplied via **kwargs
-    2. Values found in the TOML [model] table
-    3. Gloria`s own defaults
+    1. Values supplied via ``kwargs``
+    2. Values found in the TOML ``[model]`` table
+    3. Gloria's own defaults
     """
     # Make sure ignore is a set
     if isinstance(ignore, str):
@@ -257,7 +269,7 @@ def assemble_config(
     2. **TOML file** - if *toml_path* is given, key-value pairs from the file
        are merged into the baseline.
     3. **Keyword overrides** - additional arguments supplied directly to
-       :pyfunc:`assemble_config` via *kwargs* take highest precedence.
+       ``assemble_config`` via *kwargs* take highest precedence.
 
 
     Parameters

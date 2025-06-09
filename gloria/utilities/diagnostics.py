@@ -216,50 +216,57 @@ def cross_validation(
     extra_output_columns: Optional[Union[list[str], str]] = None,
 ) -> pd.DataFrame:
     """
-    Cross-Validation for time series.
+    Roll-origin cross-validation for a fitted :class:`Gloria` forecaster.
 
-    Computes forecasts from historical cutoff points, which user can input.
-    If not provided, begins from (end - horizon) and works backwards, making
-    cutoffs with a spacing of period until initial is reached.
+    For each ``cutoff`` date the model is refit to all data up to and including
+    that cutoff, then asked to predict the next ``horizon`` period. If
+    ``cutoffs=None``, a sequence of equally spaced cutoffs is generated
+    automatically using the following procedure:
 
-    When period is equal to the time interval of the data, this is the
-    technique described in https://robjhyndman.com/hyndsight/tscv/ .
+    1. Start at *end of training data* minus ``horizon``.
+    2. Iteratively step backwards by ``period``.
+    3. Stop once the remaining training span would be shorter than ``initial``.
+
+    Details on this method can be found in `cross-validation for time series
+    <https://robjhyndman.com/hyndsight/tscv/>`_.
 
     Parameters
     ----------
-    model : Gloria
-        The fitted reference Gloria model
-    horizon : TimedeltaLike
-        Duration of the horizon for forecasts.
-    period : Optional[TimedeltaLike], optional
-        Simulated forecast will be done at every this period. If not provided,
-        0.5 * horizon is used.. The default is None.
-    initial : Optional[TimedeltaLike], optional
-        The first training period will include at least this much data. If not
-        provided, 3 * horizon is used. The default is None.
-    cutoffs : Optional[list[pd.Timestamp]], optional
-        list of pd.Timestamp specifying cutoffs to be used during cross
-        validation. If not provided, they are generated as described above.
-        The default is None.
-    extra_output_columns : Optional[Union[list[str], str]], optional
-        Columns to be returned in output extra to timestamp, 'yhat' and lower/
-        upper confidence bounds.
+    model : :class:`Gloria`
+        The fitted reference Gloria model.
+    horizon : :class:`pandas.Timedelta` | str.
+        Forecast horizon for each fold.
+    period : :class:`pandas.Timedelta` | str | None
+        Spacing between successive cutoffs.  Uses ``0.5 * horizon`` if ``None``
+        (default).
+    initial : :class:`pandas.Timedelta` | str | None
+        Minimum length of the first training window.  Uses
+        ``max(3 * horizon, longest_seasonality)`` if ``None`` (default).
+    cutoffs : list[:class:`pandas.Timestamp`] | None
+        Explicit cutoff dates to use instead of automatic generation. If
+        provided, the earliest cutoff must be strictly greater than the first
+        timestamp in the historical data, and the latest cutoff must not exceed
+        ``history_end - horizon``.
+    extra_output_columns : list[str] | str | None
+        Additional prediction columns (beyond the defaults ``timestamp``,
+        ``yhat``, and the uncertainty bounds) to include in the returned
+        DataFrame.
 
     Raises
     ------
     TypeError
-        If input model is not a valid Gloria model
+        If input model is not a valid :class:`Gloria` object.
     NotFittedError
-        If input model was not fitted yet
+        If input model has not yet been fitted.
     ValueError
-        If input cutoff list does not respect boundaries given by historic data
-        and horizon
+        If manually supplied ``cutoff`` timestamps fall outside the permissible
+        ``[history_start, history_end - horizon]`` range.
 
     Returns
     -------
-    pd.DataFrame
-        The result data frame containing predicted values alongside measured
-        data, desired columns and one additional cutoff column.
+    :class:`pandas.DataFrame`
+        Concatenated forecast slices with the observed values and a ``cutoff``
+        column indicating the training origin for each row.
 
     """
     if not isinstance(model, Gloria):
@@ -354,49 +361,62 @@ def cross_validation(
 
 
 def performance_metrics(
-    df: pd.DataFrame,
+    data: pd.DataFrame,
     metric_name: str,
     timestamp_name: str,
     horizon_period: TimedeltaLike,
     performance_metrics: Optional[list[str]] = None,
 ) -> pd.DataFrame:
     """
-    Compute performance metrics from cross-validation results.
+    Evaluate cross-validation forecasts with a suite of error and coverage
+    metrics.
 
-    Computes a suite of performance metrics on the output of cross-validation.
-    By default the following metrics are included:
-    'mse': mean squared error
-    'rmse': root mean squared error
-    'mae': mean absolute error
-    'mape': mean absolute percent error
-    'smape': symmetric mean absolute percentage error
-    'mdape': median absolute percent error
-    'smdape': symmetric median absolute percent error
-    'coverage': coverage of the upper and lower intervals
+    The function ingests the DataFrame returned by :func:`cross_validation` and
+    computes the metrics listed below:
+
+    * ``mse`` - mean squared error*
+    * ``rmse`` - root mean squared error
+    * ``mae`` - mean absolute error
+    * ``mape`` - mean absolute percentage error
+    * ``smape`` - symmetric mean absolute percentage error
+    * ``mdape`` - median absolute percentage error
+    * ``smdape`` - symmetric median absolute percentage error
+    * ``coverage`` - share of observations that fall between the lower and
+      upper prediction bounds
+
+    Every metric except for ``coverage`` is computed via the corresponding
+    implementation of :mod:`sktime.performance_metrics`.
+
 
     Parameters
     ----------
-    df : pd.DataFrame
-        The dataframe returned by cross_validation.
+    data : :class:`pandas.DataFrame`
+        The dataframe returned by :func:`cross_validation`.
     metric_name : str
         The name of the metric column.
     timestamp_name : str
         The name of the timestamp column.
-    horizon_period : TimedeltaLike
-        Predictions will be aggregated in steps of horizon_period starting from
-        the cutoff. E.g., if horizon_period = "3d", predictions between cutoff
-        and third day after cutoff will be summarized under 3 day horizon,
-        predictions between third and sixth day under 6 day horizon etc.
-    performance_metrics : Optional[list[str]], optional
-        The list of performance metrics that will be evaluated. If none is
-        provided, all available metrics will be used. The default is None.
+    horizon_period : :class:`pandas.Timedelta` | str
+        Width of the horizon bins used to aggregate errors by lead time
+        (distance between ``cutoff`` and prediction timestamp). For example,
+        with ``horizon_period="3d"``:
+
+        * 0 - 3 days ahead → bin ``"3d"``
+        * 3 - 6 days ahead → bin ``"6d"``
+        * …
+
+        This *fixed-width binning* differs from Prophet's
+        ``performance_metrics``, which widens the window until a target number
+        of forecasts is included.
+    performance_metrics : list[str] | None
+        Subset of metrics to compute. If ``None`` (default), all metrics above
+        are returned.
 
     Returns
     -------
-    result : pd.DataFrame
-        The result data frame with horizon as index and all performance metrics
-        as columns. The additional column 'count' measures the number of
-        predictions the performance metrics were calculated with.
+    result : :class:`pandas.DataFrame`
+        Table indexed by horizon bin and containing every requested metric plus
+        a ``"count"`` column with the number of forecasts in each bin.
 
     """
 
@@ -440,20 +460,22 @@ def performance_metrics(
     # Ensure horizon_period is a valid Timedelta object
     horizon_period = convert_to_timedelta(horizon_period)
 
-    df_loc = df.copy()
+    data_loc = data.copy()
 
     # Compute the forecast horizon in steps of horizon_period
-    df_loc["horizon"] = (
-        np.ceil((df_loc[timestamp_name] - df_loc["cutoff"]) / horizon_period)
+    data_loc["horizon"] = (
+        np.ceil(
+            (data_loc[timestamp_name] - data_loc["cutoff"]) / horizon_period
+        )
         * horizon_period
     )
 
     # Add count column to show how many predictions the metric is based on
-    result = df_loc.groupby("horizon").agg(count=("yhat", "count"))
+    result = data_loc.groupby("horizon").agg(count=("yhat", "count"))
 
     # Evaluate all metrics
     for pm in performance_metrics:
-        result[pm] = df_loc.groupby("horizon")[
+        result[pm] = data_loc.groupby("horizon")[
             [metric_name, "yhat", "observed_lower", "observed_upper"]
         ].apply(PERFORMANCE_METRICS_MAP[pm], metric_name)
 

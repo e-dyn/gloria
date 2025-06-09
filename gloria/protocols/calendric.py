@@ -45,32 +45,41 @@ def get_holidays(
     timestamps: Optional[pd.Series] = None,
 ) -> tuple[holidays.HolidayBase, set[str]]:
     """
-    Returns all holidays for the specified country within the timerange of
-    interest as HolidayBase object.
+    Return a mapping of holiday dates to names for a specified country (and,
+    optionally, one of its subdivisions).
+
+    If ``timestamps`` is supplied, the result is limited to holidays that fall
+    within that series. Otherwise, the full calendar provided by the
+    ``holidays`` package is returned, covering years 1990 through 2100.
 
     Parameters
     ----------
     country : str
-        Must be a valid ISO 3166-1 alpha-2 country code
-    subdiv : str, optional
-        The subdivision (e.g. state or province) as a ISO 3166-2 code or its
-        alias
-    timestamps : pd.Series, optional
-        A pandas series of timestamps representing the range for which holidays
-        should be returned. If None (default), all holidays registered with the
-        holidays package are returned.
+        Two-letter ISO
+        `ISO 3166-1 alpha-2 code <https://tinyurl.com/msw8fajk>`_ of the
+        country (e.g. ``"US"``, ``"DE"``).
+    subdiv : str | None
+        An optional `ISO 3166-2 subdivion code <https://tinyurl.com/2b432nrx>`_
+        (e.g. state, province etc.). If ``None``, only nationwide holidays are
+        considered.
+    timestamps : :class:`pandas.Series` | None
+        Series whose timestamp values define the time span of interest.
+        Holidays outside this span are omitted. Supplying ``None`` returns the
+        complete holiday calendar.
 
     Raises
     ------
     AttributeError
-        In case there is no class for the given input country
+        If the requested ``country`` is not supported by the ``holidays``
+        package.
 
     Returns
     -------
     all_holidays : holidays.HolidayBase
-        A dictionary-like class containing all holidays of the input country
+        Dictionary-like object mapping ``date`` → ``holiday_name`` for every
+        holiday in the chosen region and time window.
     all_holiday_names : set[str]
-        A set of all holiday names in the desired range
+        Unique set of holiday names contained in ``all_holidays``.
     """
 
     # Get the class according to requested country
@@ -110,26 +119,34 @@ def make_holiday_dataframe(
     timestamp_name: str = "ds",
 ) -> pd.DataFrame:
     """
-    Returns all holidays for the specified country within the timerange of
-    interest as pandas DataFrame.
+    Build a tidy DataFrame of holidays that fall within the span covered by
+    input timestamps.
+
+    The result has one row per holiday occurrence and two columns:
+
+    1. ``<timestamp_name>`` - the holiday date.
+    2. ``holiday`` - the holiday`s common name.
 
     Parameters
     ----------
-    timestamps : pd.Series
-        A pandas series of timestamps representing the range for which holidays
-        should be returned.
+    timestamps : :class:`pandas.Series`
+        Series whose timestamp values define the time span of interest.
+        Holidays outside this span are omitted.
     country : str
-        Must be a valid ISO 3166-1 alpha-2 country code
-    subdiv : str, optional
-        The subdivision (e.g. state or province) as a ISO 3166-2 code or its
-        alias
-    timestamp_name : str, optional
-        Desired name for the timestamp column. The default is 'ds'.
+        Two-letter ISO
+        `ISO 3166-1 alpha-2 code <https://tinyurl.com/msw8fajk>`_ of the
+        country (e.g. ``"US"``, ``"DE"``).
+    subdiv : str | None
+        An optional `ISO 3166-2 subdivion code <https://tinyurl.com/2b432nrx>`_
+        (e.g. state, province etc.). If ``None``, only nationwide holidays are
+        considered.
+    timestamp_name : str | None
+        Desired name for the timestamp column. The default is ``"ds"``.
 
     Returns
     -------
-    holiday_df : TYPE
-        Pandas DataFrame with timestamp column and holiday name column.
+    :class:`pandas.DataFrame`
+        Two-column DataFrame with the columns described above, sorted by date.
     """
 
     # First get the HolidayBase object and a set of all holiday names
@@ -164,9 +181,43 @@ def make_holiday_dataframe(
 
 class Holiday(IntermittentEvent):
     """
-    An EventRegressor that produces recurring events coinciding with a holiday.
+    A regressor to model events coinciding with public holidays.
 
-    Note that the name-field of the regressor must equal the desired holiday.
+    The regressor is added to the :class:`Gloria` model either using
+    :meth:`~Gloria.add_event` or by adding the :class:`CalendricData` protocoll
+    via :meth:`Gloria.add_protocol` and does not need to be handled directly by
+    the user.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor. Note that the
+        ``name`` must equal the desired public holiday name as registered in
+        the `holiday <https://holidays.readthedocs.io/en/latest/>`_ package.
+        The function :func:`get_holidays` may be used to inspect valid
+        holiday names.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger a larger impact of the event, smaller
+        values dampen the impact. Must be larger than zero.
+    event : Event
+        The event that periodically occurs. Allowed event types are described
+        in the :ref:`ref-events` section.
+    t_list : list[:class:`pandas.Timestamp`]
+        A list of timestamps at which ``event`` occurs. The exact meaning of
+        each timestamp in the list depends on implementation details of the
+        underlying ``event``, but typically refers to its mode.
+
+        .. note::
+            A user provided ``t_list`` will be ignored and overwritten with an
+            automatically generated list of holiday occurrences.
+    country : str
+        The `ISO 3166-1 alpha-2 code <https://tinyurl.com/msw8fajk>`_ of the
+        holiday`s country.
+    subdiv : str | None
+        The `ISO 3166-2 code <https://tinyurl.com/2b432nrx>`_ code of the
+        country`s subdivision, if applicable.
+
     """
 
     # Country the holiday stems from
@@ -176,12 +227,14 @@ class Holiday(IntermittentEvent):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Holiday regressor to a serializable dictionary.
+        Converts the periodic event regressor to a JSON-serializable
+        dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "Holiday"`` item.
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
@@ -195,8 +248,10 @@ class Holiday(IntermittentEvent):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates Holiday regressor instance from a dictionary that holds the
-        regressor fields.
+        Creates an Holiday object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
@@ -207,7 +262,7 @@ class Holiday(IntermittentEvent):
         -------
         PeriodicEvent
             PeriodicEvent regressor instance with fields from
-            regressor_dict
+            ``regressor_dict``
         """
         # Ensure that regressor dictionary contains all required fields.
         cls.check_for_missing_keys(regressor_dict)
@@ -217,18 +272,18 @@ class Holiday(IntermittentEvent):
 
     def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
         """
-        Calculate all timestamps of holiday occurences within the range of
+        Yields a list of timestamps of holiday occurrences within the range of
         input timestamps.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A pandas series of :class:`pandas.Timestamp`.
 
         Returns
         -------
-        t_list : list[pd.Timestamp]
+        t_list : list[:class:`pandas.Timestamp`]
+            A list of timestamps of holiday occurrences.
 
         """
         # A temporary timestamp name
@@ -250,18 +305,18 @@ class Holiday(IntermittentEvent):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range.
+        Calculate fraction of overall events occurring within a timerange.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp`.
 
         Returns
         -------
         impact : float
-            Fraction of overall events within the timestamp range
+            Fraction of overall events occurring between minimum and maximum
+            date of ``t``.
 
         """
         # Set list of all occurences of desired holiday
@@ -279,25 +334,25 @@ class Holiday(IntermittentEvent):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given timestamp
-        series.
+        Create the feature matrix for the holiday regressor.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
-        regressor : pd.Series
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp` at which the regressor has to
+            be evaluated
+        regressor : :class:`pandas.Series`
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
-
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`Holiday`.
 
         Returns
         -------
-        X : pd.DataFrame
-            Contains the feature matrix
+        X : :class:`pandas.DataFrame`
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``.
         """
 
         # Set list of all occurences of desired holiday
@@ -310,16 +365,88 @@ class Holiday(IntermittentEvent):
 
 class CalendricData(Protocol):
     """
-    Protocol to add features to a Gloria model that follow calendric patterns.
+    Manage calendar-driven seasonal cycles and public-holiday effects for a
+    :class:`Gloria` forecaster.
 
-    Seasonalities:
-        Yearly, Quarterly, Monthly, Weekly, and Daily seasonalities will be
-        added
-    Holidays:
-        All holidays for a given country and (optional) subdivision will be
-        added
+    The protocol contributes:
 
-    Details are described in set_seasonalities() and set_events()
+    * **Seasonalities** - yearly, quarterly, monthly, weekly, and daily terms.
+    * **Holidays** - :ref:`Event <ref-events>` regressors for every public
+      holiday in ``country`` and (optionally) ``subdiv``.
+
+
+    Parameters
+    ----------
+    country : str | None
+        Two-letter ISO
+        `ISO 3166-1 alpha-2 code <https://tinyurl.com/msw8fajk>`_ of the
+        country (e.g. ``"US"``, ``"DE"``). If ``None`` (default), no holiday
+        regressors are created.
+    subdiv : str | None
+        An optional `ISO 3166-2 subdivion code <https://tinyurl.com/2b432nrx>`_
+        (e.g. state, province etc.). If ``None``, only nationwide holidays are
+        considered.
+    holiday_prior_scale : float | None
+        Parameter modulating the strength of all holiday regressors. Larger
+        values allow the model to fit larger holiday impact, smaller values
+        dampen the impact. Must be larger than 0. If ``None`` (default),
+        the forecaster's ``event_prior_scale`` is used.
+    holiday_event : :ref:`Event <ref-events>`
+        Event object that defines the temporal shape of each holiday regressor.
+        The default is a one-day :class:`BoxCar` event replicating Prophet-
+        style holiday regressors.
+    seasonality_prior_scale : float | None
+        Global strength parameter for every seasonality added by the protocol.
+        Larger values permit stronger seasonal variation, smaller values dampen
+        it. Must be larger than 0.If ``None`` (default), the forecaster's
+        ``seasonality_prior_scale`` is used.
+    yearly_seasonality, quarterly_seasonality, monthly_seasonality,\
+    weekly_seasonality, daily_seasonality : bool | int | "auto"
+        Configures how to add the respective seasonality to the model. Details
+        see below.
+
+
+    .. rubric:: Seasonality Options
+
+    The behaviour of the seasonal components is controlled by the
+    ``yearly_seasonality``, ``quarterly_seasonality``, ``monthly_seasonality``,
+    ``weekly_seasonality``, and ``daily_seasonality`` parameters. Valid values
+    are:
+
+    * ``True``: add the seasonality with the default maximum Fourier order
+      (see table below).
+    * ``False``: do **not** add the seasonality.
+    * ``"auto"``: add the seasonality if the data span at least two full
+      cycles. Choose the smaller of the default order and the highest order
+      allowed by the `Nyquist theorem <https://tinyurl.com/425tj4wb>`_ as
+      maximum order.
+    * ``integer >= 1``: add the seasonality with that integer as the maximum
+      order.
+
+    .. rubric:: Default Maximum Orders
+
+    +-----------+------------+-------------------+
+    | **Name**  | **Period** | **Default Order** |
+    +===========+============+===================+
+    | yearly    | 365.25 d   | 10                |
+    +-----------+------------+-------------------+
+    | quarterly | 91.31 d    | 2                 |
+    +-----------+------------+-------------------+
+    | monthly   | 30.44 d    | 3                 |
+    +-----------+------------+-------------------+
+    | weekly    | 7 d        | 3                 |
+    +-----------+------------+-------------------+
+    | daily     | 1 d        | 4                 |
+    +-----------+------------+-------------------+
+
+
+    .. admonition:: Note on Quarterly Seasonality
+       :class: caution
+
+       The quarterly component is a strict subset of the yearly component.
+       It is therefore automatically disabled if the yearly seasonality is
+       enabled, overriding the setting of ``quarterly_seasonality``.
+
     """
 
     country: Optional[str] = None
@@ -375,21 +502,28 @@ class CalendricData(Protocol):
     ) -> "Gloria":
         """
         Adds all holidays for specified country and subdivision to the Gloria
-        model.
+        object.
 
-        The method first checks which of the country-holidays can be found in
-        the time period specified by timestamps and adds only those.
+        Only holidays whose dates fall within the span covered by
+        ``timestamps`` are added; all others are ignored.
+
+        .. note::
+          You may call :meth:`set_events` directly to add the holidays.
+          When the protocol is registered via :meth:`Gloria.add_protocol`,
+          however, it is invoked automatically during
+          :meth:`Gloria.fit`, so an explicit call is rarely required.
 
         Parameters
         ----------
-        model : Gloria
+        model : :class:`Gloria`
             The Gloria model to be updated
-        timestamps : pd.Series
-            A pandas series of timestamps.
+        timestamps : :class:`pandas.Series`
+            A Series of :class:`pandas.Timestamp`. Only holidays within the
+            range set by ``timestamps`` will be added to the model.
 
         Returns
         -------
-        Gloria
+        :class:`Gloria`
             The updated Gloria model.
 
         """
@@ -429,51 +563,27 @@ class CalendricData(Protocol):
     ) -> "Gloria":
         """
         Adds yearly, quarterly, monthly, weekly, daily seasonalities to the
-        Gloria model.
+        Gloria object.
 
-        The seasonalities have the following fundamental periods and default
-        maximum orders:
+        The ruleset whether and how to add each seasonality is described in the
+        :class:`CalendricData` constructor in detail.
 
-        Name       Period   Default Order
-        ---------------------------------
-        yearly     365.25d       10
-        quarterly  91.31d         2
-        monthly    30.44d         3
-        weekly     7d             3
-        daily      1d             4
-
-
-        Whether and how the seasonalities are added depends on the mode
-        specified in the <name>_seasonality field:
-            - True: The seasonality is added using the default maximum order
-            - False: the seasonality won't be added
-            - 'auto': The seasonality will be added according to the rule set
-              described below
-            - integer >= 1: the seasonality will be added with the integer used
-              as maximum order
-
-        In 'auto' mode the logic is as follows
-            2. Each seasonality is only added, if the data span at least two
-               full cycles of the fundamental period.
-            3. The maximum order is determined by the default maximum order or
-               the highest order that satisfies the Nyquist sampling theorem,
-               whichever is smaller.
-
-        Note on quarterly seasonality:
-        Quarterly is a full subset of yearly. Therefore it will only be added
-        if yearly won't be added to the model. This rule is independent of the
-        mode in which quarterly is added.
+        .. note::
+          You may call :meth:`set_seasonalities` directly to add the features.
+          When the protocol is registered via :meth:`Gloria.add_protocol`,
+          however, it is invoked automatically during
+          :meth:`Gloria.fit`, so an explicit call is rarely required.
 
         Parameters
         ----------
-        model : Gloria
+        model : :class:`Gloria`
             The Gloria model to be updated
-        timestamps : pd.Series
-            A pandas series of timestamps.
+        timestamps : :class:`pandas.Series`
+            A Series of :class:`pandas.Timestamp`.
 
         Returns
         -------
-        Gloria
+        :class:`Gloria`
             The updated Gloria model.
 
         """
@@ -578,12 +688,12 @@ class CalendricData(Protocol):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the CalendricData protocol to a serializable dictionary.
+        Converts the calendric data protocol to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all protocol fields
+            Dictionary containing all protocol fields.
 
         """
         protocol_dict = {
@@ -599,8 +709,10 @@ class CalendricData(Protocol):
     @classmethod
     def from_dict(cls: Type[Self], protocol_dict: dict[str, Any]) -> Self:
         """
-        Creates CalendricData protocol from a dictionary that holds the
-        protocol fields.
+        Creates CalendricData protocol from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the protocol.
 
         Parameters
         ----------
@@ -609,8 +721,8 @@ class CalendricData(Protocol):
 
         Returns
         -------
-        CalendricData
-            CalendricData protocol instance with fields from protocol_dict
+        :class:`CalendricData`
+            CalendricData protocol object with fields from ``protocol_dict``
         """
         # Ensure that protocol dictionary contains all required fields.
         cls.check_for_missing_keys(protocol_dict)

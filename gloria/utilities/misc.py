@@ -68,29 +68,41 @@ def time_to_integer(
         return int(time_as_float)
 
 
-def infer_sampling_period(timestamps: pd.Series, q=0.5) -> pd.Timedelta:
+def infer_sampling_period(
+    timestamps: pd.Series, q: float = 0.5
+) -> pd.Timedelta:
     """
-    Tries to infer a sampling period of given timestamps.
+    Estimates an upper bound for the sampling period of a time series.
 
-    The function evaluates the q-quantile of differences between subsequent
-    timestamps. Hence, it does not necessarily return the most frequent
-    timestamp. Instead it confirms that the q'th fraction of data has periods
-    below or equal to the inferred one, which is sufficient for its main
-    purpose: checking whether the Nyquist sampling condition is fulfilled.
+    This function computes the q-th quantile of the time differences between
+    consecutive timestamps in the input series. The returned time delta
+    represents the value below which a fraction ``q`` of the sampling intervals
+    fall. It can be used, for example, to verify whether the time series
+    satisfies the `Nyquist sampling criterion
+    <https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem>`_.
+
 
     Parameters
     ----------
     timestamps : pd.Series
-        Input pandas series of timestamps
-    q : TYPE, optional
-        The level of the quantile The default is 0.5.
+        A pandas Series of timestamp values.
+    q : float, optional
+        The quantile level to compute, between 0 and 1. Defaults to 0.5.
 
     Returns
     -------
     pd.Timestamp
-        The inferred sampling period
+        The estimated sampling period based on the specified quantile.
+
+    Raises
+    ------
+
+    ValueError
+        If the quantile ``q`` is not between 0 and 1 (inclusive).
 
     """
+    if q < 0 or q > 1:
+        raise ValueError("Parameter q must be between 0 and 1.")
     # Calculate differences between subsequent timestamps and take their
     # q-quantile
     return timestamps.diff().quantile(q)
@@ -98,28 +110,40 @@ def infer_sampling_period(timestamps: pd.Series, q=0.5) -> pd.Timedelta:
 
 def cast_series_to_kind(series: pd.Series, kind: "DTypeKind") -> pd.Series:
     """
-    Casts a pandas Series to a dtype based on the given dtype kind.
+    Cast a :class:`pandas.Series` to a canonical NumPy dtype chosen by its
+    one-letter *dtype kind* code.
 
-    Parameters:
+    This utility is useful for preparing data before calling
+    :meth:`Gloria.fit`, as each model supports different data types.
+
+    Parameters
     ----------
     series : pd.Series
-        The pandas Series to be cast.
-    kind : str
-        A dtype kind string. Supported kinds are:
-        - 'u': unsigned integer (default to uint64)
-        - 'i': signed integer (default to int64)
-        - 'f': floating-point (default to float64)
-        - 'b': boolean (default to bool)
+        The data to cast.
+    kind : {"u", "i", "f", "b"}
+        One-letter code defined by `numpy.dtype.kind
+        <https://tinyurl.com/3czjfr3u>`_. The mapping used here is:
 
-    Returns:
+        * ``"u"``: unsigned integer  → ``uint64``
+        * ``"i"``: signed integer    → ``int64``
+        * ``"f"``: floating point    → ``float64``
+        * ``"b"``: boolean           → ``bool``
+
+    Returns
     -------
-    pd.Series
-        The pandas Series cast to the corresponding dtype.
+    :class:`pandas.Series`
+        The input series, cast to the corresponding dtype.
 
-    Raises:
+    Raises
     ------
     ValueError
-        If an unsupported dtype kind is provided.
+        If ``kind`` is not one of the supported codes **or** the cast fails
+        (e.g. due to incompatible values).
+
+    Examples
+    --------
+    >>> cast_series_to_kind(pd.Series([1, 2, 3]), "f").dtype
+    dtype('float64')
     """
     # Lookup for standard dtypes for the requested dtype-kind
     kind_to_dtype = {
