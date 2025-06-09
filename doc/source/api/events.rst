@@ -9,6 +9,7 @@ Events
 Constructors
 ------------
 .. autosummary::
+   :template: autosummary/small_class.rst
    :toctree: api/
 
    BoxCar

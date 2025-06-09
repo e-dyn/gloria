@@ -5,7 +5,13 @@
 
 
 
+
+
+
+
     
+
+
 
 
 .. currentmodule:: gloria
@@ -21,13 +27,19 @@
    
    .. rubric:: Methods
 
-   .. autosummary::
-         
-        ~Cauchy.from_dict
-         
-        ~Cauchy.generate
-         
-        ~Cauchy.to_dict
+   
+   
+   .. automethod:: Cauchy.from_dict
+   
+   
+   .. automethod:: Cauchy.generate
+   
+   
+   .. automethod:: Cauchy.to_dict
+   
+   
+   
+   
    
    
    

@@ -33,6 +33,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "sktime": ("https://www.sktime.net/en/stable/", None),
 }
 
 templates_path = ["_templates"]
@@ -52,9 +53,9 @@ napoleon_use_admonition_for_examples = False
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-html_theme_options = {
-    "logo": {
-        "image_light": "_static/glorialogo.png",
-        "image_dark": "_static/glorialogo_dark.png",
-    }
-}
+# html_theme_options = {
+#     "logo": {
+#         "image_light": "_static/glorialogo.png",
+#         "image_dark": "_static/glorialogo_dark.png",
+#     }
+# }

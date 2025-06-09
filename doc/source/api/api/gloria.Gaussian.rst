@@ -5,7 +5,13 @@
 
 
 
+
+
+
+
     
+
+
 
 
 .. currentmodule:: gloria
@@ -21,13 +27,19 @@
    
    .. rubric:: Methods
 
-   .. autosummary::
-         
-        ~Gaussian.from_dict
-         
-        ~Gaussian.generate
-         
-        ~Gaussian.to_dict
+   
+   
+   .. automethod:: Gaussian.from_dict
+   
+   
+   .. automethod:: Gaussian.generate
+   
+   
+   .. automethod:: Gaussian.to_dict
+   
+   
+   
+   
    
    
    

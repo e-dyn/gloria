@@ -51,9 +51,9 @@ class Event(BaseModel, ABC):
 
         Parameters
         ----------
-        timestamps : pd.Series
+        timestamps : :class:`pandas.Series`
             The input timestamps as independent variable
-        t_start : pd.Timestamp
+        t_start : :class:`pandas.Timestamp`
             Location of the event
 
         Raises
@@ -64,7 +64,7 @@ class Event(BaseModel, ABC):
 
         Returns
         -------
-        pd.Series
+        :class:`pandas.Series`
             The output time series including the event.
         """
         pass
@@ -132,7 +132,38 @@ class Event(BaseModel, ABC):
 
 class BoxCar(Event):
     """
-    A BoxCar shaped event
+    A BoxCar shaped event.
+
+    For a given time :math:`t` the event can be described by
+
+    .. math::
+        f(t) = \\left\\{
+            \\begin{array}{ll}
+                1 & t_0 \\le t < t_0 + w \\\\
+                0 & \\text{otherwise}
+            \\end{array}
+        \\right.
+
+    with ``width=w`` being a constructor parameter and ``t_start=t_0`` the
+    input of :meth:`~gloria.BoxCar.generate`. The following plot illustrates
+    the boxcar function.
+
+    .. image:: ../pics/example_boxcar.png
+      :align: center
+      :width: 500
+      :alt: Example plot of a boxcar function.
+
+    .. note::
+      Setting the boxcar event's ``width`` equal to the :class:`Gloria` model's
+      ``sampling_period`` yields a :math:`\\delta`-shaped regressor - identical
+      to the holiday regressors used by
+      `Prophet <https://facebook.github.io/prophet/>`_.
+
+    Parameters
+    ----------
+    width : :class:`pandas.Timedelta` | str
+        Temporal width of the boxcar function given as
+        :class:`pandas.Timedelta` or string representing such.
     """
 
     width: Timedelta
@@ -145,14 +176,14 @@ class BoxCar(Event):
 
         Parameters
         ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable
-        t_start : pd.Timestamp
+        timestamps : :class:`pandas.Series`
+            The input timestamps at which the boxcar event is to be evaluated.
+        t_start : :class:`pandas.Timestamp`
             Location of the boxcar's rising edge
 
         Returns
         -------
-        pd.Series
+        :class:`pandas.Series`
             The output time series including the boxcar event with amplitude 1.
         """
         mask = (timestamps >= t_start) & (timestamps < t_start + self.width)
@@ -160,13 +191,13 @@ class BoxCar(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the BoxCar event to a serializable dictionary.
+        Converts the BoxCar event to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including event type
-
+            Dictionary containing all event fields including an extra
+            ``event_type = "BoxCar"`` item.
         """
         # Start with event type
         event_dict = super().to_dict()
@@ -177,8 +208,10 @@ class BoxCar(Event):
     @classmethod
     def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
-        Creates BoxCar event instance from a dictionary that holds the event
-        fields.
+        Creates a BoxCar object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the event.
 
         Parameters
         ----------
@@ -188,7 +221,7 @@ class BoxCar(Event):
         Returns
         -------
         BoxCar
-            BoxCar instance with fields from event_dict
+            BoxCar object with fields from ``event_dict``
         """
         # Convert width string to pd.Timedelta
         event_dict["width"] = pd.Timedelta(event_dict["width"])
@@ -197,12 +230,42 @@ class BoxCar(Event):
 
 class Gaussian(Event):
     """
-    A Gaussian shaped event with order parameter for generating flat-top
-    Gaussians
+    A Gaussian shaped event with ``order`` parameter for generating flat-top
+    Gaussians.
+
+    For a given time :math:`t` the event can be described by
+
+    .. math::
+        f(t) = \\exp\\left(-\\left(
+            \\frac{\\left(t-t_0\\right)^2}{2\\sigma^2}
+        \\right)^n\\right)
+
+
+    with ``width=sigma`` and ``order=n`` being constructor parameters as well
+    as ``t_start=t_0`` the input of :meth:`~gloria.Gaussian.generate`. For
+    :math:`n=1` the function is a simple Gaussian and for increasing :math:`n`
+    its maximum region increasingly flattens. The following plot illustrates
+    the Gaussian function for different :math:`n`.
+
+    .. image:: ../pics/example_gaussian.png
+      :align: center
+      :width: 500
+      :alt: Example plot of a Gaussian function.
+
+    Parameters
+    ----------
+    width : :class:`pandas.Timedelta` | str
+        Temporal width of the Gaussian function given as
+        :class:`pandas.Timedelta` or string representing such.
+    order : float
+        Controls the flatness of the Gaussian function with ``order=1`` being a
+        usual Gaussian and a flat-top function for increasing ``order``. Must
+        be greater than 0.
+
     """
 
     width: Timedelta
-    order: float = Field(ge=1, default=1.0)
+    order: float = Field(gt=0, default=1.0)
 
     def generate(
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
@@ -212,17 +275,19 @@ class Gaussian(Event):
 
         Parameters
         ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable.
-        t_start : pd.Timestamp
-            Location of the Gaussian's maximum.
+        timestamps : :class:`pandas.Series`
+            The input timestamps at which the Gaussian event is to be
+            evaluated.
+        t_start : :class:`pandas.Timestamp`
+            Location of the Gaussian event's mode.
 
         Returns
         -------
-        pd.Series
+        :class:`pandas.Series`
             The output time series including the Gaussian event with amplitude
             1.
         """
+
         # normalize the input timestamps
         t = (timestamps - t_start) / self.width
         # Evaluate the Gaussian
@@ -230,12 +295,13 @@ class Gaussian(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Gaussian event to a serializable dictionary.
+        Converts the Gaussian event to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including event type.
+            Dictionary containing all event fields including an extra
+            ``event_type = "Gaussian"`` item.
         """
         # Start with event type
         event_dict = super().to_dict()
@@ -247,8 +313,10 @@ class Gaussian(Event):
     @classmethod
     def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
-        Creates Gaussian event instance from a dictionary that holds the event
-        fields.
+        Creates a Gaussian object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the event.
 
         Parameters
         ----------
@@ -258,16 +326,39 @@ class Gaussian(Event):
         Returns
         -------
         Gaussian
-            Gaussian instance with fields from event_dict
+            Gaussian object with fields from ``event_dict``
         """
-        # Convert sigma string to pd.Timedelta
+
+        # Convert width string to pd.Timedelta
         event_dict["width"] = pd.Timedelta(event_dict["width"])
         return cls(**event_dict)
 
 
 class Cauchy(Event):
     """
-    A Cauchy distribution shaped event
+    A Cauchy shaped event.
+
+    For a given time :math:`t` the event can be described by
+
+    .. math::
+        f(t) = \\frac{1}{4\\cdot \\left(t-t_0 \\right)^2 / w^2 + 1}
+
+
+    with ``width=w`` being a constructor parameter as well as ``t_start=t_0``
+    the input of :meth:`~gloria.Cauchy.generate`. The following plot
+    illustrates the Cauchy function.
+
+    .. image:: ../pics/example_cauchy.png
+      :align: center
+      :width: 500
+      :alt: Example plot of a Cauchy function.
+
+    Parameters
+    ----------
+    width : :class:`pandas.Timedelta` | str
+        Temporal width of the Cauchy function given as
+        :class:`pandas.Timedelta` or string representing such.
+
     """
 
     width: Timedelta
@@ -280,17 +371,17 @@ class Cauchy(Event):
 
         Parameters
         ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable.
-        t_start : pd.Timestamp
-            Location of the Cauchy's maximum.
+        timestamps : :class:`pandas.Series`
+            The input timestamps at which the Cauchy event is to be evaluated.
+        t_start : :class:`pandas.Timestamp`
+            Location of the Cauchy event's mode.
 
         Returns
         -------
-        pd.Series
-            The output time series including the Cauchy event with amplitude
-            1.
+        :class:`pandas.Series`
+            The output time series including the Cauchy event with amplitude 1.
         """
+
         # normalize the input timestamps
         t = (timestamps - t_start) / self.width
         # Evaluate the Cauchy
@@ -298,12 +389,13 @@ class Cauchy(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Cauchy event to a serializable dictionary.
+        Converts the Cauchy event to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including event type.
+            Dictionary containing all event fields including an extra
+            ``event_type = "Cauchy"`` item.
         """
         # Start with event type
         event_dict = super().to_dict()
@@ -314,8 +406,10 @@ class Cauchy(Event):
     @classmethod
     def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
-        Creates Cauchy event instance from a dictionary that holds the event
-        fields.
+        Creates a Cauchy object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the event.
 
         Parameters
         ----------
@@ -325,16 +419,44 @@ class Cauchy(Event):
         Returns
         -------
         Cauchy
-            Cauchy instance with fields from event_dict
+            Cauchy object with fields from ``event_dict``
         """
-        # Convert sigma string to pd.Timedelta
+        # Convert width string to pd.Timedelta
         event_dict["width"] = pd.Timedelta(event_dict["width"])
         return cls(**event_dict)
 
 
 class Exponential(Event):
     """
-    A Exponential decay shaped event
+    A two-sided exponential decay shaped event.
+
+    For a given time :math:`t` the event can be described by
+
+    .. math::
+        f(t) = \\exp\\left(
+            -\\log 2 \\left|\\frac{t-t_0}{w\\left(t\\right)}\\right|
+        \\right).
+
+    Here, :math:`w\\left(t\\right) = w_\\text{lead}` is the left-sided
+    lead-width for :math:`t<t_0` and :math:`w\\left(t\\right) = w_\\text{lag}`
+    is the right-sided lag-width for :math:`t\\ge t_0`, set by ``lead_width``
+    and ``lag_width`` in the constructor, respectively. The parameter
+    ``t_start=t_0`` is an input of :meth:`~gloria.Exponential.generate`. The
+    following plot illustrates the two-sided exponential decay function.
+
+    .. image:: ../pics/example_exponential.png
+      :align: center
+      :width: 500
+      :alt: Example plot of a two-sided exponential decay function.
+
+    Parameters
+    ----------
+    lead_width : :class:`pandas.Timedelta` | str
+        Temporal left-sided lead-width of the exponential function given as
+        :class:`pandas.Timedelta` or string representing such.
+    lag_width : :class:`pandas.Timedelta` | str
+        Temporal right-sided lag-width of the exponential function given as
+        :class:`pandas.Timedelta` or string representing such.
     """
 
     # Widths of both exponential decay wings
@@ -370,6 +492,8 @@ class Exponential(Event):
         """
         If lag width is below zero, sets to zero and warn user. Also check
         whether lag_width = lag_width = 0 and issue warning.
+
+        :meta private:
         """
         if lag_width < Timedelta(0):
             # Gloria
@@ -398,19 +522,20 @@ class Exponential(Event):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a two-sided exponential decay event.
+        Generate a time series with a single Exponential event.
 
         Parameters
         ----------
-        timestamps : pd.Series
-            The input timestamps as independent variable
-        t_start : pd.Timestamp
-            Location of the Exponential's maximum.
+        timestamps : :class:`pandas.Series`
+            The input timestamps at which the Exponential event is to be
+            evaluated.
+        t_start : :class:`pandas.Timestamp`
+            Location of the Exponential event's mode.
 
         Returns
         -------
-        pd.Series
-            The output time series including the exponential event with
+        :class:`pandas.Series`
+            The output time series including the Exponential event with
             amplitude 1.
         """
         # Shift the input timestamps
@@ -435,13 +560,13 @@ class Exponential(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Expponential event to a serializable dictionary.
+        Converts the Exponential event to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including event type
-
+            Dictionary containing all event fields including an extra
+            ``event_type = "Exponential"`` item.
         """
         # Start with event type
         event_dict = super().to_dict()
@@ -453,8 +578,10 @@ class Exponential(Event):
     @classmethod
     def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
         """
-        Creates Exponential event instance from a dictionary that holds the
-        event fields.
+        Creates a Exponential object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the event.
 
         Parameters
         ----------
@@ -464,7 +591,7 @@ class Exponential(Event):
         Returns
         -------
         Exponential
-            Exponential instance with fields from event_dict
+            Exponential object with fields from ``event_dict``
         """
         # Convert lead_width string to pd.Timedelta
         event_dict["lead_width"] = pd.Timedelta(event_dict["lead_width"])

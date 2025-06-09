@@ -12,7 +12,7 @@ The example below walks through these steps with a minimal dataset. Even as your
 1. Load and Preprocess
 ----------------------
 
-We are going to use hourly data showing the energy consumption recorded by `American Electric Power Company, Inc. <https://en.wikipedia.org/wiki/American_Electric_Power>`_ [#f1]_. The underlying csv-file has two columns: Its timestamp column is called ``"Datetime"`` and the metric column showing the energy consumption in MW is called ``"AEP_MW"``. In the first bit of code, we load the data and convert the timestamps to actual datetime objects. Also, for the sake of clarity, we restrict ourselves to two weeks worth of data, corresponding to the last 336 hours. Eventually, inspect the data by plotting them.
+We are going to use hourly data showing the energy consumption recorded by `American Electric Power Company, Inc. <https://en.wikipedia.org/wiki/American_Electric_Power>`_ [#f1]_. The underlying csv-file has two columns: Its timestamp column is called ``"Datetime"`` and the metric column showing the energy consumption in megawatts is called ``"AEP_MW"``. In the first bit of code, we load the data and convert the timestamps to actual datetime objects. Also, for the sake of clarity, we restrict ourselves to two weeks worth of data, corresponding to the last 336 hours. Eventually, inspect the data by plotting them.
 
 .. code-block:: python
 
@@ -51,7 +51,7 @@ Creating a Gloria model can be done in only two lines of code:
     from gloria import Gloria
     m = Gloria()
 
-The :class:`~gloria.Gloria` constructor has some sensible defaults but often we will need to change these values. In particular we are going to tell Gloria:
+The :class:`~gloria.Gloria` constructor has some sensible defaults but often we need to change these values. In particular we are going to tell Gloria:
 
 1. The column names it has to expect by setting ``timestamp_name`` as well as ``metric_name``,
 2. The hourly sampling of the data by setting ``sampling_period = "1h"``,
@@ -82,7 +82,7 @@ In the two last lines of code, we equipped the model with daily and weekly seaso
 3. Fit and Forecast
 -------------------
 
-Setting up the model was the major part of work. The remainder is fairly simple. First, we call the :meth:`~gloria.Gloria.fit` method on the preprocessed data. This step will do some further internal processing on the data and forward them to Gloria's fit-backend. Once the model is fit, we can use it to make forecasts by calling :meth:`~gloria.Gloria.predict`. The argument ``periods=96`` is in units of ``sampling_period``, hence it corresponds to 96 hours or 4 days of forecast period [#f2]_. Eventually, we plot the result:
+Setting up the model was the major part of work. The remainder is fairly simple. First, we call the :meth:`~gloria.Gloria.fit` method on the preprocessed data. This step will do some further internal processing on the data and forward them to Gloria's fit-backend. Once the model is fitted, we can use it to make forecasts by calling :meth:`~gloria.Gloria.predict`. The argument ``periods=96`` is in units of ``sampling_period``, hence it corresponds to 96 hours or 4 days of forecast period [#f2]_. Eventually, we plot the result:
 
 .. code-block:: python
 
@@ -107,7 +107,7 @@ Setting up the model was the major part of work. The remainder is fairly simple.
         label="ci",
     )
     
-In the figure we see that our model nicely fits the data with most of them covered by the confidence interval. Also the power consumptio drop during the weekend is well reproduced.
+In the figure we see that our model nicely fits the data with most of them covered by the confidence interval. Also the drop ofpower consumption during the weekend is well reproduced in both training data and forecast.
 
 .. image:: pics/01_basic_usage_fig02.png
   :width: 600

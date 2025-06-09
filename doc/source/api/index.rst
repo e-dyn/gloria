@@ -11,5 +11,7 @@ This page describes the intentionally compact public API of Gloria, which is exp
    configuration
    regressors
    events
+   protocols
+   diagnostics
    serialize
    misc

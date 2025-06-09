@@ -43,6 +43,7 @@
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Cauchy';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -111,14 +112,8 @@
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
-    <img src="../../_static/glorialogo_dark.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
   
+    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -297,6 +292,18 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gaussian.html">gloria.Gaussian</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protocols.html">Protocols</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.CalendricData.html">gloria.CalendricData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.Holiday.html">gloria.Holiday</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.get_holidays.html">gloria.get_holidays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.make_holiday_dataframe.html">gloria.make_holiday_dataframe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../diagnostics.html">Diagnostics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.cross_validation.html">gloria.cross_validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.performance_metrics.html">gloria.performance_metrics</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_dict.html">gloria.model_from_dict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_json.html">gloria.model_from_json</a></li>
@@ -377,27 +384,80 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gloria.Cauchy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">Cauchy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Cauchy" title="Link to this definition">#</a></dt>
-<dd><p>A Cauchy distribution shaped event</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_dict</span></code>(event_dict)</p></td>
-<td><p>Creates Cauchy event instance from a dictionary that holds the event fields.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate</span></code>(timestamps, t_start)</p></td>
-<td><p>Generate a time series with a single Cauchy event.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code>()</p></td>
-<td><p>Converts the Cauchy event to a serializable dictionary.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+<dd><p>A Cauchy shaped event.</p>
+<p>For a given time <span class="math notranslate nohighlight">\(t\)</span> the event can be described by</p>
+<div class="math notranslate nohighlight">
+\[f(t) = \frac{1}{4\cdot \left(t-t_0 \right)^2 / w^2 + 1}\]</div>
+<p>with <code class="docutils literal notranslate"><span class="pre">width=w</span></code> being a constructor parameter as well as <code class="docutils literal notranslate"><span class="pre">t_start=t_0</span></code>
+the input of <a class="reference internal" href="#gloria.Cauchy.generate" title="gloria.Cauchy.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a>. The following plot
+illustrates the Cauchy function.</p>
+<a class="reference internal image-reference" href="../../_images/example_cauchy.png"><img alt="Example plot of a Cauchy function." class="align-center" src="../../_images/example_cauchy.png" style="width: 500px;" />
+</a>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><em>Annotated</em></a><em>[</em><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><em>Timedelta</em></a><em>, </em><em>BeforeValidator</em><em>(</em><em>func=~gloria.utilities.misc.convert_to_timedelta</em><em>, </em><em>json_schema_input_type=PydanticUndefined</em><em>)</em><em>]</em>)</p>
+<dd class="field-odd"><p><strong>width</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a> | str) – Temporal width of the Cauchy function given as
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a> or string representing such.</p>
 </dd>
 </dl>
+<p class="rubric">Methods</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Cauchy.from_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Cauchy.from_dict" title="Link to this definition">#</a></dt>
+<dd><p>Creates a Cauchy object from a dictionary.</p>
+<p>The key-value pairs of the dictionary must correspond to the
+constructor arguments of the event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all event fields</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cauchy object with fields from <code class="docutils literal notranslate"><span class="pre">event_dict</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gloria.Cauchy" title="gloria.Cauchy">Cauchy</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Cauchy.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Cauchy.generate" title="Link to this definition">#</a></dt>
+<dd><p>Generate a time series with a single Cauchy event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – The input timestamps at which the Cauchy event is to be evaluated.</p></li>
+<li><p><strong>t_start</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>) – Location of the Cauchy event’s mode.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output time series including the Cauchy event with amplitude 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Cauchy.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Cauchy.to_dict" title="Link to this definition">#</a></dt>
+<dd><p>Converts the Cauchy event to a JSON-serializable dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing all event fields including an extra
+<code class="docutils literal notranslate"><span class="pre">event_type</span> <span class="pre">=</span> <span class="pre">&quot;Cauchy&quot;</span></code> item.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -449,7 +509,12 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Cauchy"><code class="docutils literal notranslate"><span class="pre">Cauchy</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Cauchy"><code class="docutils literal notranslate"><span class="pre">Cauchy</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Cauchy.from_dict"><code class="docutils literal notranslate"><span class="pre">Cauchy.from_dict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Cauchy.generate"><code class="docutils literal notranslate"><span class="pre">Cauchy.generate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Cauchy.to_dict"><code class="docutils literal notranslate"><span class="pre">Cauchy.to_dict()</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

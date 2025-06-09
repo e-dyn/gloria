@@ -14,7 +14,11 @@
     'validate_dataframe',
     'validate_metric_column',
     'validate_population_name',
-    'validate_sampling_period'
+    'validate_sampling_period',
+    'validate_lag_width',
+    'validate_lead_width',
+    'validate_holiday_event',
+    'validate_seasonality_arg'
 ] %}
 
 {% set include_inherited = [

@@ -5,7 +5,13 @@
 
 
 
+
+
+
+
     
+
+
 
 
 .. currentmodule:: gloria
@@ -21,13 +27,19 @@
    
    .. rubric:: Methods
 
-   .. autosummary::
-         
-        ~BoxCar.from_dict
-         
-        ~BoxCar.generate
-         
-        ~BoxCar.to_dict
+   
+   
+   .. automethod:: BoxCar.from_dict
+   
+   
+   .. automethod:: BoxCar.generate
+   
+   
+   .. automethod:: BoxCar.to_dict
+   
+   
+   
+   
    
    
    

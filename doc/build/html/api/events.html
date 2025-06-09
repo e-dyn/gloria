@@ -43,6 +43,7 @@
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/events';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -111,14 +112,8 @@
   
   
   
-    
-    
-      
-    
-    
-    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
-    <img src="../_static/glorialogo_dark.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
   
+    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -297,6 +292,18 @@
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.Gaussian.html">gloria.Gaussian</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="protocols.html">Protocols</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.CalendricData.html">gloria.CalendricData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.Holiday.html">gloria.Holiday</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.get_holidays.html">gloria.get_holidays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.make_holiday_dataframe.html">gloria.make_holiday_dataframe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="diagnostics.html">Diagnostics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.cross_validation.html">gloria.cross_validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/gloria.performance_metrics.html">gloria.performance_metrics</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.model_from_dict.html">gloria.model_from_dict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.model_from_json.html">gloria.model_from_json</a></li>
@@ -376,16 +383,16 @@
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BoxCar</span></code></a>(*, width)</p></td>
-<td><p>A BoxCar shaped event</p></td>
+<td><p>A BoxCar shaped event.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/gloria.Cauchy.html#gloria.Cauchy" title="gloria.Cauchy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cauchy</span></code></a>(*, width)</p></td>
-<td><p>A Cauchy distribution shaped event</p></td>
+<td><p>A Cauchy shaped event.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exponential</span></code></a>(*, lead_width, lag_width)</p></td>
-<td><p>A Exponential decay shaped event</p></td>
+<td><p>A two-sided exponential decay shaped event.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gaussian</span></code></a>(*, width[, order])</p></td>
-<td><p>A Gaussian shaped event with order parameter for generating flat-top Gaussians</p></td>
+<td><p>A Gaussian shaped event with <code class="docutils literal notranslate"><span class="pre">order</span></code> parameter for generating flat-top Gaussians.</p></td>
 </tr>
 </tbody>
 </table>

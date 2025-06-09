@@ -5,7 +5,13 @@
 
 
 
+
+
+
+
     
+
+
 
 
 .. currentmodule:: gloria
@@ -21,17 +27,19 @@
    
    .. rubric:: Methods
 
-   .. autosummary::
-         
-        ~Exponential.from_dict
-         
-        ~Exponential.generate
-         
-        ~Exponential.to_dict
-         
-        ~Exponential.validate_lag_width
-         
-        ~Exponential.validate_lead_width
+   
+   
+   .. automethod:: Exponential.from_dict
+   
+   
+   .. automethod:: Exponential.generate
+   
+   
+   .. automethod:: Exponential.to_dict
+   
+   
+   
+   
    
    
    

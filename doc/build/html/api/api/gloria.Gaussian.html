@@ -43,10 +43,11 @@
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gaussian';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Serialization" href="../serialize.html" />
+    <link rel="next" title="Protocols" href="../protocols.html" />
     <link rel="prev" title="gloria.Exponential" href="gloria.Exponential.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -111,14 +112,8 @@
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
-    <img src="../../_static/glorialogo_dark.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
   
+    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -297,6 +292,18 @@
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">gloria.Gaussian</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../protocols.html">Protocols</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.CalendricData.html">gloria.CalendricData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.Holiday.html">gloria.Holiday</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.get_holidays.html">gloria.get_holidays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.make_holiday_dataframe.html">gloria.make_holiday_dataframe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../diagnostics.html">Diagnostics</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gloria.cross_validation.html">gloria.cross_validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.performance_metrics.html">gloria.performance_metrics</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../serialize.html">Serialization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_dict.html">gloria.model_from_dict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.model_from_json.html">gloria.model_from_json</a></li>
@@ -377,31 +384,92 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gloria.Gaussian">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gaussian" title="Link to this definition">#</a></dt>
-<dd><p>A Gaussian shaped event with order parameter for generating flat-top
-Gaussians</p>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_dict</span></code>(event_dict)</p></td>
-<td><p>Creates Gaussian event instance from a dictionary that holds the event fields.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate</span></code>(timestamps, t_start)</p></td>
-<td><p>Generate a time series with a single Gaussian event.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code>()</p></td>
-<td><p>Converts the Gaussian event to a serializable dictionary.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+<dd><p>A Gaussian shaped event with <code class="docutils literal notranslate"><span class="pre">order</span></code> parameter for generating flat-top
+Gaussians.</p>
+<p>For a given time <span class="math notranslate nohighlight">\(t\)</span> the event can be described by</p>
+<div class="math notranslate nohighlight">
+\[f(t) = \exp\left(-\left(
+    \frac{\left(t-t_0\right)^2}{2\sigma^2}
+\right)^n\right)\]</div>
+<p>with <code class="docutils literal notranslate"><span class="pre">width=sigma</span></code> and <code class="docutils literal notranslate"><span class="pre">order=n</span></code> being constructor parameters as well
+as <code class="docutils literal notranslate"><span class="pre">t_start=t_0</span></code> the input of <a class="reference internal" href="#gloria.Gaussian.generate" title="gloria.Gaussian.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a>. For
+<span class="math notranslate nohighlight">\(n=1\)</span> the function is a simple Gaussian and for increasing <span class="math notranslate nohighlight">\(n\)</span>
+its maximum region increasingly flattens. The following plot illustrates
+the Gaussian function for different <span class="math notranslate nohighlight">\(n\)</span>.</p>
+<a class="reference internal image-reference" href="../../_images/example_gaussian.png"><img alt="Example plot of a Gaussian function." class="align-center" src="../../_images/example_gaussian.png" style="width: 500px;" />
+</a>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><em>Annotated</em></a><em>[</em><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><em>Timedelta</em></a><em>, </em><em>BeforeValidator</em><em>(</em><em>func=~gloria.utilities.misc.convert_to_timedelta</em><em>, </em><em>json_schema_input_type=PydanticUndefined</em><em>)</em><em>]</em>)</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a> | str) – Temporal width of the Gaussian function given as
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a> or string representing such.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Controls the flatness of the Gaussian function with <code class="docutils literal notranslate"><span class="pre">order=1</span></code> being a
+usual Gaussian and a flat-top function for increasing <code class="docutils literal notranslate"><span class="pre">order</span></code>. Must
+be greater than 0.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Methods</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Gaussian.from_dict">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gaussian.from_dict" title="Link to this definition">#</a></dt>
+<dd><p>Creates a Gaussian object from a dictionary.</p>
+<p>The key-value pairs of the dictionary must correspond to the
+constructor arguments of the event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all event fields</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gaussian object with fields from <code class="docutils literal notranslate"><span class="pre">event_dict</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gloria.Gaussian" title="gloria.Gaussian">Gaussian</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Gaussian.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gaussian.generate" title="Link to this definition">#</a></dt>
+<dd><p>Generate a time series with a single Gaussian event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – The input timestamps at which the Gaussian event is to be
+evaluated.</p></li>
+<li><p><strong>t_start</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>) – Location of the Gaussian event’s mode.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output time series including the Gaussian event with amplitude
+1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gloria.Gaussian.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gaussian.to_dict" title="Link to this definition">#</a></dt>
+<dd><p>Converts the Gaussian event to a JSON-serializable dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing all event fields including an extra
+<code class="docutils literal notranslate"><span class="pre">event_type</span> <span class="pre">=</span> <span class="pre">&quot;Gaussian&quot;</span></code> item.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -426,11 +494,11 @@ Gaussians</p>
       </div>
     </a>
     <a class="right-next"
-       href="../serialize.html"
+       href="../protocols.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Serialization</p>
+        <p class="prev-next-title">Protocols</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -453,7 +521,12 @@ Gaussians</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Gaussian"><code class="docutils literal notranslate"><span class="pre">Gaussian</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Gaussian"><code class="docutils literal notranslate"><span class="pre">Gaussian</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Gaussian.from_dict"><code class="docutils literal notranslate"><span class="pre">Gaussian.from_dict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Gaussian.generate"><code class="docutils literal notranslate"><span class="pre">Gaussian.generate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gloria.Gaussian.to_dict"><code class="docutils literal notranslate"><span class="pre">Gaussian.to_dict()</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
