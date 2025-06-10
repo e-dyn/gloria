@@ -387,8 +387,8 @@
 <a class="reference internal" href="gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> forecaster.</p>
 <p>The protocol contributes:</p>
 <ul class="simple">
-<li><p><strong>Seasonalities</strong> – yearly, quarterly, monthly, weekly, and daily terms.</p></li>
-<li><p><strong>Holidays</strong> – <a class="reference internal" href="../events.html#ref-events"><span class="std std-ref">Event</span></a> regressors for every public
+<li><p><strong>Seasonalities</strong> - yearly, quarterly, monthly, weekly, and daily terms.</p></li>
+<li><p><strong>Holidays</strong> - <a class="reference internal" href="../events.html#ref-events"><span class="std std-ref">Event</span></a> regressors for every public
 holiday in <code class="docutils literal notranslate"><span class="pre">country</span></code> and (optionally) <code class="docutils literal notranslate"><span class="pre">subdiv</span></code>.</p></li>
 </ul>
 <dl class="field-list simple">
@@ -406,8 +406,8 @@ values allow the model to fit larger holiday impact, smaller values
 dampen the impact. Must be larger than 0. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default),
 the forecaster’s <code class="docutils literal notranslate"><span class="pre">event_prior_scale</span></code> is used.</p></li>
 <li><p><strong>holiday_event</strong> (<a class="reference internal" href="../events.html#ref-events"><span class="std std-ref">Event</span></a>) – Event object that defines the temporal shape of each holiday regressor.
-The default is a one-day <a class="reference internal" href="gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a> event replicating Prophet-style
-holiday regressors.</p></li>
+The default is a one-day <a class="reference internal" href="gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a> event replicating Prophet-
+style holiday regressors.</p></li>
 <li><p><strong>seasonality_prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Global strength parameter for every seasonality added by the protocol.
 Larger values permit stronger seasonal variation, smaller values dampen
 it. Must be larger than 0.If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the forecaster’s

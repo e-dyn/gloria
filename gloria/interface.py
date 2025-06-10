@@ -274,7 +274,6 @@ class Gloria(BaseModel):
 
         # Sanitize provided Changepoints
         if self.changepoints is not None:
-            print(self.changepoints)
             self.changepoints = pd.Series(
                 pd.to_datetime(self.changepoints), name=self.timestamp_name
             )
