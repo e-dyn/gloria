@@ -4,7 +4,7 @@ Define public API by import all functions and classes exposed to the end-user
 
 # Gloria
 # Events
-from gloria.events import BoxCar, Gaussian, SuperGaussian
+from gloria.events import BoxCar, Cauchy, Exponential, Gaussian
 
 # Gloria forecaster
 from gloria.interface import Gloria
@@ -27,13 +27,11 @@ from gloria.regressors import (
 )
 
 # Configuration
-from gloria.utilities.configuration import (
-    DataConfig,
-    GloriaConfig,
-    MetricConfig,
-    RunConfig,
+from gloria.utilities.configuration import model_from_toml
+from gloria.utilities.diagnostics import (
+    cross_validation,
+    performance_metrics,
 )
-from gloria.utilities.logging import log_config
 from gloria.utilities.misc import (
     cast_series_to_kind,
     infer_sampling_period,
@@ -57,15 +55,12 @@ __all__ = [
     "PeriodicEvent",
     "BoxCar",
     "Gaussian",
-    "SuperGaussian",
+    "Cauchy",
+    "Exponential",
     "get_holidays",
     "make_holiday_dataframe",
     "Holiday",
     "CalendricData",
-    "RunConfig",
-    "GloriaConfig",
-    "MetricConfig",
-    "DataConfig",
     "model_to_dict",
     "model_from_dict",
     "model_to_json",
@@ -73,5 +68,7 @@ __all__ = [
     "time_to_integer",
     "infer_sampling_period",
     "cast_series_to_kind",
-    "log_config",
+    "cross_validation",
+    "performance_metrics",
+    "model_from_toml",
 ]

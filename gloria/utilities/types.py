@@ -3,11 +3,15 @@ Package-wide used type aliases
 """
 
 # Standard Library
-from typing import Iterable, Literal, Mapping, Union
+from typing import Annotated, Iterable, Literal, Mapping, Union
 
 # Third Party
 import pandas as pd
+from pydantic import BeforeValidator
 from typing_extensions import TypeAlias
+
+# Gloria
+from gloria.utilities.misc import convert_to_timedelta
 
 # The strings representing implemented backend models
 Distribution: TypeAlias = Literal[
@@ -38,3 +42,9 @@ SeriesData: TypeAlias = Union[
     bool,
     None,  # scalar types
 ]
+
+# Annotaded Timedelta type for validation
+Timedelta = Annotated[pd.Timedelta, BeforeValidator(convert_to_timedelta)]
+
+# Timedelta like type including strings
+TimedeltaLike = Union[pd.Timedelta, str]

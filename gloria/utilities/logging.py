@@ -250,7 +250,7 @@ def get_logger() -> logging.Logger:
                     [
                         " System Info ".center(50, "-"),
                         collect_sysinfo(),
-                        " Exection Log ".center(50, "-"),
+                        " Execution Log ".center(50, "-"),
                     ]
                 )
                 + "\n\n"
@@ -273,8 +273,3 @@ def get_logger() -> logging.Logger:
     # assignment mypy complains. No way to make everyone happy.
     setattr(logger, "error", error_with_traceback(logger.error))  # noqa: B010
     return logger
-
-
-# if __name__ == "__main__":
-#     config = LoggingConfig()
-#     config.stream_level = "AAA"

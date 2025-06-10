@@ -26,6 +26,15 @@ class Regressor(BaseModel, ABC):
     """
     Base class for adding regressors to the Gloria model and creating the
     respective feature matrix
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger impact, smaller values dampen the impact.
+        Must be larger than zero.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -43,12 +52,13 @@ class Regressor(BaseModel, ABC):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Regressor to a serializable dictionary.
+        Converts the regressor to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields including regressor type
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type`` key with the class name as value.
         """
 
         regressor_dict = {
@@ -143,25 +153,40 @@ class Regressor(BaseModel, ABC):
 
 class ExternalRegressor(Regressor):
     """
-    Used to add external regressors to the Gloria model and create its
-    feature matrix
+    A regressor based on user-provided data.
+
+    The regressor is added to the :class:`Gloria` model using
+    :meth:`~Gloria.add_external_regressor` and does not need to be handled
+    directly by the user. Instead of synthesizing the regressor data, they must
+    be provided to :meth:`~Gloria.fit` as part of the input data frame.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger impact, smaller values dampen the impact.
+        Must be larger than zero.
     """
 
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates ExternalRegressor instance from a dictionary that holds the
-        regressor fields.
+        Creates an ExternalRegressor object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
         regressor_dict : dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields.
 
         Returns
         -------
         ExternalRegressor
-            ExternalRegressor instance with fields from regressor_dict
+            ExternalRegressor instance with fields from ``regressor_dict``.
         """
         return cls(**regressor_dict)
 
@@ -169,24 +194,26 @@ class ExternalRegressor(Regressor):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given integer
-        time vector
+        Creates the feature matrix for the external regressor.
+
 
         Parameters
         ----------
         t : pd.Series
             A pandas series of timestamps at which the regressor has to be
-            evaluated
+            evaluated. For ``ExternalRegressor`` this is only used to validate
+            that the input ``regressor`` data and timestamps ``t`` have
+            identical shapes.
         regressor : pd.Series
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
+            feature matrix unchanged.
 
         Returns
         -------
         X : pd.DataFrame
-            Contains the feature matrix
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``
         """
         if not isinstance(regressor, pd.Series):
             raise TypeError("External Regressor must be pandas Series.")
@@ -206,11 +233,47 @@ class ExternalRegressor(Regressor):
 
 class Seasonality(Regressor):
     """
-    Used to add a seasonality regressors to the Gloria model and create its
-    feature matrix
+    A regressor to model seasonality features from Fourier components.
 
-    Important: Period is unitless. That is, when called from Gloria, it will
-    make seasonality features with a period in units of 1/sampling_frequency.
+    The regressor is added to the :class:`Gloria` model using
+    :meth:`~Gloria.add_seasonality` and does not need to be handled
+    directly by the user. The feature matrix produced by
+    :meth:`~Seasonality.make_feature` contains :math:`2 \\cdot N` columns
+    corresponding to the even and odd Fourier terms
+
+    .. math::
+        \\sum_{n=1}^{N}{\\sin\\left(\\frac{2\\pi n}{T} t\\right)
+                        + \\cos\\left(\\frac{2\\pi n}{T} t\\right)}
+
+    where :math:`T` is the fundamental Fourier period and :math:`N` is the
+    maximum Fourier order to be included, controlled by the parameters
+    ``period`` and ``order``, respectively.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger seasonal oscillations, smaller values
+        dampen the impact. Must be larger than zero.
+    period : float
+        Fundamental period of the seasonality component. Note that the period
+        is unitless. It can be understood in units of ``sampling_period`` of
+        the :class:`~gloria.Gloria` owning this seasonality. Must be larger
+        than zero.
+    fourier_order : int
+        Maximum Fourier order of the underlying series. Even and odd Fourier
+        terms from fundamental up to ``fourier_order`` will be used as
+        regressors. Must be larger or equal to 1.
+
+
+    .. warning::
+        In a future version of Gloria, ``period`` will become a
+        :class:`pandas.Timestamp` or ``str`` representing such. Where possible
+        use :meth:`~Gloria.add_seasonality` instead of :class:`Seasonality`
+        to avoid conflict.
+
     """
 
     # Fundamental period in units of 1/sampling_frequency
@@ -220,12 +283,13 @@ class Seasonality(Regressor):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Seasonality regressor to a serializable dictionary.
+        Converts the Seasonality regressor to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "Seasonality"`` item.
         """
         # Parent class converts basic fields
         regressor_dict = super().to_dict()
@@ -237,18 +301,20 @@ class Seasonality(Regressor):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates Seasonality regressor instance from a dictionary that holds the
-        regressor fields.
+        Creates an Seasonality object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
         regressor_dict : dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields.
 
         Returns
         -------
         Seasonality
-            Seasonality regressor instance with fields from regressor_dict
+            Seasonality regressor instance with fields from ``regressor_dict``.
         """
         return cls(**regressor_dict)
 
@@ -256,24 +322,33 @@ class Seasonality(Regressor):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given integer
-        time vector
+        Create the feature matrix for the seasonality regressor.
 
         Parameters
         ----------
         t : pd.Series
             A pandas series of timestamps at which the regressor has to be
-            evaluated. The timestamps have to be represented as integers.
+            evaluated. The timestamps have to be represented as integers in
+            units of their sampling frequency.
         regressor : pd.Series
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`Seasonality`.
 
         Returns
         -------
         X : pd.DataFrame
-            Contains the feature matrix
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``
+
+
+        .. warning::
+            In a future version of Gloria, ``period`` will become a
+            :class:`pandas.Timestamp` or ``str`` representing such and ``t``
+            will be a :class:`pandas.Series` of timestamps.
+
         """
         # First construct column names, Note that in particular 'odd' and
         # 'even' must follow the same order as they are returned by
@@ -301,37 +376,48 @@ class Seasonality(Regressor):
 
     @staticmethod
     def fourier_series(
-        t: np.ndarray, period: float, max_fourier_order: int
+        t: np.ndarray, period: float, fourier_order: int
     ) -> np.ndarray:
         """
-        Create a (2 X max_fourier_order) column array that contains alternating
-        odd and even terms of fourier components up to the maximum order
+        Creates an array of even and odd Fourier terms.
+
+        The :class:`numpy.ndarray` output array has the following structure:
+
+        * **Columns**: alternatingely odd and even Fourier terms up to the
+          given maximum ``fourier_order``, resulting in :math:`2\\times`
+          ``fourier_order`` columns.
+        * **Rows**: Fourier terms evaluated at each timestamp, resulting in
+          ``len(t)`` rows.
+
 
         Parameters
         ----------
         t : np.ndarray
-            Integer array at which the fourier Components are to be evaluated
+            Integer array at which the Fourier components are evaluated.
         period : float
-            Period duration in units of the integer array
-        max_fourier_order : int
-            Maximum order up to which Fourier components will be created
+            Period duration in units of the integer array.
+        fourier_order : int
+            Maximum Fourier order up to which Fourier components will be
+            created. Must be larger or equal 1.
 
         Returns
         -------
         np.ndarray
             The array containing the Fourier components
 
+
+        .. warning::
+            In a future version of Gloria, ``period`` will become a
+            :class:`pandas.Timestamp` or ``str`` representing such and ``t``
+            will be a :class:`pandas.Series` of timestamps.
+
         """
         # Calculate angular frequency
         w0 = 2 * np.pi / period
         # Two matrices of even and odd terms from fundamental mode up to
         # specified max_fourier_order
-        odd = np.sin(
-            w0 * t.reshape(-1, 1) * np.arange(1, max_fourier_order + 1)
-        )
-        even = np.cos(
-            w0 * t.reshape(-1, 1) * np.arange(1, max_fourier_order + 1)
-        )
+        odd = np.sin(w0 * t.reshape(-1, 1) * np.arange(1, fourier_order + 1))
+        even = np.cos(w0 * t.reshape(-1, 1) * np.arange(1, fourier_order + 1))
         return np.hstack([odd, even])
 
 
@@ -368,7 +454,28 @@ class EventRegressor(Regressor):
 
 class SingleEvent(EventRegressor):
     """
-    An EventRegressor that produces the event exactly once at a given time.
+    A regressor to model a single occurrence of an event.
+
+    The regressor is added to the :class:`Gloria` model using
+    :meth:`~Gloria.add_event` and does not need to be handled
+    directly by the user.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger a larger impact of the event, smaller
+        values dampen the impact. Must be larger than zero.
+    event : Event
+        The event that occurs at ``t_start``. Allowed event types are described
+        in the :ref:`ref-events` section.
+    t_start : :class:`pandas.Timestamp`
+        The timestamp at which ``event`` occurs. The exact meaning of
+        ``t_start`` depends on the implementation details of the underlying
+        ``event``, but typically refers to its mode.
+
     """
 
     # Single timestamp at which the event occurs
@@ -376,12 +483,13 @@ class SingleEvent(EventRegressor):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the SingleEvent regressor to a serializable dictionary.
+        Converts the single event regressor to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "SingleEvent"`` item.
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
@@ -392,8 +500,10 @@ class SingleEvent(EventRegressor):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates SingleEvent regressor instance from a dictionary that holds the
-        regressor fields.
+        Creates an SingleEvent object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
@@ -403,8 +513,9 @@ class SingleEvent(EventRegressor):
         Returns
         -------
         SingleEvent
-            SingleEvent regressor instance with fields from regressor_dict
+            SingleEvent regressor instance with fields from ``regressor_dict``
         """
+
         # Convert non-built-in types
         regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
@@ -412,18 +523,18 @@ class SingleEvent(EventRegressor):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range.
+        Calculate fraction of overall events occurring within a timerange.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp`.
 
         Returns
         -------
         impact : float
-            Fraction of overall events within the timestamp range
+            Fraction of overall events occurring between minimum and maximum
+            date of ``t``.
 
         """
         impact = float(t.min() <= self.t_start <= t.max())
@@ -433,24 +544,25 @@ class SingleEvent(EventRegressor):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given timestamp
-        series.
+        Create the feature matrix for the single event regressor.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
-        regressor : pd.Series
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp` at which the regressor has to
+            be evaluated
+        regressor : :class:`pandas.Series`
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`SingleEvent`.
 
         Returns
         -------
-        X : pd.DataFrame
-            Contains the feature matrix
+        X : :class:`pandas.DataFrame`
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``.
         """
 
         # First construct column name
@@ -467,7 +579,28 @@ class SingleEvent(EventRegressor):
 
 class IntermittentEvent(EventRegressor):
     """
-    An EventRegressor that produces the event at times given through a list.
+    A regressor to model reoccuring events at given times.
+
+    The regressor is added to the :class:`Gloria` model using
+    :meth:`~Gloria.add_event` and does not need to be handled
+    directly by the user.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger a larger impact of the event, smaller
+        values dampen the impact. Must be larger than zero.
+    event : Event
+        The event that occurs at ``t_start``. Allowed event types are described
+        in the :ref:`ref-events` section.
+    t_list : list[:class:`pandas.Timestamp`]
+        A list of timestamps at which ``event`` occurs. The exact meaning of
+        each timestamp in the list depends on implementation details of the
+        underlying ``event``, but typically refers to its mode.
+
     """
 
     # A list of timestamps at which the base events occur.
@@ -475,12 +608,14 @@ class IntermittentEvent(EventRegressor):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the IntermittentEvent regressor to a serializable dictionary.
+        Converts the intermittent event regressor to a JSON-serializable
+        dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "IntermittentEvent"`` item.
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
@@ -491,8 +626,10 @@ class IntermittentEvent(EventRegressor):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates IntermittentEvent regressor instance from a dictionary that
-        holds the regressor fields.
+        Creates an IntermittentEvent object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
@@ -503,8 +640,9 @@ class IntermittentEvent(EventRegressor):
         -------
         IntermittentEvent
             IntermittentEvent regressor instance with fields from
-            regressor_dict
+            ``regressor_dict``
         """
+
         # Convert non-built-in
         regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
         # As t_list is optional, check if it is present
@@ -522,18 +660,18 @@ class IntermittentEvent(EventRegressor):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range.
+        Calculate fraction of overall events occurring within a timerange.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp`.
 
         Returns
         -------
         impact : float
-            Fraction of overall events within the timestamp range
+            Fraction of overall events occurring between minimum and maximum
+            date of ``t``.
 
         """
         # In case no event is in the list, return zero to signal that no event
@@ -549,25 +687,29 @@ class IntermittentEvent(EventRegressor):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given timestamp
-        series.
+        Create the feature matrix for the intermittent event regressor.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
-        regressor : pd.Series
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp` at which the regressor has to
+            be evaluated
+        regressor : :class:`pandas.Series`
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`IntermittentEvent`.
 
         Returns
         -------
-        X : pd.DataFrame
-            Contains the feature matrix
+        X : :class:`pandas.DataFrame`
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``.
         """
+
+        # Drop index to ensure t aligns with all_events
+        t = t.reset_index(drop=True)
 
         # First construct column name
         column = (
@@ -577,11 +719,13 @@ class IntermittentEvent(EventRegressor):
 
         # Loop through all start times in t_list, and accumulate the events
         all_events = pd.Series(0, index=range(t.shape[0]))
+
         for t_start in self.t_list:
             all_events += self.event.generate(t, t_start)
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_events})
+
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
         return X, prior_scales
@@ -589,7 +733,31 @@ class IntermittentEvent(EventRegressor):
 
 class PeriodicEvent(SingleEvent):
     """
-    An EventRegressor that produces periodically recurring events
+    A regressor to model periodically recurring events.
+
+    The regressor is added to the :class:`Gloria` model using
+    :meth:`~Gloria.add_event` and does not need to be handled
+    directly by the user.
+
+    Parameters
+    ----------
+    name : str
+        A descriptive, unique name to identify the regressor.
+    prior_scale : float
+        Parameter modulating the strength of the regressors. Larger values
+        allow the model to fit larger a larger impact of the event, smaller
+        values dampen the impact. Must be larger than zero.
+    event : Event
+        The event that periodically occurs. Allowed event types are described
+        in the :ref:`ref-events` section.
+    t_start : :class:`pandas.Timestamp`
+        An arbitrary timestamp at which ``event`` occurs. The event will be
+        repeated forwards and backwards in time every ``period``. The exact
+        meaning of ``t_start`` depends on the implementation details of the
+        underlying ``event``, but typically refers to its mode.
+    period : :class:`pandas.Timedelta`
+        Periodicity of the periodic event regressor.
+
     """
 
     # The periodicity of the base event
@@ -597,12 +765,14 @@ class PeriodicEvent(SingleEvent):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the PeriodicEvent regressor to a serializable dictionary.
+        Converts the periodic event regressor to a JSON-serializable
+        dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all regressor fields
+            Dictionary containing all regressor fields including an extra
+            ``regressor_type = "PeriodicEvent"`` item.
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
@@ -613,8 +783,10 @@ class PeriodicEvent(SingleEvent):
     @classmethod
     def from_dict(cls: Type[Self], regressor_dict: dict[str, Any]) -> Self:
         """
-        Creates PeriodicEvent regressor instance from a dictionary that
-        holds the regressor fields.
+        Creates an PeriodocEvent object from a dictionary.
+
+        The key-value pairs of the dictionary must correspond to the
+        constructor arguments of the regressor.
 
         Parameters
         ----------
@@ -625,7 +797,7 @@ class PeriodicEvent(SingleEvent):
         -------
         PeriodicEvent
             PeriodicEvent regressor instance with fields from
-            regressor_dict
+            ``regressor_dict``.
         """
         # Convert non-built-in fields
         regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
@@ -635,18 +807,18 @@ class PeriodicEvent(SingleEvent):
 
     def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
         """
-        Calculate all timestamps of periods within the range of input
-        timestamps.
+        Yields a list of timestamps of period starts within the range of
+        input timestamps.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A pandas series of :class:`pandas.Timestamp`.
 
         Returns
         -------
-        t_list : list[pd.Timestamp]
+        t_list : list[:class:`pandas.Timestamp`]
+            A list of timestamps of period starts.
 
         """
         # Calculate number of periods with respect to t_start necessary to
@@ -664,18 +836,18 @@ class PeriodicEvent(SingleEvent):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range.
+        Calculate fraction of overall events occurring within a timerange.
 
         Parameters
         ----------
-        t : pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp`.
 
         Returns
         -------
         impact : float
-            Fraction of overall events within the timestamp range
+            Fraction of overall events occurring between minimum and maximum
+            date of ``t``.
 
         """
 
@@ -696,25 +868,29 @@ class PeriodicEvent(SingleEvent):
         self: Self, t: pd.Series, regressor: Optional[pd.Series] = None
     ) -> tuple[pd.DataFrame, dict]:
         """
-        Create the feature matrix along with prior scales for a given timestamp
-        series.
+        Create the feature matrix for the periodic event regressor.
 
         Parameters
         ----------
-        t: pd.Series
-            A pandas series of timestamps at which the regressor has to be
-            evaluated
-        regressor : pd.Series
+        t : :class:`pandas.Series`
+            A series of :class:`pandas.Timestamp` at which the regressor has to
+            be evaluated
+        regressor : :class:`pandas.Series`
             Contains the values for the regressor that will be added to the
-            feature matrix unchanged. Only has effect for ExternalRegressor
+            feature matrix unchanged. Only has effect for
+            :class:`ExternalRegressor`. Any input will be ignored for
+            :class:`PeriodicEvent`.
 
         Returns
         -------
-        X : pd.DataFrame
-            Contains the feature matrix
+        X : :class:`pandas.DataFrame`
+            The feature matrix containing the data of the regressor.
         prior_scales : dict
-            A map for 'feature matrix column name' -> 'prior_scale'
+            A map for ``feature matrix column name`` → ``prior_scale``.
         """
+
+        # Drop index to ensure t aligns with all_events
+        t = t.reset_index(drop=True)
 
         # First construct column name
         column = (

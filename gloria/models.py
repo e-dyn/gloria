@@ -28,7 +28,7 @@ from typing_extensions import Self, TypeAlias
 
 # Gloria
 # Inhouse Packages
-from gloria.utilities.constants import _BACKEND_DEFAULTS, _CMDSTAN_VERSION
+from gloria.utilities.constants import _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
@@ -77,6 +77,11 @@ class BinomialPopulation(BaseModel):
         Validates the value pass along with the population size estimation
         method.
         """
+        # Safeguard if validation of mode already failed
+        if "mode" not in info.data:
+            raise ValueError(
+                "Can't validate 'value' field as 'mode' was invalid."
+            )
         if info.data["mode"] == "constant":
             if not isinstance(value, int):
                 raise ValueError(
@@ -375,6 +380,10 @@ class ModelBackendBase(ABC):
 
         t = stan_data.t
 
+        # For models where y is unsigned, a cast to a signed type is necessary.
+        # Otherwise the subtraction in calculating k can cause an overflow.
+        y_scaled = y_scaled.copy().astype(float)
+
         # Step 1: Estimation of k and m, such that a straight line passes from
         # first and last data point
         T = t[-1] - t[0]
@@ -422,12 +431,9 @@ class ModelBackendBase(ABC):
     def fit(
         self: Self,
         stan_data: ModelInputData,
-        optimize_mode: Literal["MAP", "MLE"] = _BACKEND_DEFAULTS[
-            "optimize_mode"
-        ],
-        sample: bool = _BACKEND_DEFAULTS["sample"],
+        optimize_mode: Literal["MAP", "MLE"],
+        sample: bool,
         augmentation_config: Optional[BinomialPopulation] = None,
-        **kwargs: dict[str, Any],
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
         Calculates initial parameters and fits the model to the input data.
@@ -448,8 +454,6 @@ class ModelBackendBase(ABC):
             is only required for the BinomialConstantN and
             BetaBinomialConstantN model. For all other models it defaults to
             None.
-        **kwargs : dict[str, Any]
-            Additional arguments that are passed to the fit method
 
         Returns
         -------
@@ -502,14 +506,9 @@ class ModelBackendBase(ABC):
             optimized_model = self.model.optimize(**optimize_args)
 
         if sample:
-            get_logger().info(
-                f"Starting Laplace sampling with {sample} " "samples."
-            )
+            get_logger().info("Starting Laplace sampling.")
             self.stan_fit = self.model.laplace_sample(
-                data=stan_data.dict(),
-                mode=optimized_model,
-                jacobian=jacobian,
-                **kwargs,  # type: ignore
+                data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )
             self.sample = True
 
@@ -581,15 +580,16 @@ class ModelBackendBase(ABC):
         result : pd.DataFrame
             Dataframe containing all predicted metrics, including
             uncertainties. The columns include:
-                - yhat/trend: mean predicted value for overall model or trend
-                - yhat/trend_upper/lower: uncertainty intervals for mean
-                  predicted values with respect to specified interval_width
-                - observed_upper/lower: uncertainty intervals for observed
-                  values
-                - '_linked' versions of all quantities except for 'observed'.
+
+            * yhat/trend: mean predicted value for overall model or trend
+            * yhat/trend_upper/lower: uncertainty intervals for mean
+              predicted values with respect to specified interval_width
+            * observed_upper/lower: uncertainty intervals for observed
+              values
+            * '_linked' versions of all quantities except for 'observed'.
         """
 
-        if self.fit_params is None:
+        if self.fit_params == dict():
             raise ValueError("Can't predict prior to fit.")
 
         # Get optimized parameters (or their samples) from fit
@@ -992,6 +992,7 @@ class BinomialConstantN(ModelBackendBase):
         augmentation_config : BinomialPopulation
             Contains configuration parameters 'mode' and 'value' used to
             determine the population size. Three modes are supported:
+
             1. 'constant': value equals the population size
             2. 'factor': the population size is the maximum of y times value
             3. 'scale': the population size is a value optimized such that the
@@ -1253,8 +1254,7 @@ class Normal(ModelBackendBase):
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
-        # The initial guess for the noise necessary for normal distribution
-        ini_params.sigma_obs = 0.5  # type: ignore[attr-defined]
+        ini_params.sigma = 2
         return stan_data, ini_params
 
 
@@ -1588,7 +1588,7 @@ class Beta(ModelBackendBase):
 
 class BetaBinomialConstantN(ModelBackendBase):
     """
-    Implementation of model backend for beta- binomial distribution with
+    Implementation of model backend for beta-binomial distribution with
     constant N
     """
 
@@ -1672,6 +1672,7 @@ class BetaBinomialConstantN(ModelBackendBase):
         augmentation_config : BinomialPopulation
             Contains configuration parameters 'mode' and 'value' used to
             determine the population size. Three modes are supported:
+
             1. 'constant': value equals the population size
             2. 'factor': the population size is the maximum of y times value
             3. 'scale': the population size is a value optimized such that the
