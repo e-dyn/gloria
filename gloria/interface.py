@@ -41,12 +41,17 @@ For Documentation
 
 ### --- Module Imports --- ###
 # Standard Library
+import math
 from pathlib import Path
 from typing import Any, Collection, Literal, Optional, Type, Union, cast
+
 
 # Third Party
 import numpy as np
 import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+from matplotlib.dates import AutoDateFormatter, AutoDateLocator
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -63,6 +68,12 @@ from gloria.models import (
     MODEL_MAP,
     ModelInputData,
     get_model_backend,
+)
+from gloria.plot import (
+    add_changepoints_to_plot,
+    plot_event_component,
+    plot_seasonality_component,
+    plot_trend_component,
 )
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import (
@@ -1696,3 +1707,276 @@ class Gloria(BaseModel):
         print("  --------------------  ".center(70))
         print("| Here, take a cookie. |".center(70))
         print("  ====================  ".center(70))
+
+    def plot(
+        self: Self,
+        fcst: pd.DataFrame,
+        ax: Optional[sns] = None,
+        uncertainty: bool = True,
+        xlabel: str = "ds",
+        ylabel: str = "y",
+        figsize: Tuple[int, int] = (10, 6),
+        show_changepoints: bool = False,
+        include_legend: bool = False,
+    ) -> plt.figure:
+        """
+        Plot the forecast of a Gloria model, including trend line, predictions,
+        and confidence intervals.
+
+        Parameters
+        ----------
+        m : Gloria
+            A trained Gloria model. Must contain historical data in `m.history`
+
+        fcst : pd.DataFrame
+            DataFrame with forecast results, including the columns: 'ds',
+            'yhat', 'trend', 'observed_lower', and 'observed_upper'.
+
+        ax : sns.axes.Axes, optional
+            An existing matplotlib axis to draw on. If None, a new figure
+            and axis will be created.
+
+        uncertainty : bool, default=True
+            Whether to plot the uncertainty/confidence intervals.
+
+        xlabel : str, default='ds'
+            Label for the x-axis.
+
+        ylabel : str, default='y'
+            Label for the y-axis.
+
+        figsize : tuple of int, default=(10, 6)
+            Figure size in inches. Used only when creating a new figure.
+
+        show_changepoints : bool, default=False
+            Whether to display significant changepoints on the plot.
+
+        include_legend : bool, default=False
+            Whether to display a legend on the plot.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The figure object containing the forecast plot.
+        """
+        # Check if a custom axis was passed
+        user_provided_ax = ax is not None
+
+        # Create new figure and axis if none provided
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, facecolor="w")
+        else:
+            fig = ax.get_figure()
+
+        # Set Seaborn style and update plot aesthetics
+        sns.set(style="whitegrid")
+        plt.rcParams.update(
+            {
+                "font.size": 14,
+                "font.family": "DejaVu Sans",
+                "axes.titlesize": 18,
+                "axes.labelsize": 16,
+                "legend.fontsize": 14,
+                "axes.edgecolor": "#333333",
+                "axes.linewidth": 1.2,
+            }
+        )
+
+        # Plot historical data as scatter points
+        sns.scatterplot(
+            x=self.history["ds"],
+            y=self.history["y"],
+            ax=ax,
+            label="Data",
+            color="#016a86",
+            edgecolor="w",
+            s=20,
+            alpha=0.7,
+        )
+
+        # Plot the model's trend line
+        ax.plot(
+            fcst["ds"],
+            fcst["trend"],
+            color="#264653",
+            linewidth=1.0,
+            alpha=0.8,
+            label="Trend",
+        )
+
+        # Plot the forecast line
+        ax.plot(
+            fcst["ds"],
+            fcst["yhat"],
+            color="#e6794a",
+            linewidth=1.5,
+            label="Fit",
+        )
+
+        # Plot the confidence interval (if enabled)
+        if uncertainty:
+            ax.fill_between(
+                fcst["ds"],
+                fcst["observed_lower"],
+                fcst["observed_upper"],
+                color="#819997",
+                alpha=0.3,
+                label="Confidence Interval",
+            )
+
+        if show_changepoints:
+            add_changepoints_to_plot(self, fcst, ax)
+
+        # Set date format for x-axis
+        locator = AutoDateLocator(interval_multiples=False)
+        formatter = AutoDateFormatter(locator)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
+
+        # Set axis labels
+        ax.set_xlabel(xlabel, labelpad=15)
+        ax.set_ylabel(ylabel, labelpad=15)
+
+        # Add gridlines (only horizontal)
+        ax.grid(True, axis="y", linestyle="--", alpha=0.3)
+        ax.grid(visible=False, axis="x")
+
+        # Remove top and right spines for cleaner look
+        sns.despine(ax=ax)
+
+        # Remove default legend unless specified
+        try:
+            ax.get_legend().remove()
+        except AttributeError:
+            pass
+
+        if include_legend:
+            ax.legend(frameon=True, shadow=True, loc="best", fontsize=10)
+
+        # Adjust layout if we created the figure
+        if not user_provided_ax:
+            fig.tight_layout()
+
+        return fig
+
+    def plot_components(
+        self: Self,
+        fcst: pd.DataFrame,
+        uncertainty: bool = True,
+        weekly_start: int = 0,
+        figsize: Tuple[int, int] | None = None,
+    ) -> plt.figure:
+        """
+        Plot forecast components of a Gloria model using a modern Seaborn style
+
+        Parameters
+        ----------
+        m : Gloria
+            A fitted Gloria model containing seasonalities, events, regressors,
+            and trend.
+
+        fcst : pd.DataFrame
+            Forecast dataframe from the model, used for plotting trend
+            and uncertainty.
+
+        uncertainty : bool, optional, default=True
+            Whether to include uncertainty intervals in the trend component
+            plot.
+
+        weekly_start : int, optional, default=0
+            Starting day of the week (0=Monday) for weekly seasonal plots.
+
+        figsize : tuple of float, optional
+            Figure size as (width, height). If not provided, it is calculated
+            automatically to arrange subplots in a nearly square grid.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The matplotlib Figure containing all component subplots.
+        """
+
+        # Set Seaborn style and Matplotlib parameters for consistent aesthetics
+        sns.set(style="whitegrid")
+        plt.rcParams.update(
+            {
+                "font.size": 14,
+                "font.family": "DejaVu Sans",
+                "axes.titlesize": 18,
+                "axes.labelsize": 16,
+                "legend.fontsize": 14,
+                "axes.edgecolor": "#333333",
+                "axes.linewidth": 1.2,
+            }
+        )
+
+        # Define components to plot: always include 'trend'
+        components = ["trend"]
+
+        # Add seasonalities detected in the model
+        components.extend(self.model_extra["seasonalities"].keys())
+
+        # Add events if available
+        if self.model_extra["events"].keys():
+            components.append("events")
+
+        # Add external regressors if available
+        if self.model_extra["external_regressors"].keys():
+            components.append("external_regressors")
+
+        npanel = len(components)
+
+        # Calculate number of rows and columns for subplot
+        # grid (as square as possible)
+        ncols = math.floor(math.sqrt(npanel))
+        nrows = math.ceil(npanel / ncols)
+
+        # Automatically determine figure size if not specified
+        if not figsize:
+            figsize = (int(4.5 * ncols), int(3.2 * nrows))
+
+        # Create subplots with white background
+        fig, axes = plt.subplots(nrows, ncols, figsize=figsize, facecolor="w")
+
+        # Flatten axes array for easy iteration, handle single subplot case
+        axes = axes.flatten() if npanel > 1 else [axes]
+
+        # Loop over components and call corresponding plot functions
+        for ax, plot_name in zip(axes, components):
+            if plot_name == "trend":
+                plot_trend_component(
+                    m=self,
+                    fcst=fcst,
+                    component="trend",
+                    ax=ax,
+                    uncertainty=uncertainty,
+                )
+            elif plot_name in self.model_extra["seasonalities"].keys():
+                plot_seasonality_component(
+                    m=self,
+                    component=plot_name,
+                    start_offset=weekly_start,
+                    period=int(
+                        np.floor(
+                            self.model_extra["seasonalities"][plot_name].period
+                        )
+                    ),
+                    ax=ax,
+                )
+            elif plot_name in ["events", "external_regressors"]:
+                plot_event_component(m=self, component=plot_name, ax=ax)
+
+            # Visual tuning: grid only on y-axis, remove x-axis grid,
+            # remove top/right spines
+            ax.grid(axis="y", linestyle="--", alpha=0.3)
+            ax.grid(visible=False, axis="x")
+            sns.despine(ax=ax)
+
+        # Adjust layout to prevent overlap
+        fig.tight_layout()
+
+        return fig
+
+
+if __name__ == "__main__":
+    ...
