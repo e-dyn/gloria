@@ -3,3 +3,4 @@ gloria/stan_models/cmdstan-*/
 **/logfiles/
 **/models
 demonstrations/
+gloria/stan_models/RTools40/

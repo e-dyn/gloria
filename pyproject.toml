@@ -18,7 +18,9 @@ dependencies = [
     "holidays (>=0.67,<0.68)",
     "sktime (>=0.37.0,<0.38.0)",
     "tomli (>=2.2.1,<3.0.0)",
-    "sphinx-autodoc-typehints (<=2.3.0)",
+    "plotly (>=6.1.1,<7.0.0)",
+    "nbformat (>=5.10.4,<6.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)"
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -55,6 +57,7 @@ pytest = "^8.3.5"
 pytest-cov = "^6.1.1"
 sphinx-inline-tabs = "^2023.4.21"
 pydata-sphinx-theme = "^0.16.1"
+sphinx-autodoc-typehints = ">=2.3.0"
 
 
 [tool.poetry.group.spyder]
@@ -64,7 +67,7 @@ optional = true
 pyqt5-qt5 = "<=5.15.2"
 pyqtwebengine-qt5 = "<=5.15.2"
 pyqt5 = "^5.15.11"
-spyder = "5.5.4"
+spyder = ">=5.5.4"
 
 [tool.pytest.ini_options]
 testpaths = ["gloria/tests"]
