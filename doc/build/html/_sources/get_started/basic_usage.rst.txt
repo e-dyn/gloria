@@ -1,3 +1,5 @@
+.. _ref-basic-usage:
+
 Basic Usage
 ===========
 

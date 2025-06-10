@@ -50,6 +50,10 @@
          
         ~Gloria.make_future_dataframe
          
+        ~Gloria.plot
+         
+        ~Gloria.plot_components
+         
         ~Gloria.predict
          
         ~Gloria.to_dict

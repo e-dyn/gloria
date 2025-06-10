@@ -1713,9 +1713,10 @@ class Gloria(BaseModel):
         fcst: pd.DataFrame,
         ax: Optional[Artist] = None,
         uncertainty: bool = True,
-        xlabel: str = "ds",
-        ylabel: str = "y",
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
         figsize: tuple[int, int] = (10, 6),
+        dpi: int = 150,
         show_changepoints: bool = False,
         include_legend: bool = False,
     ) -> plt.figure:
@@ -1725,46 +1726,60 @@ class Gloria(BaseModel):
 
         Parameters
         ----------
-        m : Gloria
-            A trained Gloria model. Must contain historical data in `m.history`
+        fcst : :class:`pandas.DataFrame`
+            DataFrame with forecast results. Must be the output of
+            :meth:`Gloria.predict`
+        ax : Optional[Artist]
+            An existing matplotlib axis to draw on. If ``None`` (default), a
+            new figure and axis will be created.
+        uncertainty : bool
+            Whether to plot the uncertainty/confidence intervals. The default
+            is ``True``
+        xlabel : Optional[str], optional
+            Label for the x-axis. If ``None`` (default), the ``timestamp_name``
+            of the corresponding Gloria model will be used.
+        ylabel : Optional[str], optional
+            Label for the y-axis. If ``None`` (default), the ``metric_name`` of
+            the corresponding Gloria model will be used.
+        figsize : tuple[int, int]
+            Figure size as (*width*, *height*) in inches. Used only when
+            creating a new figure. The default is (10, 6).
+        dpi : int
+            Resolution of the figure in dots-per-inches. Used only when
+            creating a new figure. The default is 150.
+        show_changepoints : bool
+            Whether to display significant changepoints on the plot. The
+            default is False.
+        include_legend : bool
+            Whether to display a legend on the plot. The default is False.
 
-        fcst : pd.DataFrame
-            DataFrame with forecast results, including the columns: 'ds',
-            'yhat', 'trend', 'observed_lower', and 'observed_upper'.
-
-        ax : sns.axes.Axes, optional
-            An existing matplotlib axis to draw on. If None, a new figure
-            and axis will be created.
-
-        uncertainty : bool, default=True
-            Whether to plot the uncertainty/confidence intervals.
-
-        xlabel : str, default='ds'
-            Label for the x-axis.
-
-        ylabel : str, default='y'
-            Label for the y-axis.
-
-        figsize : tuple of int, default=(10, 6)
-            Figure size in inches. Used only when creating a new figure.
-
-        show_changepoints : bool, default=False
-            Whether to display significant changepoints on the plot.
-
-        include_legend : bool, default=False
-            Whether to display a legend on the plot.
+        Raises
+        ------
+        NotFittedError
+            The model has not been fitted yet.
 
         Returns
         -------
-        matplotlib.figure.Figure
+        :class:`matplotlib.figure.Figure`
             The figure object containing the forecast plot.
+
         """
+
+        if not self.is_fitted:
+            raise NotFittedError()
+
+        # Set x and y label if None were provided
+        if xlabel is None:
+            xlabel = self.timestamp_name
+        if ylabel is None:
+            ylabel = self.metric_name
+
         # Check if a custom axis was passed
         user_provided_ax = ax is not None
 
         # Create new figure and axis if none provided
         if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, facecolor="w")
+            fig, ax = plt.subplots(figsize=figsize, facecolor="w", dpi=dpi)
         else:
             fig = ax.get_figure()
 
@@ -1784,19 +1799,19 @@ class Gloria(BaseModel):
 
         # Plot historical data as scatter points
         sns.scatterplot(
-            x=self.history["ds"],
-            y=self.history["y"],
+            x=self.history[self.timestamp_name],
+            y=self.history[self.metric_name],
             ax=ax,
-            label="Data",
             color="#016a86",
             edgecolor="w",
             s=20,
             alpha=0.7,
+            label="Data",
         )
 
         # Plot the model's trend line
         ax.plot(
-            fcst["ds"],
+            fcst[self.timestamp_name],
             fcst["trend"],
             color="#264653",
             linewidth=1.0,
@@ -1806,7 +1821,7 @@ class Gloria(BaseModel):
 
         # Plot the forecast line
         ax.plot(
-            fcst["ds"],
+            fcst[self.timestamp_name],
             fcst["yhat"],
             color="#e6794a",
             linewidth=1.5,
@@ -1816,7 +1831,7 @@ class Gloria(BaseModel):
         # Plot the confidence interval (if enabled)
         if uncertainty:
             ax.fill_between(
-                fcst["ds"],
+                fcst[self.timestamp_name],
                 fcst["observed_lower"],
                 fcst["observed_upper"],
                 color="#819997",
@@ -1864,38 +1879,43 @@ class Gloria(BaseModel):
         fcst: pd.DataFrame,
         uncertainty: bool = True,
         weekly_start: int = 0,
-        figsize: Union[tuple[int, int], None] = None,
+        figsize: Optional[tuple[int, int]] = None,
+        dpi: int = 150,
     ) -> plt.figure:
         """
-        Plot forecast components of a Gloria model using a modern Seaborn style
+        Plot forecast components of a Gloria model using a modern Seaborn
+        style.
 
         Parameters
         ----------
-        m : Gloria
-            A fitted Gloria model containing seasonalities, events, regressors,
-            and trend.
-
-        fcst : pd.DataFrame
-            Forecast dataframe from the model, used for plotting trend
+        fcst : :class:`pandas.DataFrame`
+            Forecast DataFrame from the model, used for plotting trend.
             and uncertainty.
-
-        uncertainty : bool, optional, default=True
+        uncertainty : bool
             Whether to include uncertainty intervals in the trend component
-            plot.
-
-        weekly_start : int, optional, default=0
+            plot. The default is True.
+        weekly_start : int
             Starting day of the week (0=Monday) for weekly seasonal plots.
+            The default is 0.
+        figsize : tuple[int, int]
+            Figure size as (*width*, *height*) in inches. Used only when
+            creating a new figure. If not provided, it is calculated
+            automatically to arrange subplots in a nearly square grid. The
+            default is None.
+        dpi : int
+            Resolution of the figure in dots-per-inches. Used only when
+            creating a new figure. The default is 150.
 
-        figsize : tuple of float, optional
-            Figure size as (width, height). If not provided, it is calculated
-            automatically to arrange subplots in a nearly square grid.
+        Raises
+        ------
+        NotFittedError
+            The model has not been fitted yet.
 
         Returns
         -------
-        matplotlib.figure.Figure
-            The matplotlib Figure containing all component subplots.
+        :class:`matplotlib.figure.Figure`
+            The figure object containing all component subplots.
         """
-
         # Set Seaborn style and Matplotlib parameters for consistent aesthetics
         sns.set(style="whitegrid")
         plt.rcParams.update(
@@ -1936,7 +1956,9 @@ class Gloria(BaseModel):
             figsize = (int(4.5 * ncols), int(3.2 * nrows))
 
         # Create subplots with white background
-        fig, axes = plt.subplots(nrows, ncols, figsize=figsize, facecolor="w")
+        fig, axes = plt.subplots(
+            nrows, ncols, figsize=figsize, facecolor="w", dpi=dpi
+        )
 
         # Flatten axes array for easy iteration, handle single subplot case
         axes = axes.flatten() if npanel > 1 else [axes]

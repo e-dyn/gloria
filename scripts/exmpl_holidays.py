@@ -65,7 +65,7 @@ if __name__ == "__main__":
         .reset_index(drop=True)
         .fillna(0)
     )
-    result, X = model.predict(data)
+    result = model.predict(data)
 
     timestamp_name = model.timestamp_name
     metric_name = model.metric_name
@@ -96,49 +96,53 @@ if __name__ == "__main__":
         result_prophet = model_prophet.predict(data)
         result_prophet = result_prophet[mask]
 
-    fig, ax = plt.subplots(figsize=(12, 8), dpi=140)
-    ax.plot(df[timestamp_name], df[metric_name], "o", label="data")
-    ax.plot(result[timestamp_name], result["trend"], "black", label="trend")
-    ax.plot(result[timestamp_name], result["yhat"], "red", label="fit")
-    ax.plot(
-        result[timestamp_name],
-        result["trend_upper"],
-        "black",
-        label="trend_upper",
-    )
-    ax.plot(
-        result[timestamp_name],
-        result["trend_lower"],
-        "black",
-        label="trend_lower",
-    )
-    ax.fill_between(
-        result[timestamp_name],
-        result["observed_lower"],
-        result["observed_upper"],
-        color="gray",
-        alpha=0.3,
-        label="ci",
-    )
+    model.plot(result, show_changepoints=True)
 
-    if COMPARE_TO_PROPHET:
-        ax.plot(
-            result_prophet[timestamp_name],
-            result_prophet["trend"],
-            "green",
-            linestyle="--",
-            label="trend prophet",
-        )
-        ax.plot(
-            result_prophet[timestamp_name],
-            result_prophet["yhat"],
-            "green",
-            linestyle="--",
-            label="fit prophet",
-        )
+    model.plot_components(result)
 
-    plt.legend()
-    plt.show()
+    # fig, ax = plt.subplots(figsize=(12, 8), dpi=140)
+    # ax.plot(df[timestamp_name], df[metric_name], "o", label="data")
+    # ax.plot(result[timestamp_name], result["trend"], "black", label="trend")
+    # ax.plot(result[timestamp_name], result["yhat"], "red", label="fit")
+    # ax.plot(
+    #     result[timestamp_name],
+    #     result["trend_upper"],
+    #     "black",
+    #     label="trend_upper",
+    # )
+    # ax.plot(
+    #     result[timestamp_name],
+    #     result["trend_lower"],
+    #     "black",
+    #     label="trend_lower",
+    # )
+    # ax.fill_between(
+    #     result[timestamp_name],
+    #     result["observed_lower"],
+    #     result["observed_upper"],
+    #     color="gray",
+    #     alpha=0.3,
+    #     label="ci",
+    # )
+
+    # if COMPARE_TO_PROPHET:
+    #     ax.plot(
+    #         result_prophet[timestamp_name],
+    #         result_prophet["trend"],
+    #         "green",
+    #         linestyle="--",
+    #         label="trend prophet",
+    #     )
+    #     ax.plot(
+    #         result_prophet[timestamp_name],
+    #         result_prophet["yhat"],
+    #         "green",
+    #         linestyle="--",
+    #         label="fit prophet",
+    #     )
+
+    # plt.legend()
+    # plt.show()
 
     a = (
         (df.y <= result.observed_lower) | (df.y > result.observed_upper)
