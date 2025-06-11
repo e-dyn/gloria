@@ -88,7 +88,7 @@ def plot_trend_component(
         fig = plt.figure(facecolor="w", figsize=figsize)
         ax = fig.add_subplot(111)
 
-    fcst_t = fcst["ds"]
+    fcst_t = fcst[m.timestamp_name]
 
     # Plot main component line (e.g., trend)
     artists += ax.plot(
@@ -188,13 +188,13 @@ def plot_seasonality_component(
     df = get_seasonal_component_df(m, component, period, start_offset % 7)
 
     # Define date range for one seasonality period
-    start_date = min(pd.to_datetime(df["ds"]))
+    start_date = min(pd.to_datetime(df[m.timestamp_name]))
     end_date = start_date + pd.Timedelta(days=period)
 
     # Plot seasonal component line
     artists += ax.plot(
-        df["ds"],
-        df["y"],
+        df[m.timestamp_name],
+        df[m.metric_name],
         linestyle="-",
         color="#264653",
         linewidth=1.5,
@@ -304,8 +304,8 @@ def plot_event_component(
 
     # Plot main event/regressor line
     artists += ax.plot(
-        df["ds"],
-        df["y"],
+        df[m.timestamp_name],
+        df[m.metric_name],
         linestyle="-",
         color="#264653",  # dark teal
         linewidth=1.5,
@@ -385,7 +385,7 @@ def get_seasonal_component_df(
         drop=True
     )
 
-    return pd.DataFrame({"ds": days, "y": relevant_y})
+    return pd.DataFrame({m.timestamp_name: days, m.metric_name: relevant_y})
 
 
 def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
@@ -427,9 +427,9 @@ def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
 
     Xb = np.matmul(X_component, beta_component)
 
-    days = m.history["ds"]
+    days = m.history[m.timestamp_name]
 
-    return pd.DataFrame({"ds": days, "y": Xb})
+    return pd.DataFrame({m.timestamp_name: days, m.metric_name: Xb})
 
 
 def add_changepoints_to_plot(
