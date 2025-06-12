@@ -19,6 +19,7 @@ from gloria.events import Event
 
 # Inhouse Packages
 from gloria.utilities.constants import _DELIM
+from gloria.utilities.types import Timestamp
 
 
 ### --- Class and Function Definitions --- ###
@@ -471,7 +472,7 @@ class SingleEvent(EventRegressor):
     event : Event
         The event that occurs at ``t_start``. Allowed event types are described
         in the :ref:`ref-events` section.
-    t_start : :class:`pandas.Timestamp`
+    t_start : :class:`pandas.Timestamp` | str
         The timestamp at which ``event`` occurs. The exact meaning of
         ``t_start`` depends on the implementation details of the underlying
         ``event``, but typically refers to its mode.
@@ -479,7 +480,7 @@ class SingleEvent(EventRegressor):
     """
 
     # Single timestamp at which the event occurs
-    t_start: pd.Timestamp
+    t_start: Timestamp
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -596,7 +597,7 @@ class IntermittentEvent(EventRegressor):
     event : Event
         The event that occurs at ``t_start``. Allowed event types are described
         in the :ref:`ref-events` section.
-    t_list : list[:class:`pandas.Timestamp`]
+    t_list : list[:class:`pandas.Timestamp`] | list[str]
         A list of timestamps at which ``event`` occurs. The exact meaning of
         each timestamp in the list depends on implementation details of the
         underlying ``event``, but typically refers to its mode.
@@ -604,7 +605,7 @@ class IntermittentEvent(EventRegressor):
     """
 
     # A list of timestamps at which the base events occur.
-    t_list: list[pd.Timestamp] = []
+    t_list: list[Timestamp] = []
 
     def to_dict(self: Self) -> dict[str, Any]:
         """

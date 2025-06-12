@@ -11,7 +11,7 @@ from pydantic import BeforeValidator
 from typing_extensions import TypeAlias
 
 # Gloria
-from gloria.utilities.misc import convert_to_timedelta
+from gloria.utilities.misc import convert_to_timedelta, convert_to_timestamp
 
 # The strings representing implemented backend models
 Distribution: TypeAlias = Literal[
@@ -43,8 +43,9 @@ SeriesData: TypeAlias = Union[
     None,  # scalar types
 ]
 
-# Annotaded Timedelta type for validation
+# Annotaded Timedelta and Timestamp type for validation
 Timedelta = Annotated[pd.Timedelta, BeforeValidator(convert_to_timedelta)]
+Timestamp = Annotated[pd.Timestamp, BeforeValidator(convert_to_timestamp)]
 
 # Timedelta like type including strings
 TimedeltaLike = Union[pd.Timedelta, str]
