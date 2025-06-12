@@ -273,3 +273,40 @@ def convert_to_timedelta(timedelta: Union[pd.Timedelta, str]) -> pd.Timedelta:
         msg = f"Could not parse input sampling period: {e}"
         get_logger().error(msg)
         raise ValueError(msg) from e
+
+
+def convert_to_timestamp(timestamp: Union[pd.Timestamp, str]) -> pd.Timestamp:
+    """
+    Takes Timestamp or Timestamp like string and converts it to a Timestamp.
+    If any errors occur, they will be logged and raised as ValueError so the
+    function can be used as field validator for pydantic models.
+
+    Parameters
+    ----------
+    timestamp : Union[pd.Timestamp, str]
+        The input timestamp
+
+    Raises
+    ------
+    ValueError
+        Raised if the input was a string that could not be converted to a
+        Timestamp.
+
+    Returns
+    -------
+    pd.Timedelta
+        Converted Timestamp
+
+    """
+    # Third Party
+    from pandas._libs.tslibs.parsing import DateParseError
+
+    # Gloria
+    from gloria.utilities.logging import get_logger
+
+    try:
+        return pd.Timestamp(timestamp)
+    except (DateParseError, ValueError) as e:
+        msg = f"Could not parse input timestamp: {e}"
+        get_logger().error(msg)
+        raise ValueError(msg) from e

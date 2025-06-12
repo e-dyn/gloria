@@ -284,7 +284,6 @@ class Gloria(BaseModel):
 
         # Sanitize provided Changepoints
         if self.changepoints is not None:
-            print(self.changepoints)
             self.changepoints = pd.Series(
                 pd.to_datetime(self.changepoints), name=self.timestamp_name
             )
@@ -499,8 +498,8 @@ class Gloria(BaseModel):
             A descriptive name of the event.
         regressor_type : str
             Type of the underlying event regressor. Must be any of
-            ``"ExternalRegressor"``, ``"Seasonality"``, ``"SingleEvent"``,
-            ``"IntermittentEvent"``, ``"PeriodicEvent"``, ``"Holiday"``
+            ``"SingleEvent"``, ``"IntermittentEvent"``, ``"PeriodicEvent"``,
+            ``"Holiday"``
         event : Union[Event, dict[str, Any]]
             The base event used by the event regressor. Must be either of type
             :class:`Event` or a dictionary an event can be constructed from
@@ -1101,6 +1100,7 @@ class Gloria(BaseModel):
         # Make sure the data adhere to all requirements
         self.history = self.validate_dataframe(data)
         self.history.sort_values(by=self.timestamp_name, inplace=True)
+        self.history.reset_index(drop=True, inplace=True)
         # Add a colum with mapping the timestamps to integer values
         self.history = self.time_to_integer(self.history)
 
@@ -1341,7 +1341,7 @@ class Gloria(BaseModel):
 
         # First convert to integer timestamps with respect to first timestamp
         # and sampling_delta of training data
-        data = data.copy()
+        data = data.copy().reset_index(drop=True)
         data[_T_INT] = time_to_integer(
             data[self.timestamp_name],
             self.first_timestamp,
