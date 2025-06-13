@@ -243,12 +243,14 @@ class Seasonality(Regressor):
     corresponding to the even and odd Fourier terms
 
     .. math::
-        \\sum_{n=1}^{N}{\\sin\\left(\\frac{2\\pi n}{T} t\\right)
-                        + \\cos\\left(\\frac{2\\pi n}{T} t\\right)}
+        \\sum_{n=1}^{N}{a_n\\sin\\left(\\frac{2\\pi n}{T} t\\right)
+                        + b_n\\cos\\left(\\frac{2\\pi n}{T} t\\right)}
 
     where :math:`T` is the fundamental Fourier period and :math:`N` is the
     maximum Fourier order to be included, controlled by the parameters
-    ``period`` and ``order``, respectively.
+    ``period`` and ``order``, respectively. The parameters :math:`a_n` and
+    :math:`b_n` are weighting factor that will be optimized during Gloria's
+    fitting procedure.
 
     Parameters
     ----------
