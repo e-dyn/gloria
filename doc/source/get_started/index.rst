@@ -9,3 +9,5 @@ On this page you find a series of basic tutorials that should get you up and run
    
    installation
    basic_usage
+   model_selection
+   external_regressors
