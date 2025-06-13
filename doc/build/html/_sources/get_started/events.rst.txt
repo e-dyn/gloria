@@ -1,3 +1,4 @@
+.. _ref-events:
 .. currentmodule:: gloria
 
 Events

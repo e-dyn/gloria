@@ -262,6 +262,7 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
 </div>
 </nav></div>
@@ -328,8 +329,8 @@
 <div class="math notranslate nohighlight">
 \[f_\text{seas}(t) \approx \sum_{n=1}^{N}{a_n\sin\left(\frac{2\pi n}{T} t\right)
                 + b_n\cos\left(\frac{2\pi n}{T} t\right)}.\]</div>
-<p>Here <span class="math notranslate nohighlight">\(T\)</span> is the fundamental period of the Fourier series, e.g. <code class="docutils literal notranslate"><span class="pre">T=7</span> <span class="pre">days</span></code> for patterns that repeat on a weekly basis. The upper limit <span class="math notranslate nohighlight">\(N\)</span> of the Fourier sum is known as its <em>order</em>, where higher orders are able to describe faster oscillations. Eventually, the parameters <span class="math notranslate nohighlight">\(a_n\)</span> and <span class="math notranslate nohighlight">\(b_n\)</span> are weighting factors that are specific to the seasonal component at hand and will be estimated by Gloria’s fitting procedure.</p>
-<p>To illustrate how the Fourier order shapes the seasonal fit, we first condense the hourly load data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.</p>
+<p>Here <span class="math notranslate nohighlight">\(T\)</span> is the fundamental period of the Fourier series, e.g. <span class="math notranslate nohighlight">\(T\)</span> = 7 days for patterns that repeat on a weekly basis. The upper limit <span class="math notranslate nohighlight">\(N\)</span> of the Fourier sum is known as its <em>order</em>, where higher orders are able to describe faster oscillations. Eventually, the parameters <span class="math notranslate nohighlight">\(a_n\)</span> and <span class="math notranslate nohighlight">\(b_n\)</span> are weighting factors that are specific to the seasonal component at hand and will be estimated by Gloria’s fitting procedure.</p>
+<p>To illustrate how the Fourier order shapes the seasonal fit, we first condense the hourly power consumption data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># Load the data</span>
@@ -386,7 +387,7 @@
 <p>When considering possible seasonalities and Fourier orders for your model, you can follow these guidelines</p>
 <ul class="simple">
 <li><p><strong>Minimum data span</strong>: include a seasonal component only if your data cover at least two complete periods. One period for learning the pattern, one more for confirming its stability. A weekly seasonality requires at least 2 weeks of data.</p></li>
-<li><p><strong>Maximum Fourier order</strong>: the maximum order that can be estimated from data with sampling period <span class="math notranslate nohighlight">\(\Delta t\)</span> is <span class="math notranslate nohighlight">\(\lfloor T / (2 \Delta t) \rfloor\)</span>. For a weekly seasonality (<span class="math notranslate nohighlight">\(T\)</span> = 7 days) on daily data (<span class="math notranslate nohighlight">\(\Delta t\)</span> = 1 day), the order is capped at 3.</p></li>
+<li><p><strong>Maximum Fourier order</strong>: the maximum order that can be estimated from data with sampling period <span class="math notranslate nohighlight">\(\Delta t\)</span> is <span class="math notranslate nohighlight">\(\lfloor T / (2 \Delta t) \rfloor\)</span> following the <a class="reference external" href="https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem">Nyquist theorem</a>. For a weekly seasonality (<span class="math notranslate nohighlight">\(T\)</span> = 7 days) on daily data (<span class="math notranslate nohighlight">\(\Delta t\)</span> = 1 day), the order is capped at 3.</p></li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>

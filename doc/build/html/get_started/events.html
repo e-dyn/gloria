@@ -49,7 +49,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/events';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="next" title="Calendric Data" href="calendric_data.html" />
     <link rel="prev" title="Modeling Trends" href="modeling_trends.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -261,6 +261,7 @@
 <li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
 </div>
 </nav></div>
@@ -322,14 +323,14 @@
                 <article class="bd-article">
                   
   <section id="events">
-<h1>Events<a class="headerlink" href="#events" title="Link to this heading">#</a></h1>
+<span id="ref-events"></span><h1>Events<a class="headerlink" href="#events" title="Link to this heading">#</a></h1>
 <section id="conceptual-idea">
 <h2>Conceptual Idea<a class="headerlink" href="#conceptual-idea" title="Link to this heading">#</a></h2>
 <p>Gloria provides a flexible framework for representing events in your dataset. Imagine, for instance, a brief one-off dip in the data - just like the drop we saw in the <a class="reference internal" href="modeling_trends.html#ref-modeling-trends"><span class="std std-ref">modeling trends</span></a> example between July 6th and 9th. Although we captured that behaviour by tweaking the trend component, describing it as an event is a more intuitive approach and becomes especially valuable when similar events repeat.</p>
 <p>In Gloria, every event has two key parts:</p>
 <ol class="arabic simple">
 <li><p><strong>Anchor</strong>: a reference instant that marks where the event is aligned in time. Anchors are managed through <em>event regressors</em>, namely <a class="reference internal" href="../api/api/gloria.SingleEvent.html#gloria.SingleEvent" title="gloria.SingleEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleEvent</span></code></a>, <a class="reference internal" href="../api/api/gloria.IntermittentEvent.html#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a>, <a class="reference internal" href="../api/api/gloria.PeriodicEvent.html#gloria.PeriodicEvent" title="gloria.PeriodicEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeriodicEvent</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Holiday.html#gloria.Holiday" title="gloria.Holiday"><code class="xref py py-class docutils literal notranslate"><span class="pre">Holiday</span></code></a>.</p></li>
-<li><p><strong>Profile</strong>: the temporal shape that unfolds around any anchor. All profiles available in Gloria are of type <a class="reference internal" href="../api/events.html#ref-events"><span class="std std-ref">Event</span></a> and include <a class="reference internal" href="../api/api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>, <a class="reference internal" href="../api/api/gloria.Cauchy.html#gloria.Cauchy" title="gloria.Cauchy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cauchy</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a>.</p></li>
+<li><p><strong>Profile</strong>: the temporal shape that unfolds around any anchor. All profiles available in Gloria are of type <a class="reference internal" href="#ref-events"><span class="std std-ref">Event</span></a> and include <a class="reference internal" href="../api/api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>, <a class="reference internal" href="../api/api/gloria.Cauchy.html#gloria.Cauchy" title="gloria.Cauchy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cauchy</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a>.</p></li>
 </ol>
 <p>The figure illustrates the idea. In the first column you see <a class="reference internal" href="../api/api/gloria.SingleEvent.html#gloria.SingleEvent" title="gloria.SingleEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleEvent</span></code></a> instances that occur only once: each row shows a different profiles (black solid line), all aligned to the same anchor time (red dashed vertical line).</p>
 <p>You can place several anchors along the time axis - irregularly or at equal intervals - yielding the patterns in the second and third columns and corresponding to <a class="reference internal" href="../api/api/gloria.IntermittentEvent.html#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a> and <a class="reference internal" href="../api/api/gloria.PeriodicEvent.html#gloria.PeriodicEvent" title="gloria.PeriodicEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeriodicEvent</span></code></a>, respectively. At every anchor, the same profile is stamped. Mathematically, the full signal is the convolution of one profile with the collection of anchor times.</p>
@@ -506,11 +507,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="../api/index.html"
+       href="calendric_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Calendric Data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
