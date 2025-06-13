@@ -32,6 +32,8 @@ Methods
    Gloria.from_toml
    Gloria.load_data
    Gloria.make_future_dataframe
+   Gloria.plot
+   Gloria.plot_components
    Gloria.predict
    Gloria.to_dict
    Gloria.to_json

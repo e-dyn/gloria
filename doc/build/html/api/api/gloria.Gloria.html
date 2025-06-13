@@ -32,6 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,6 +44,8 @@
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gloria';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -266,6 +269,8 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.from_toml.html">gloria.Gloria.from_toml</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.load_data.html">gloria.Gloria.load_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.make_future_dataframe.html">gloria.Gloria.make_future_dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.plot.html">gloria.Gloria.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.plot_components.html">gloria.Gloria.plot_components</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.predict.html">gloria.Gloria.predict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.to_dict.html">gloria.Gloria.to_dict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Gloria.to_json.html">gloria.Gloria.to_json</a></li>
@@ -389,7 +394,7 @@ workflow.</p>
 prediction behaviour. Features such as <code class="docutils literal notranslate"><span class="pre">seasonalities</span></code>, <code class="docutils literal notranslate"><span class="pre">external</span>
 <span class="pre">regressors</span></code>, and <code class="docutils literal notranslate"><span class="pre">events</span></code> (or collection of such using <code class="docutils literal notranslate"><span class="pre">protocols</span></code>)
 are added to Gloria objects. Once set up, <a class="reference internal" href="gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>,
-<a class="reference internal" href="gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a>, or <code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code> methods are available to
+<a class="reference internal" href="gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a>, or <a class="reference internal" href="gloria.Gloria.plot.html#gloria.Gloria.plot" title="gloria.Gloria.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> methods are available to
 fit the model to input data and visualize the results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -479,6 +484,12 @@ Must be greater equal to 0.</p></li>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="gloria.Gloria.make_future_dataframe.html#gloria.Gloria.make_future_dataframe" title="gloria.Gloria.make_future_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_future_dataframe</span></code></a>([periods, include_history])</p></td>
 <td><p>Build a timestamp skeleton that extends the training horizon.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="gloria.Gloria.plot.html#gloria.Gloria.plot" title="gloria.Gloria.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>(fcst[, ax, uncertainty, xlabel, ...])</p></td>
+<td><p>Plot the forecast of a Gloria model, including trend line, predictions, and confidence intervals.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="gloria.Gloria.plot_components.html#gloria.Gloria.plot_components" title="gloria.Gloria.plot_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_components</span></code></a>(fcst[, uncertainty, ...])</p></td>
+<td><p>Plot forecast components of a Gloria model using a modern Seaborn style.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>([data, toml_path])</p></td>
 <td><p>Generate forecasts from a <em>fitted</em> <a class="reference internal" href="#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> model.</p></td>

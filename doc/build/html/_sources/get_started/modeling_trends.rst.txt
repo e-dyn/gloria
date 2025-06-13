@@ -1,3 +1,5 @@
+.. _ref-modeling-trends:
+
 Modeling Trends
 ===============
 
@@ -102,7 +104,7 @@ If nothing else is specified - as in our first attempt - Gloria's default is to 
 List of Changepoints
 --------------------
 
-While the last result is already more well-behaved, we see that the two automatically placed changepoints lie in the middle of the drop rather than at its edges. As a result, some daily oscillations are over-estimated whereas others are under-estimated. It would be better to place three custom changepoints: one at each edge of the drop and one in the middle. This can be done by providing a list of changepoints; in that case the automatic grid is disabled.
+While the last result is already more well-behaved, we see that one of the automatically placed changepoints lies in the middle of the drop rather than at its edges while the other is nowhere near the drop. As a result, some daily oscillations are over-estimated whereas others are under-estimated. It would be better to place three custom changepoints: one at each edge of the drop and one in the middle. This can be done by providing a list of changepoints; in that case the automatic grid is disabled.
 
 .. code-block:: python
 
@@ -110,7 +112,7 @@ While the last result is already more well-behaved, we see that the two automati
     changepoints = [
         "2018-07-06 00:00:00",
         "2018-07-07 18:00:00",
-        "2018-07-09 12:00:00",
+        "2018-07-09 12:00:00"
     ]
 
     # Set up the Gloria model

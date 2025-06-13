@@ -1,3 +1,5 @@
+.. _ref-modeling-trends:
+
 Modeling Trends
 ===============
 
