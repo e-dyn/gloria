@@ -81,7 +81,7 @@ Configuring Seasonalities
 When considering possible seasonalities and Fourier orders for your model, you can follow these guidelines
 
 * **Minimum data span**: include a seasonal component only if your data cover at least two complete periods. One period for learning the pattern, one more for confirming its stability. A weekly seasonality requires at least 2 weeks of data.
-* **Maximum Fourier order**: the maximum order that can be estimated from data with sampling period :math:`\Delta t` is :math:`\lfloor T / (2 \Delta t) \rfloor`. For a weekly seasonality (:math:`T` = 7 days) on daily data (:math:`\Delta t` = 1 day), the order is capped at 3.
+* **Maximum Fourier order**: the maximum order that can be estimated from data with sampling period :math:`\Delta t` is :math:`\lfloor T / (2 \Delta t) \rfloor` following the `Nyquist theorem <https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem>`_. For a weekly seasonality (:math:`T` = 7 days) on daily data (:math:`\Delta t` = 1 day), the order is capped at 3.
    
 .. tip::
 
