@@ -396,11 +396,13 @@ directly by the user. The feature matrix produced by
 <a class="reference internal" href="#gloria.Seasonality.make_feature" title="gloria.Seasonality.make_feature"><code class="xref py py-meth docutils literal notranslate"><span class="pre">make_feature()</span></code></a> contains <span class="math notranslate nohighlight">\(2 \cdot N\)</span> columns
 corresponding to the even and odd Fourier terms</p>
 <div class="math notranslate nohighlight">
-\[\sum_{n=1}^{N}{\sin\left(\frac{2\pi n}{T} t\right)
-                + \cos\left(\frac{2\pi n}{T} t\right)}\]</div>
+\[\sum_{n=1}^{N}{a_n\sin\left(\frac{2\pi n}{T} t\right)
+                + b_n\cos\left(\frac{2\pi n}{T} t\right)}\]</div>
 <p>where <span class="math notranslate nohighlight">\(T\)</span> is the fundamental Fourier period and <span class="math notranslate nohighlight">\(N\)</span> is the
 maximum Fourier order to be included, controlled by the parameters
-<code class="docutils literal notranslate"><span class="pre">period</span></code> and <code class="docutils literal notranslate"><span class="pre">order</span></code>, respectively.</p>
+<code class="docutils literal notranslate"><span class="pre">period</span></code> and <code class="docutils literal notranslate"><span class="pre">order</span></code>, respectively. The parameters <span class="math notranslate nohighlight">\(a_n\)</span> and
+<span class="math notranslate nohighlight">\(b_n\)</span> are weighting factor that will be optimized during Gloria’s
+fitting procedure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
