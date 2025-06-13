@@ -23,6 +23,7 @@ extensions = [
     "sphinx_inline_tabs",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx_copybutton",
 ]
 
 

@@ -824,15 +824,14 @@ class PeriodicEvent(SingleEvent):
         """
         # Calculate number of periods with respect to t_start necessary to
         # cover the entire given timestamp range.
-        n_min = (t.min() - self.t_start) // self.period
-        n_max = (t.max() - self.t_start) // self.period
+        n_margin = 2
+        n_min = (t.min() - self.t_start) // self.period - n_margin
+        n_max = (t.max() - self.t_start) // self.period + n_margin
 
         # Generate list of event start times
         t_list = [
             self.t_start + n * self.period for n in range(n_min, n_max + 1)
         ]
-        # Remove timestamps outside of range of t
-        t_list = [t0 for t0 in t_list if t.min() <= t0 <= t.max()]
         return t_list
 
     def get_impact(self: Self, t: pd.Series) -> float:

@@ -32,6 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,10 +44,12 @@
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/modeling_trends';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="next" title="Events" href="events.html" />
     <link rel="prev" title="Basic Usage" href="basic_usage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -256,6 +259,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Modeling Trends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
 </ul>
 </div>
 </nav></div>
@@ -317,7 +321,7 @@
                 <article class="bd-article">
                   
   <section id="modeling-trends">
-<h1>Modeling Trends<a class="headerlink" href="#modeling-trends" title="Link to this heading">#</a></h1>
+<span id="ref-modeling-trends"></span><h1>Modeling Trends<a class="headerlink" href="#modeling-trends" title="Link to this heading">#</a></h1>
 <p>The <em>trend</em> is the component of your data that desribes its local mean value, around which the seasonalities oscillate. Typically, trends are not constant, but evolve upwards or downwards and are subject to sudden changes. Gloria assumes a continuous linear trend model, that is it models a piecewise-linear trend function whose rate is allowed to change at specified <em>changepoints</em> without introducing discontinuities.</p>
 <p>In our introductory example <a class="reference internal" href="basic_usage.html#ref-basic-usage"><span class="std std-ref">basic usage</span></a>, we deliberately chose a section of the power-consumption data set, which does not exhibit trend changes. By setting <code class="docutils literal notranslate"><span class="pre">n_changepoints=0</span></code> we forced the Gloria model to fit a simple linear trend. Now let’s look at a different part of the same data set, several days further back in time.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>             <span class="c1"># For loading and processing</span>
@@ -401,12 +405,12 @@
 </section>
 <section id="list-of-changepoints">
 <h2>List of Changepoints<a class="headerlink" href="#list-of-changepoints" title="Link to this heading">#</a></h2>
-<p>While the last result is already more well-behaved, we see that the two automatically placed changepoints lie in the middle of the drop rather than at its edges. As a result, some daily oscillations are over-estimated whereas others are under-estimated. It would be better to place three custom changepoints: one at each edge of the drop and one in the middle. This can be done by providing a list of changepoints; in that case the automatic grid is disabled.</p>
+<p>While the last result is already more well-behaved, we see that one of the automatically placed changepoints lies in the middle of the drop rather than at its edges while the other is nowhere near the drop. As a result, some daily oscillations are over-estimated whereas others are under-estimated. It would be better to place three custom changepoints: one at each edge of the drop and one in the middle. This can be done by providing a list of changepoints; in that case the automatic grid is disabled.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify the changepoints</span>
 <span class="n">changepoints</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;2018-07-06 00:00:00&quot;</span><span class="p">,</span>
     <span class="s2">&quot;2018-07-07 18:00:00&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;2018-07-09 12:00:00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;2018-07-09 12:00:00&quot;</span>
 <span class="p">]</span>
 
 <span class="c1"># Set up the Gloria model</span>
@@ -451,11 +455,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="../api/index.html"
+       href="events.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Events</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
