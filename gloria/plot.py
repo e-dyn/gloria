@@ -366,12 +366,24 @@ def get_seasonal_component_df(
 
     X_component = m.X[filtered_columns]
 
-    # Extract corresponding coefficients
-    beta_component = [
-        value for key, value in m.prior_scales.items() if key_str in key
-    ]
-    if not beta_component:
-        raise ValueError(f"No coefficients found for component '{component}'.")
+    # Find indices of the relevant columns
+    column_indices = [m.X.columns.get_loc(col) for col in filtered_columns]
+
+    # Extract beta coefficients, if available
+    if (
+        hasattr(m, "model_backend")
+        and hasattr(m.model_backend, "fit_params")
+        and "beta" in m.model_backend.fit_params
+    ):
+        beta_all = np.array(m.model_backend.fit_params["beta"])
+        if beta_all.ndim == 1 and max(column_indices) < len(beta_all):
+            beta_component = beta_all[column_indices]
+        else:
+            raise ValueError(
+                "Beta vector too short or incorrectly structured."
+            )
+    else:
+        raise ValueError("No beta coefficients available in model backend.")
 
     # Calculate component values
     Xb = np.matmul(X_component, beta_component)
@@ -417,13 +429,24 @@ def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
 
     X_component = m.X[filtered_columns]
 
-    beta_component = [
-        value for key, value in m.prior_scales.items() if key_str in key
-    ]
-    if not beta_component:
-        raise ValueError(
-            f"No coefficients found for component {component_name}."
-        )
+    # Find indices of the relevant columns
+    column_indices = [m.X.columns.get_loc(col) for col in filtered_columns]
+
+    # Extract beta coefficients, if available
+    if (
+        hasattr(m, "model_backend")
+        and hasattr(m.model_backend, "fit_params")
+        and "beta" in m.model_backend.fit_params
+    ):
+        beta_all = np.array(m.model_backend.fit_params["beta"])
+        if beta_all.ndim == 1 and max(column_indices) < len(beta_all):
+            beta_component = beta_all[column_indices]
+        else:
+            raise ValueError(
+                "Beta vector too short or incorrectly structured."
+            )
+    else:
+        raise ValueError("No beta coefficients available in model backend.")
 
     Xb = np.matmul(X_component, beta_component)
 
