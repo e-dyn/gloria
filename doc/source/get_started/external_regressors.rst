@@ -1,58 +1,38 @@
-.. _ref-model-selection:
+.. _ref-external_regressors:
 
-Model Selection
-===============
+External Regressors
+====================
 
-Choosing the right statistical model is a key step in time series analysis. Different datasets come with different distributional characteristics - some are continuous, others are discrete; some are symmetric, others skewed or bounded. Gloria supports a range of probabilistic models to allow flexible, context-aware fitting and forecasting.
+Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important **exogenous influences**—factors outside the series that systematically affect its behavior.
 
-By default, Gloria uses the **Normal distribution**. This is suitable for many common use cases involving continuous data with symmetric noise. However, depending on the **data type** (e.g., counts, proportions, durations) and the **behavior** of the series (e.g., skewness, overdispersion, boundedness), more specialized models may yield significantly better results.
+Typical examples of external regressors include:
+- Weather data
+- Economic indicators
 
-This section shows how model selection can improve both the **numerical performance** and the **interpretability** of your forecasts. We illustrate this using count data and the **Negative Binomial** model, but the same principle applies across a variety of models available in Gloria, such as:
+Ignoring these variables can lead to biased estimates, unexplained variability, and underperforming forecasts.
 
-Here’s a **quick reference**:
-
-.. list-table:: 
-   :header-rows: 1
-   :widths: 20 40
-
-   * - Model
-     - Mathematical Characteristics
-   * - Gaussian
-     - Continuous, symmetric, unbounded; mean = location, variance = spread
-   * - Gamma
-     - Continuous, positive-only; right-skewed; controlled by shape and rate
-   * - ExGaussian
-     - Convolution of Normal and Exponential; skewed with heavy tail
-   * - Beta
-     - Continuous on (0, 1); flexible shape; bounded and normalized
-   * - Poisson
-     - Discrete, positive integers; mean = variance (equidispersion)
-   * - Neg. Binomial
-     - Discrete, positive integers; variance > mean (overdispersion)
-   * - Binomial
-     - Discrete; bounded between 0 and n; fixed number of trials
-   * - Beta-Binomial
-     - Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)
-
-
-The goal is always the same: choose the distribution that best reflects your data's constraints and variability.
 
 1. Create and Fit with the Default Model
--------------------
+-----------------------------------------
 
-We are going to use daily data showing the website traffic of data.lacity.org and geohub.lacity.org [#f1]_. The underlying CSV file contains several columns, including a timestamp column called ``Date``, metric columns such as ``Users``, ``Sessions``, and ``Bounce Rate`` for both websites, as well as an aggregated column representing the combined user count across both platforms.
+We are going to use daily data showing the **water level** of Lake Bilancino in Italy [#f1]_. The dataset originates from open hydrological measurements and contains several relevant variables, including:
 
-In the first bit of code, we load the data and convert the ``Date`` to proper datetime objects. Due to some irregularities and missing entries at the beginning of the time series, we restrict the dataset to observations starting from 2017.
+- ``Date``: A timestamp column representing daily measurements
+- ``Rainfall_X``: It indicates the quantity of rain falling, expressed in millimeters (mm), in the area X
+- ``Flow_Rate``: It indicates the lake's flow rate, expressed in cubic meters per seconds (mc/s)
 
-We first model the data using Gloria’s default settings. By default, Gloria assumes a Normal distribution, which models symmetric noise around the mean and does not impose constraints on predicted values.
+This data provides an ideal basis for time series forecasting, particularly because flow rate respond both to internal seasonal patterns and external hydrological dynamics such as rainfall.
 
-Based on prior analysis of the series, we assume the following:
+In the first part of this example, we restrict ourselves to the **default model configuration**, based on Gloria’s core methodology. 
 
-- There are three changepoints in the trend component, reflecting structural shifts in user behavior.
-- The data exhibits weekly and yearly seasonality, likely driven by usage habits and calendar effects.
-- We aim to forecast 30 days into the future.
+We start by applying Gloria with the following assumptions:
 
-This configuration allows us to explore the fit of the default model under realistic assumptions about periodicity and long-term trend changes.
+- **No changepoints** to capture structural shifts in water level trends
+- A **Gamma distribution** to model a positive, right-skewed variation
+- **Daily frequency** (1-day sampling interval)
+- **Yearly seasonality** to account for periodic hydrological patterns
+
+Let’s begin by preparing the data and fitting this baseline model.
 
 .. code-block:: python
 
@@ -63,142 +43,149 @@ This configuration allows us to explore the fit of the default model under reali
 
     # Load the data
     df = pd.read_csv(file)
-
-    # Convert to datetime
-    df['Date'] = pd.DatetimeIndex(df['Date'])
-
-    # Restrict data 
-    df = df[df["Date"] >= "2017-01-01"].reset_index(drop=True)
-
-    # Sort data by Date
-    df_gloria = df.sort_values(by="Date")
-
+    
     # Save the column names and data configurations for later usage
-    metric_name = "Socrata Sessions"
+    n_changepoints = 0
+    model = "gamma"
+    metric_name = "Flow_Rate"
+    regressor_name = ["Rainfall_S_Piero", "Rainfall_Mangona", "Rainfall_S_Agata",
+                      "Rainfall_Cavallina", "Rainfall_Le_Croci"]
     timestamp_name = "Date"
     sampling_period = "1 d"
-    n_changepoints = 3
+
+    # Convert to datetime
+    df["Date"] = pd.to_datetime(df["Date"], format="%d/%m/%Y")
+
+    # Restrict data 
+    df_gloria = df[
+        (df["Date"] >= "2013-01-01")
+        & (df["Date"] <= "2015-12-31")
+        & (df[regressor_name].notna().all(axis=1))
+        & (df[metric_name].notna())
+    ].reset_index(drop=True)
+
+
+    # Sort data by Date
+    df_gloria = df_gloria.sort_values(by="Date")
 
     # Set up the model
     my_model = Gloria(
-    metric_name = metric_name,
-    timestamp_name = timestamp_name,
-    sampling_period = sampling_period,
-    n_changepoints = n_changepoints
+        model=model,
+        metric_name=metric_name,
+        timestamp_name=timestamp_name,
+        sampling_period=sampling_period,
+        n_changepoints=n_changepoints
     )
 
     # Add seasonalities
-    protocol = CalendricData(
-        yearly_seasonality = False,
-        weekly_seasonality = True
-    )
+    protocol = CalendricData(yearly_seasonality=True, weekly_seasonality=False)
     my_model.add_protocol(protocol)
 
     # Fit the model to the data
     my_model.fit(df_gloria)
 
     # Predict
-    prediction = my_model.predict(periods=30)
+    future_dates = my_model.make_future_dataframe(periods=1)
+    forecast = my_model.predict(future_dates)
 
     # Plot
     my_model.plot(prediction, include_legend = True)
 
 
-.. image:: pics/model_selection_figure01.png
+.. image:: pics/external_regressors_figure01.png
    :width: 700
-   :alt: model selection figure 1 - normal distribution fit
+   :alt: external regressor figure 1 - no regressor
 
-Although a fit and forecast are produced that formally meet the chosen model’s requirements, the result is not well-suited for this type of data and leads to several shortcomings:
+Although a forecast is produced that formally satisfies the assumptions of the selected model — in this case, the **Gamma distribution** — the results still reveal important shortcomings when modeling lake level dynamics **without external regressors**:
 
-- Predicted values may be non-integer or even negative, which is not meaningful for count data. Since the observed values are discrete and strictly non-negative, this leads to interpretational problems.
-- The Normal model assumes symmetric noise around the mean, but count data are naturally asymmetric due to the lower bound at zero. As a result, the model fails to reflect the skewness present in the data.
-- This symmetry assumption often results in unrealistically narrow confidence intervals, particularly on the lower end where the model would allow for values below zero—something impossible in reality.
+- The Gamma distribution correctly ensures that predicted values are **strictly positive** and can handle **right-skewed** distributions, which is appropriate for many natural measurements like water levels.
+- However, because the model relies **solely on internal patterns** such as trend and seasonality, it cannot respond to **external shocks** or variations caused by hydrological drivers like inflow or drainage.
+- As a result, the forecasts may still **miss critical inflection points** or shifts in the data, especially during anomalous events or periods of sudden change.
 
-In short, although a Normal model may yield a mathematically valid fit, its structural assumptions are misaligned with the data's properties, which leads to both quantitative inaccuracies and qualitative misinterpretation.
+In short, without external context such as the **rainfall** in specific areas, it cannot fully explain or anticipate the dynamics observed in the system, limiting both the **accuracy** and **interpretability** of its forecasts.
 
-3. Improve the Fit with a Suitable Model: Negative Binomial
-------------------------------------------------------------
 
-o better model count data with high variability, we switch to the Negative Binomial distribution. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.
 
-More importantly, it meets two essential requirements often seen in real-world count data:
+2. Improve the Fit with External Regressors: Rainfall Inputs
+-------------------------------------------------------------
 
-- It enforces a natural lower bound at zero, ensuring that predicted values are non-negative.
-- It operates on discrete (integer) values, rather than continuous ones.
+To improve model performance and capture the true drivers of variation in flow rate, we now extend the model by incorporating **external regressors** — specifically, **rainfall measurements** from the various catchment areas that feed into the lake.
 
-This makes the Negative Binomial model an appropriate choice for modeling data that consists of positive integer values.
+Although the lake’s inflow and outflow (`Flow_Rate`) is a key driver of water level changes, this variable is itself influenced by upstream precipitation. By including rainfall data from multiple hydrological zones as regressors, we provide Gloria with **causal context** that improves its ability to **explain and forecast** future changes in lake level.
 
-Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function :meth:`~gloria.Gloria.cast_series_to_kind` for this purpose:
+It is crucial that the external regressor data are available and clean for every time point in the historical dataset to ensure a reliable fit. Furthermore, for forecasting, corresponding regressor values must be known or accurately forecasted for future periods. For weather-related regressors like rainfall, this dependency is often manageable over shorter forecast horizons, where meteorological predictions are typically more reliable.
+
+We continue to use the **Gamma distribution**, which remains well-suited for modeling positive, skewed, and continuous quantities like lake levels. However, the model now includes a structured regressor component that helps modulate the forecast based on real-world environmental inputs.
+
+
 
 .. code-block:: python
 
-    # Cast data to uint64
-    df_gloria[metric_name] = cast_series_to_kind(df_gloria[metric_name], "u")
-
     # Set up the model
-    m = Gloria(
-        model = "negative binomial",
-        metric_name = metric_name,
-        timestamp_name = timestamp_name,
-        sampling_period = sampling_period,
-        n_changepoints = n_changepoints
+    my_model = Gloria(
+        model=model,
+        metric_name=metric_name,
+        timestamp_name=timestamp_name,
+        sampling_period=sampling_period,
+        n_changepoints=n_changepoints
     )
 
     # Add seasonalities
-    protocol = CalendricData(
-        yearly_seasonality = True,
-        weekly_seasonality = True
-    )
-
+    protocol = CalendricData(yearly_seasonality=True, weekly_seasonality=False)
     my_model.add_protocol(protocol)
 
+    # Add regressors
+    for name in regressor_name:
+        my_model.add_external_regressor(name=name, prior_scale = 5.0)
+        
     # Fit the model to the data
     my_model.fit(df_gloria)
 
     # Predict
-    forecast = my_model.predict(periods=30)
+    future_dates = my_model.make_future_dataframe(periods=1)
+    
+    #  All external regressors must be available for both the entire historical
+    # and future dataframes
+    if isinstance(regressor_name, str):
+        regressor_name = [regressor_name]
+
+    future_dates = future_dates.merge(
+        df[["Date"] + regressor_name], on="Date", how="left"
+    )
+    
+    forecast = my_model.predict(future_dates)
 
     # Plot
-    my_model.plot(forecast, include_legend = True)
+    my_model.plot(prediction, include_legend = True)
 
 
 The revised model leads to:
 
-- Realistic predictions (non-negative integers)
-- More accurate reflection of data spread
-- Asymmetric confidence intervals, capturing extreme days
-- Better overall interpretability
+- More responsive predictions that reflect external influences
+- Improved accuracy by incorporating causal drivers
+- Confidence intervals that adapt to changes driven by regressors
+- Enhanced interpretability through inclusion of meaningful external factors
 
-.. image:: pics/model_selection_figure02.png
+.. image:: pics/external_regressors_figure02.png
   :width: 700
   :alt: model selection figure 2 - negative binomial distribution fit
 
 .. rubric:: Summary
 
-Different data types require different assumptions. Gloria provides a range of built-in probabilistic models to support modeling:
+Incorporating external regressors into time series models like Gloria can substantially enhance forecast quality and interpretability. While traditional models capture internal dynamics such as trend and seasonality, they often miss crucial exogenous drivers that influence the target variable.
 
-- Continuous, positive, bounded, and skewed values  
-- Discrete counts or proportions  
-- Overdispersed or irregular patterns
+By including meaningful external regressors, the model benefits from:
 
-When the default Normal model does not align with your data characteristics, consider switching to a more suitable distribution. This small change can lead to more meaningful forecasts and reduce interpretational pitfalls.
+- Greater responsiveness to real-world events and external shocks  
+- Improved explanatory power by linking observed variations to causal factors  
+- More accurate and robust forecasts with adaptive confidence intervals  
+- Enhanced interpretability, enabling stakeholders to understand key influences on the series 
+- Reliable performance only when regressor data is consistently available—both historically and (via forecast) into the future 
 
+In practical applications, ensuring the availability of external regressors for both historical and future time points is essential to fully leverage their predictive potential.
 
-Detailed Model Selection Logic
-------------------------------
-
-Choosing the correct distribution depends on:
-
-1. Is the outcome **continuous** or **discrete**?
-2. Are there **natural bounds** (e.g. zero, one, or upper limits)?
-3. Is there **overdispersion** (variance > mean)?
-
-The following decision tree helps guide model choice:
-
-.. image:: pics/model_selection_tree.png
-   :width: 700
-   :alt: Model selection decision tree
+Overall, extending Gloria with external regressors allows for richer, context-aware models that better reflect the complexities of real-world systems.
 
 .. rubric:: Footnotes
 
-.. [#f1] The data are available through `Data.gov <https://data.lacity.org/api/views/d4kt-8j3n/rows.csv?accessType=DOWNLOAD>`_.
+.. [#f1] The data are available through `Kaggle <https://www.kaggle.com/code/iamleonie/intro-to-time-series-forecasting/input?select=Lake_Bilancino.csv>`_.
