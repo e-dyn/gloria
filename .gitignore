@@ -2,7 +2,6 @@ gloria/stan_models/cmdstan-*/
 **/__pycache__
 **/logfiles/
 **/models
-**/doc/build
 **/scripts/data/GloriaBetaTest
 **/gloria/stan_models
 demonstrations/
