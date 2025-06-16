@@ -50,7 +50,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API Reference" href="../api/index.html" />
-    <link rel="prev" title="Events" href="events.html" />
+    <link rel="prev" title="Model Selection" href="model_selection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0.dev1" />
@@ -261,6 +261,8 @@
 <li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Calendric Data</a></li>
 </ul>
 </div>
@@ -404,14 +406,14 @@
 <span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">calendric_protocol</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The resulting plot below shows that two to three of the 13 added holidays have a measurable impact on the fit.</p>
+<p>The resulting plot below shows that two to three out of 13 added holidays have a measurable impact on the fit.</p>
 <a class="reference internal image-reference" href="../_images/06_calendric_data_fig03.png"><img alt="Fitting the power consumption data set on a daily basis after configuring the model using the CalendricData protocol." class="align-center" src="../_images/06_calendric_data_fig03.png" style="width: 700px;" />
 </a>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>Seasonalities and events are not added to the model when <a class="reference internal" href="../api/api/gloria.Gloria.add_protocol.html#gloria.Gloria.add_protocol" title="gloria.Gloria.add_protocol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_protocol()</span></code></a> is called but during the subsequent <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> procedure.</p></li>
-<li><p>Manually added seasonalities and events take precedence over their protocol counterparts. If you wish to treat a single holiday differently from the rest, simply add using <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a>.</p></li>
+<li><p>Manually added seasonalities and events take precedence over their protocol counterparts. If you wish to treat a single holiday differently from the rest, simply add it using <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a>.</p></li>
 <li><p>The ruleset applied by the calendric data protocol when adding seasonalities mimics Prophet’s behaviour for the better part. Refer to <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> for details.</p></li>
 </ul>
 </div>
@@ -429,12 +431,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="events.html"
+       href="model_selection.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Events</p>
+        <p class="prev-next-title">Model Selection</p>
       </div>
     </a>
     <a class="right-next"

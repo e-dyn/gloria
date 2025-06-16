@@ -12,4 +12,6 @@ On this page you find a series of basic tutorials that should get you up and run
    seasonalities
    modeling_trends
    events
+   external_regressors
+   model_selection
    calendric_data
