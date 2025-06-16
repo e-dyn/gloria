@@ -38,7 +38,7 @@ Here’s a **quick reference**:
 The goal is always the same: choose the distribution that best reflects your data's constraints and variability.
 
 1. Create and Fit with the Default Model
--------------------
+----------------------------------------
 
 We are going to use daily data showing the website traffic of data.lacity.org and geohub.lacity.org [#f1]_. The underlying CSV file contains several columns, including a timestamp column called ``Date``, metric columns such as ``Users``, ``Sessions``, and ``Bounce Rate`` for both websites, as well as an aggregated column representing the combined user count across both platforms.
 
@@ -117,7 +117,7 @@ Although a fit and forecast are produced that formally meet the chosen model’s
 In short, although a Normal model may yield a mathematically valid fit, its structural assumptions are misaligned with the data's properties, which leads to both quantitative inaccuracies and qualitative misinterpretation.
 
 3. Improve the Fit with a Suitable Model: Negative Binomial
-------------------------------------------------------------
+-----------------------------------------------------------
 
 o better model count data with high variability, we switch to the Negative Binomial distribution. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.
 

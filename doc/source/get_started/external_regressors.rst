@@ -1,7 +1,7 @@
 .. _ref-external_regressors:
 
 External Regressors
-====================
+===================
 
 Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important **exogenous influences**—factors outside the series that systematically affect its behavior.
 
@@ -13,7 +13,7 @@ Ignoring these variables can lead to biased estimates, unexplained variability, 
 
 
 1. Create and Fit with the Default Model
------------------------------------------
+----------------------------------------
 
 We are going to use daily data showing the **water level** of Lake Bilancino in Italy [#f1]_. The dataset originates from open hydrological measurements and contains several relevant variables, including:
 
@@ -107,7 +107,7 @@ In short, without external context such as the **rainfall** in specific areas, i
 
 
 2. Improve the Fit with External Regressors: Rainfall Inputs
--------------------------------------------------------------
+------------------------------------------------------------
 
 To improve model performance and capture the true drivers of variation in flow rate, we now extend the model by incorporating **external regressors** — specifically, **rainfall measurements** from the various catchment areas that feed into the lake.
 
