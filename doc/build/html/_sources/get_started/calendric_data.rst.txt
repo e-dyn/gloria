@@ -100,7 +100,7 @@ Use of Protocols
     # Add the protocol
     m.add_protocol(calendric_protocol)
 
-The resulting plot below shows that two to three of the 13 added holidays have a measurable impact on the fit.
+The resulting plot below shows that two to three out of 13 added holidays have a measurable impact on the fit.
 
 .. image:: pics/06_calendric_data_fig03.png
   :align: center
@@ -110,5 +110,5 @@ The resulting plot below shows that two to three of the 13 added holidays have a
 .. note::
 
     * Seasonalities and events are not added to the model when :meth:`~Gloria.add_protocol` is called but during the subsequent :meth:`~Gloria.fit` procedure.
-    * Manually added seasonalities and events take precedence over their protocol counterparts. If you wish to treat a single holiday differently from the rest, simply add using :meth:`~Gloria.add_event`.
+    * Manually added seasonalities and events take precedence over their protocol counterparts. If you wish to treat a single holiday differently from the rest, simply add it using :meth:`~Gloria.add_event`.
     * The ruleset applied by the calendric data protocol when adding seasonalities mimics Prophet's behaviour for the better part. Refer to :class:`CalendricData` for details.

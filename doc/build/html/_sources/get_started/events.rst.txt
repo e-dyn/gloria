@@ -1,4 +1,4 @@
-.. _ref-events:
+.. _ref-events-tutorial:
 .. currentmodule:: gloria
 
 Events
@@ -123,7 +123,7 @@ Besides modelling single-occurrence events with :class:`SingleEvent`, Gloria off
 * :class:`Holiday` for country- and region-specific public holidays.
 
 .. tip::
-  :class:`Holiday` is Gloria's analogue to Prophet's holiday component, but it is more flexible: you may attach any event profile, whereas Prophet is limited to 1-day boxcars. See the :class:`CalendricData` protocol as well as our :ref:`Protocols <ref-protocols>` tutorial on configuring Gloria models similar to Prophet.
+  :class:`Holiday` is Gloria's analogue to Prophet's holiday component, but it is more flexible: you may attach any event profile, whereas Prophet is limited to 1-day boxcars. See the :class:`CalendricData` protocol as well as our :ref:`Calendric Data <ref-calendric-data>` tutorial on configuring Gloria models similar to Prophet.
 
 The next example shows how to capture the regular weekend drop in power consumption discussed in :ref:`Basic Usage <ref-basic-usage>`. We omit the weekly seasonality term and instead insert a :class:`PeriodicEvent` that places a Gaussian profile at the midpoint of each weekend.
 
