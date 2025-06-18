@@ -319,6 +319,7 @@ def assemble_config(
 
     # Validate augmentation config if there is any
     if method == "fit" and "augmentation_config" in kwargs:
+        print(kwargs)
         kwargs["augmentation_config"] = BinomialPopulation(
             **kwargs["augmentation_config"]
         )
