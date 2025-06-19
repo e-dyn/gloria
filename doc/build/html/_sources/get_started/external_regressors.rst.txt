@@ -3,17 +3,18 @@
 External Regressors
 ===================
 
-Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important **exogenous influences**—factors outside the series that systematically affect its behavior.
+Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important **exogenous influences**, that is factors outside the series that systematically affect its behavior.
 
 Typical examples of external regressors include:
+
 - Weather data
 - Economic indicators
 
 Ignoring these variables can lead to biased estimates, unexplained variability, and underperforming forecasts.
 
 
-1. Create and Fit with the Default Model
-----------------------------------------
+Baseline Fit with Default Model
+-------------------------------
 
 We are going to use daily data showing the **water level** of Lake Bilancino in Italy [#f1]_. The dataset originates from open hydrological measurements and contains several relevant variables, including:
 
@@ -96,7 +97,7 @@ Let’s begin by preparing the data and fitting this baseline model.
    :width: 700
    :alt: external regressor figure 1 - no regressor
 
-Although a forecast is produced that formally satisfies the assumptions of the selected model — in this case, the **Gamma distribution** — the results still reveal important shortcomings when modeling lake level dynamics **without external regressors**:
+Although a forecast is produced that formally satisfies the assumptions of the selected model - in this case, the **Gamma distribution** —- the results still reveal important shortcomings when modeling lake level dynamics **without external regressors**:
 
 - The Gamma distribution correctly ensures that predicted values are **strictly positive** and can handle **right-skewed** distributions, which is appropriate for many natural measurements like water levels.
 - However, because the model relies **solely on internal patterns** such as trend and seasonality, it cannot respond to **external shocks** or variations caused by hydrological drivers like inflow or drainage.
@@ -106,8 +107,8 @@ In short, without external context such as the **rainfall** in specific areas, i
 
 
 
-2. Improve the Fit with External Regressors: Rainfall Inputs
-------------------------------------------------------------
+Improved Fit with External Regressors: Rainfall Inputs
+------------------------------------------------------
 
 To improve model performance and capture the true drivers of variation in flow rate, we now extend the model by incorporating **external regressors** — specifically, **rainfall measurements** from the various catchment areas that feed into the lake.
 

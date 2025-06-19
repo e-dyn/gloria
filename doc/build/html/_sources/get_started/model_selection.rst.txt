@@ -1,5 +1,7 @@
 .. _ref-model-selection:
 
+.. currentmodule:: gloria
+
 Model Selection
 ===============
 
@@ -7,38 +9,49 @@ Choosing the right statistical model is a key step in time series analysis. Diff
 
 By default, Gloria uses the **Normal distribution**. This is suitable for many common use cases involving continuous data with symmetric noise. However, depending on the **data type** (e.g., counts, proportions, durations) and the **behavior** of the series (e.g., skewness, overdispersion, boundedness), more specialized models may yield significantly better results.
 
-This section shows how model selection can improve both the **numerical performance** and the **interpretability** of your forecasts. We illustrate this using count data and the **Negative Binomial** model, but the same principle applies across a variety of models available in Gloria, such as:
+This section shows how model selection can improve both the **numerical performance** and the **interpretability** of your forecasts. We illustrate this using count data and the **Negative Binomial** model, but the same principle applies across a variety of models available in Gloria.
 
 Here’s a **quick reference**:
 
 .. list-table:: 
    :header-rows: 1
-   :widths: 20 40
+   :widths: 20 45 35
 
    * - Model
      - Mathematical Characteristics
+     - ``model = ...`` 
    * - Gaussian
      - Continuous, symmetric, unbounded; mean = location, variance = spread
+     - ``"normal"``
    * - Gamma
      - Continuous, positive-only; right-skewed; controlled by shape and rate
+     - ``"gamma"``
    * - ExGaussian
      - Convolution of Normal and Exponential; skewed with heavy tail
+     - not available
    * - Beta
      - Continuous on (0, 1); flexible shape; bounded and normalized
+     - ``"beta"``
    * - Poisson
      - Discrete, positive integers; mean = variance (equidispersion)
+     - ``"poisson"``
    * - Neg. Binomial
      - Discrete, positive integers; variance > mean (overdispersion)
+     - ``"negative binomial"``
    * - Binomial
      - Discrete; bounded between 0 and n; fixed number of trials
+     - ``"binomial constant n"`` or ``"binomial vectorized n"``
    * - Beta-Binomial
      - Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)
+     - ``"beta-binomial constant n"``
 
+
+The last column in this table refers to the value you have to set for the ``model`` argument in the :class:`Gloria` constructor. 
 
 The goal is always the same: choose the distribution that best reflects your data's constraints and variability.
 
-1. Create and Fit with the Default Model
-----------------------------------------
+Baseline Fit with Default Model
+-------------------------------
 
 We are going to use daily data showing the website traffic of data.lacity.org and geohub.lacity.org [#f1]_. The underlying CSV file contains several columns, including a timestamp column called ``Date``, metric columns such as ``Users``, ``Sessions``, and ``Bounce Rate`` for both websites, as well as an aggregated column representing the combined user count across both platforms.
 
@@ -116,19 +129,19 @@ Although a fit and forecast are produced that formally meet the chosen model’s
 
 In short, although a Normal model may yield a mathematically valid fit, its structural assumptions are misaligned with the data's properties, which leads to both quantitative inaccuracies and qualitative misinterpretation.
 
-3. Improve the Fit with a Suitable Model: Negative Binomial
------------------------------------------------------------
+Improved Fit with Suitable Model: Negative Binomial
+---------------------------------------------------
 
-o better model count data with high variability, we switch to the Negative Binomial distribution. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.
+To better model count data with high variability, we switch to the *Negative Binomial* distribution by setting ``model="negative binomial"`` in the :class:`Gloria` constructor. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.
 
 More importantly, it meets two essential requirements often seen in real-world count data:
 
-- It enforces a natural lower bound at zero, ensuring that predicted values are non-negative.
+- It enforces a natural lower bound at zero, ensuring that predicted values are non-negative [#f2]_.
 - It operates on discrete (integer) values, rather than continuous ones.
 
-This makes the Negative Binomial model an appropriate choice for modeling data that consists of positive integer values.
+This makes the Negative Binomial model an appropriate choice for modeling data that consist of positive integer values.
 
-Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function :meth:`~gloria.Gloria.cast_series_to_kind` for this purpose:
+Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function :meth:`cast_series_to_kind` for this purpose:
 
 .. code-block:: python
 
@@ -173,6 +186,7 @@ The revised model leads to:
   :width: 700
   :alt: model selection figure 2 - negative binomial distribution fit
 
+
 .. rubric:: Summary
 
 Different data types require different assumptions. Gloria provides a range of built-in probabilistic models to support modeling:
@@ -193,7 +207,7 @@ Choosing the correct distribution depends on:
 2. Are there **natural bounds** (e.g. zero, one, or upper limits)?
 3. Is there **overdispersion** (variance > mean)?
 
-The following decision tree helps guide model choice:
+The following decision tree helps guide model choice [#f3]_:
 
 .. image:: pics/model_selection_tree.png
    :width: 700
@@ -202,3 +216,5 @@ The following decision tree helps guide model choice:
 .. rubric:: Footnotes
 
 .. [#f1] The data are available through `Data.gov <https://data.lacity.org/api/views/d4kt-8j3n/rows.csv?accessType=DOWNLOAD>`_.
+.. [#f2] See also the `/scripts/03_demo_version switch.py <https://github.com/benkambs/gloria-betatest/blob/main/scripts/03_demo_version%20switch.py>`_ example.
+.. [#f3] Figure was taken from `here <https://schmettow.github.io/New_Stats/glm.html>`_ 

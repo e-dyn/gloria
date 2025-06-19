@@ -49,8 +49,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/model_selection';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Calendric Data" href="calendric_data.html" />
-    <link rel="prev" title="External Regressors" href="external_regressors.html" />
+    <link rel="next" title="Decomposition Types" href="decomposition_types.html" />
+    <link rel="prev" title="Events" href="events.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0.dev1" />
@@ -261,8 +261,9 @@
 <li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
-<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
 </div>
@@ -328,49 +329,60 @@
 <span id="ref-model-selection"></span><h1>Model Selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h1>
 <p>Choosing the right statistical model is a key step in time series analysis. Different datasets come with different distributional characteristics - some are continuous, others are discrete; some are symmetric, others skewed or bounded. Gloria supports a range of probabilistic models to allow flexible, context-aware fitting and forecasting.</p>
 <p>By default, Gloria uses the <strong>Normal distribution</strong>. This is suitable for many common use cases involving continuous data with symmetric noise. However, depending on the <strong>data type</strong> (e.g., counts, proportions, durations) and the <strong>behavior</strong> of the series (e.g., skewness, overdispersion, boundedness), more specialized models may yield significantly better results.</p>
-<p>This section shows how model selection can improve both the <strong>numerical performance</strong> and the <strong>interpretability</strong> of your forecasts. We illustrate this using count data and the <strong>Negative Binomial</strong> model, but the same principle applies across a variety of models available in Gloria, such as:</p>
+<p>This section shows how model selection can improve both the <strong>numerical performance</strong> and the <strong>interpretability</strong> of your forecasts. We illustrate this using count data and the <strong>Negative Binomial</strong> model, but the same principle applies across a variety of models available in Gloria.</p>
 <p>Here’s a <strong>quick reference</strong>:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
-<col style="width: 33.3%" />
-<col style="width: 66.7%" />
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Model</p></th>
 <th class="head"><p>Mathematical Characteristics</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">...</span></code></p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Gaussian</p></td>
 <td><p>Continuous, symmetric, unbounded; mean = location, variance = spread</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Gamma</p></td>
 <td><p>Continuous, positive-only; right-skewed; controlled by shape and rate</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;gamma&quot;</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>ExGaussian</p></td>
 <td><p>Convolution of Normal and Exponential; skewed with heavy tail</p></td>
+<td><p>not available</p></td>
 </tr>
 <tr class="row-odd"><td><p>Beta</p></td>
 <td><p>Continuous on (0, 1); flexible shape; bounded and normalized</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;beta&quot;</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Poisson</p></td>
 <td><p>Discrete, positive integers; mean = variance (equidispersion)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;poisson&quot;</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Neg. Binomial</p></td>
 <td><p>Discrete, positive integers; variance &gt; mean (overdispersion)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;negative</span> <span class="pre">binomial&quot;</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Binomial</p></td>
 <td><p>Discrete; bounded between 0 and n; fixed number of trials</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;binomial</span> <span class="pre">constant</span> <span class="pre">n&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;binomial</span> <span class="pre">vectorized</span> <span class="pre">n&quot;</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Beta-Binomial</p></td>
 <td><p>Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;beta-binomial</span> <span class="pre">constant</span> <span class="pre">n&quot;</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>The last column in this table refers to the value you have to set for the <code class="docutils literal notranslate"><span class="pre">model</span></code> argument in the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> constructor.</p>
 <p>The goal is always the same: choose the distribution that best reflects your data’s constraints and variability.</p>
-<section id="create-and-fit-with-the-default-model">
-<h2>1. Create and Fit with the Default Model<a class="headerlink" href="#create-and-fit-with-the-default-model" title="Link to this heading">#</a></h2>
+<section id="baseline-fit-with-default-model">
+<h2>Baseline Fit with Default Model<a class="headerlink" href="#baseline-fit-with-default-model" title="Link to this heading">#</a></h2>
 <p>We are going to use daily data showing the website traffic of data.lacity.org and geohub.lacity.org <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The underlying CSV file contains several columns, including a timestamp column called <code class="docutils literal notranslate"><span class="pre">Date</span></code>, metric columns such as <code class="docutils literal notranslate"><span class="pre">Users</span></code>, <code class="docutils literal notranslate"><span class="pre">Sessions</span></code>, and <code class="docutils literal notranslate"><span class="pre">Bounce</span> <span class="pre">Rate</span></code> for both websites, as well as an aggregated column representing the combined user count across both platforms.</p>
 <p>In the first bit of code, we load the data and convert the <code class="docutils literal notranslate"><span class="pre">Date</span></code> to proper datetime objects. Due to some irregularities and missing entries at the beginning of the time series, we restrict the dataset to observations starting from 2017.</p>
 <p>We first model the data using Gloria’s default settings. By default, Gloria assumes a Normal distribution, which models symmetric noise around the mean and does not impose constraints on predicted values.</p>
@@ -439,16 +451,16 @@
 </ul>
 <p>In short, although a Normal model may yield a mathematically valid fit, its structural assumptions are misaligned with the data’s properties, which leads to both quantitative inaccuracies and qualitative misinterpretation.</p>
 </section>
-<section id="improve-the-fit-with-a-suitable-model-negative-binomial">
-<h2>3. Improve the Fit with a Suitable Model: Negative Binomial<a class="headerlink" href="#improve-the-fit-with-a-suitable-model-negative-binomial" title="Link to this heading">#</a></h2>
-<p>o better model count data with high variability, we switch to the Negative Binomial distribution. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.</p>
+<section id="improved-fit-with-suitable-model-negative-binomial">
+<h2>Improved Fit with Suitable Model: Negative Binomial<a class="headerlink" href="#improved-fit-with-suitable-model-negative-binomial" title="Link to this heading">#</a></h2>
+<p>To better model count data with high variability, we switch to the <em>Negative Binomial</em> distribution by setting <code class="docutils literal notranslate"><span class="pre">model=&quot;negative</span> <span class="pre">binomial&quot;</span></code> in the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> constructor. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.</p>
 <p>More importantly, it meets two essential requirements often seen in real-world count data:</p>
 <ul class="simple">
-<li><p>It enforces a natural lower bound at zero, ensuring that predicted values are non-negative.</p></li>
+<li><p>It enforces a natural lower bound at zero, ensuring that predicted values are non-negative <a class="footnote-reference brackets" href="#f2" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p></li>
 <li><p>It operates on discrete (integer) values, rather than continuous ones.</p></li>
 </ul>
-<p>This makes the Negative Binomial model an appropriate choice for modeling data that consists of positive integer values.</p>
-<p>Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function <code class="xref py py-meth docutils literal notranslate"><span class="pre">cast_series_to_kind()</span></code> for this purpose:</p>
+<p>This makes the Negative Binomial model an appropriate choice for modeling data that consist of positive integer values.</p>
+<p>Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function <a class="reference internal" href="../api/api/gloria.cast_series_to_kind.html#gloria.cast_series_to_kind" title="gloria.cast_series_to_kind"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cast_series_to_kind()</span></code></a> for this purpose:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cast data to uint64</span>
 <span class="n">df_gloria</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
 
@@ -505,7 +517,7 @@
 <li><p>Are there <strong>natural bounds</strong> (e.g. zero, one, or upper limits)?</p></li>
 <li><p>Is there <strong>overdispersion</strong> (variance &gt; mean)?</p></li>
 </ol>
-<p>The following decision tree helps guide model choice:</p>
+<p>The following decision tree helps guide model choice <a class="footnote-reference brackets" href="#f3" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>:</p>
 <a class="reference internal image-reference" href="../_images/model_selection_tree.png"><img alt="Model selection decision tree" src="../_images/model_selection_tree.png" style="width: 700px;" />
 </a>
 <p class="rubric">Footnotes</p>
@@ -513,6 +525,14 @@
 <aside class="footnote brackets" id="f1" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>The data are available through <a class="reference external" href="https://data.lacity.org/api/views/d4kt-8j3n/rows.csv?accessType=DOWNLOAD">Data.gov</a>.</p>
+</aside>
+<aside class="footnote brackets" id="f2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>See also the <a class="reference external" href="https://github.com/benkambs/gloria-betatest/blob/main/scripts/03_demo_version%20switch.py">/scripts/03_demo_version switch.py</a> example.</p>
+</aside>
+<aside class="footnote brackets" id="f3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Figure was taken from <a class="reference external" href="https://schmettow.github.io/New_Stats/glm.html">here</a></p>
 </aside>
 </aside>
 </section>
@@ -529,20 +549,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="external_regressors.html"
+       href="events.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">External Regressors</p>
+        <p class="prev-next-title">Events</p>
       </div>
     </a>
     <a class="right-next"
-       href="calendric_data.html"
+       href="decomposition_types.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Calendric Data</p>
+        <p class="prev-next-title">Decomposition Types</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -565,8 +585,8 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-and-fit-with-the-default-model">1. Create and Fit with the Default Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improve-the-fit-with-a-suitable-model-negative-binomial">3. Improve the Fit with a Suitable Model: Negative Binomial</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#baseline-fit-with-default-model">Baseline Fit with Default Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improved-fit-with-suitable-model-negative-binomial">Improved Fit with Suitable Model: Negative Binomial</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detailed-model-selection-logic">Detailed Model Selection Logic</a></li>
 </ul>
   </nav></div>

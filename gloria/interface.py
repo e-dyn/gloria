@@ -122,7 +122,8 @@ class Gloria(BaseModel):
         The distribution model to be used. Can be any of ``"poisson"``,
         ``"binomial constant n"``, ``"binomial vectorized n"``,
         ``"negative binomial"``, ``"gamma"``, ``"beta"``, ``"beta-binomial
-        constant n"``, or ``"normal"``.
+        constant n"``, or ``"normal"``. See :ref:`Model Selection
+        <ref-model-selection>` tutorial for further information.
     sampling_period : Union[pd.Timedelta, str]
         Minimum spacing between two adjacent samples either as ``pd.Timedelta``
         or a compatible string such as ``"1d"`` or ``"20 min"``.
@@ -1211,11 +1212,10 @@ class Gloria(BaseModel):
         config = assemble_config(
             method="fit", model=self, toml_path=toml_path, **kwargs
         )
-
         self.fit_kwargs = dict(
             optimize_mode=config["optimize_mode"],
             sample=config["sample"],
-            augmentation_config=config["augmentation_config"],
+            augmentation_config=dict(config["augmentation_config"]),
         )
 
         # Prepare the model and input data

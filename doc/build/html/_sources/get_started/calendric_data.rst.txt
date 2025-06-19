@@ -1,4 +1,5 @@
 .. _ref-calendric-data:
+
 .. currentmodule:: gloria
 
 Calendric Data
