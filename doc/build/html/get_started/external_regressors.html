@@ -49,8 +49,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/external_regressors';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Model Selection" href="model_selection.html" />
-    <link rel="prev" title="Events" href="events.html" />
+    <link rel="next" title="Calendric Data" href="calendric_data.html" />
+    <link rel="prev" title="Decomposition Types" href="decomposition_types.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0.dev1" />
@@ -261,8 +261,9 @@
 <li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
 </div>
@@ -326,13 +327,15 @@
                   
   <section id="external-regressors">
 <span id="ref-external-regressors"></span><h1>External Regressors<a class="headerlink" href="#external-regressors" title="Link to this heading">#</a></h1>
-<p>Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important <strong>exogenous influences</strong>—factors outside the series that systematically affect its behavior.</p>
-<p>Typical examples of external regressors include:
-- Weather data
-- Economic indicators</p>
+<p>Incorporating external regressors can significantly improve the quality and interpretability of time series forecasts. While autoregressive models focus solely on the internal dynamics of a time series (e.g., trends, seasonality, autocorrelation), they may miss important <strong>exogenous influences</strong>, that is factors outside the series that systematically affect its behavior.</p>
+<p>Typical examples of external regressors include:</p>
+<ul class="simple">
+<li><p>Weather data</p></li>
+<li><p>Economic indicators</p></li>
+</ul>
 <p>Ignoring these variables can lead to biased estimates, unexplained variability, and underperforming forecasts.</p>
-<section id="create-and-fit-with-the-default-model">
-<h2>1. Create and Fit with the Default Model<a class="headerlink" href="#create-and-fit-with-the-default-model" title="Link to this heading">#</a></h2>
+<section id="baseline-fit-with-default-model">
+<h2>Baseline Fit with Default Model<a class="headerlink" href="#baseline-fit-with-default-model" title="Link to this heading">#</a></h2>
 <p>We are going to use daily data showing the <strong>water level</strong> of Lake Bilancino in Italy <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The dataset originates from open hydrological measurements and contains several relevant variables, including:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Date</span></code>: A timestamp column representing daily measurements</p></li>
@@ -407,7 +410,7 @@
 </div>
 <a class="reference internal image-reference" href="../_images/external_regressors_figure01.png"><img alt="external regressor figure 1 - no regressor" src="../_images/external_regressors_figure01.png" style="width: 700px;" />
 </a>
-<p>Although a forecast is produced that formally satisfies the assumptions of the selected model — in this case, the <strong>Gamma distribution</strong> — the results still reveal important shortcomings when modeling lake level dynamics <strong>without external regressors</strong>:</p>
+<p>Although a forecast is produced that formally satisfies the assumptions of the selected model - in this case, the <strong>Gamma distribution</strong> —- the results still reveal important shortcomings when modeling lake level dynamics <strong>without external regressors</strong>:</p>
 <ul class="simple">
 <li><p>The Gamma distribution correctly ensures that predicted values are <strong>strictly positive</strong> and can handle <strong>right-skewed</strong> distributions, which is appropriate for many natural measurements like water levels.</p></li>
 <li><p>However, because the model relies <strong>solely on internal patterns</strong> such as trend and seasonality, it cannot respond to <strong>external shocks</strong> or variations caused by hydrological drivers like inflow or drainage.</p></li>
@@ -415,8 +418,8 @@
 </ul>
 <p>In short, without external context such as the <strong>rainfall</strong> in specific areas, it cannot fully explain or anticipate the dynamics observed in the system, limiting both the <strong>accuracy</strong> and <strong>interpretability</strong> of its forecasts.</p>
 </section>
-<section id="improve-the-fit-with-external-regressors-rainfall-inputs">
-<h2>2. Improve the Fit with External Regressors: Rainfall Inputs<a class="headerlink" href="#improve-the-fit-with-external-regressors-rainfall-inputs" title="Link to this heading">#</a></h2>
+<section id="improved-fit-with-external-regressors-rainfall-inputs">
+<h2>Improved Fit with External Regressors: Rainfall Inputs<a class="headerlink" href="#improved-fit-with-external-regressors-rainfall-inputs" title="Link to this heading">#</a></h2>
 <p>To improve model performance and capture the true drivers of variation in flow rate, we now extend the model by incorporating <strong>external regressors</strong> — specifically, <strong>rainfall measurements</strong> from the various catchment areas that feed into the lake.</p>
 <p>Although the lake’s inflow and outflow (<cite>Flow_Rate</cite>) is a key driver of water level changes, this variable is itself influenced by upstream precipitation. By including rainfall data from multiple hydrological zones as regressors, we provide Gloria with <strong>causal context</strong> that improves its ability to <strong>explain and forecast</strong> future changes in lake level.</p>
 <p>It is crucial that the external regressor data are available and clean for every time point in the historical dataset to ensure a reliable fit. Furthermore, for forecasting, corresponding regressor values must be known or accurately forecasted for future periods. For weather-related regressors like rainfall, this dependency is often manageable over shorter forecast horizons, where meteorological predictions are typically more reliable.</p>
@@ -501,20 +504,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="events.html"
+       href="decomposition_types.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Events</p>
+        <p class="prev-next-title">Decomposition Types</p>
       </div>
     </a>
     <a class="right-next"
-       href="model_selection.html"
+       href="calendric_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Model Selection</p>
+        <p class="prev-next-title">Calendric Data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -537,8 +540,8 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-and-fit-with-the-default-model">1. Create and Fit with the Default Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improve-the-fit-with-external-regressors-rainfall-inputs">2. Improve the Fit with External Regressors: Rainfall Inputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#baseline-fit-with-default-model">Baseline Fit with Default Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improved-fit-with-external-regressors-rainfall-inputs">Improved Fit with External Regressors: Rainfall Inputs</a></li>
 </ul>
   </nav></div>
 

@@ -85,4 +85,4 @@ When considering possible seasonalities and Fourier orders for your model, you c
    
 .. tip::
 
-  When using the :class:`~gloria.CalendricData` protocol, these rules are automatically applied setting ``yearly_seasonality``, ``weekly_seasonality`` etc. to ``"auto"``. 
+  When using the :class:`~gloria.CalendricData` protocol, these rules are automatically applied setting ``yearly_seasonality``, ``weekly_seasonality`` etc. to ``"auto"``. For more information, see the :ref:`Calendric Data <ref-calendric-data>` tutorial.
