@@ -1858,6 +1858,11 @@ class Gloria(BaseModel):
         # Remove top and right spines for cleaner look
         sns.despine(ax=ax)
 
+        # Rotate tick labels for clarity
+        for label in ax.get_xticklabels():
+            label.set_rotation(45)
+            label.set_horizontalalignment("right")
+
         # Remove default legend unless specified
         try:
             ax.get_legend().remove()
@@ -1977,11 +1982,9 @@ class Gloria(BaseModel):
                     m=self,
                     component=plot_name,
                     start_offset=weekly_start,
-                    period=int(
-                        np.floor(
+                    period=np.rint(
                             self.model_extra["seasonalities"][plot_name].period
-                        )
-                    ),
+                        ).astype(int),
                     ax=ax,
                 )
             elif plot_name in ["events", "external_regressors"]:

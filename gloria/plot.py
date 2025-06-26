@@ -186,7 +186,7 @@ def plot_seasonality_component(
     if component != "weekly":
         start_offset = 0
     df = get_seasonal_component_df(m, component, period, start_offset % 7)
-
+  
     # Define date range for one seasonality period
     start_date = min(pd.to_datetime(df[m.timestamp_name]))
     end_date = start_date + pd.Timedelta(days=period)
@@ -205,54 +205,44 @@ def plot_seasonality_component(
 
     # Light grid for context
     ax.grid(True, which="major", c="gray", ls="-", lw=1, alpha=0.2)
-
-    # Set x-ticks and format according to seasonality type
-    n_ticks = 8
-    xticks = pd.to_datetime(
-        np.linspace(start_date.value, end_date.value, n_ticks)
-    ).to_pydatetime()
-    ax.set_xticks(xticks)
-
-    if component == "yearly":
-        month_starts = pd.date_range(start=start_date, end=end_date, freq="MS")
-        ax.set_xticks(month_starts)
-        fmt = FuncFormatter(
-            lambda x, pos=None: "{dt:%b} {dt.day}".format(dt=num2date(x))
-        )
-        ax.xaxis.set_major_formatter(fmt)
-    elif component == "weekly":
-        ax.set_xlim(
-            start_date - pd.Timedelta(hours=12),
-            start_date + pd.Timedelta(days=period - 1, hours=12),
-        )
-        fmt = FuncFormatter(
-            lambda x, pos=None: "{dt:%A}".format(dt=num2date(x))
-        )
-        ax.xaxis.set_major_formatter(fmt)
-    elif component == "daily":
-        fmt = FuncFormatter(
-            lambda x, pos=None: "{dt:%T}".format(dt=num2date(x))
-        )
-        ax.xaxis.set_major_formatter(fmt)
-    elif period <= 2:
-        fmt = FuncFormatter(
-            lambda x, pos=None: "{dt:%T}".format(dt=num2date(x))
-        )
-        ax.xaxis.set_major_formatter(fmt)
-    else:
-        fmt = FuncFormatter(
-            lambda x, pos=None: "{:.0f}".format(
-                1 + pos * (period - 1) / (n_ticks - 1)
-            )
-        )
-        ax.xaxis.set_major_formatter(fmt)
-
+        
     ax.set_ylabel(component.capitalize())
+
+   # Format x-axis depending on component
+    x_dates = pd.to_datetime(df[m.timestamp_name])
+    if component == "yearly":
+        ax.set_xticks(x_dates)
+        tick_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        ax.set_xticklabels(tick_labels) 
+    elif component == "quarterly":
+        ax.set_xticks(x_dates)
+        ax.set_xticklabels([f"Month {d+1}" for d in range(3)])
+    elif component == "monthly":
+        ax.set_xticks(x_dates)
+        ax.set_xticklabels([f"{d+1}" for d in range(31)])  # 01-Jan
+    elif component == "weekly":
+        ax.set_xticks(x_dates)
+        weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", 
+                    "Friday", "Saturday", "Sunday"]
+        rotated_weekdays = weekdays[start_offset:] + weekdays[:start_offset]
+        ax.set_xticklabels(rotated_weekdays)
+    elif component == "daily":
+        ax.set_xticks(x_dates)
+        ax.set_xticklabels([f"{H}:00" for H in range(23)])  # 00:00, 01:00
+    else:
+        # Fallback: auto format
+        locator = AutoDateLocator()
+        formatter = AutoDateFormatter(locator)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
+
 
     # Rotate tick labels for clarity
     for label in ax.get_xticklabels():
         label.set_rotation(45)
         label.set_horizontalalignment("right")
+
 
     return artists
 
@@ -324,7 +314,12 @@ def plot_event_component(
     sns.despine(ax=ax)
 
     # Axis label and tick formatting
-    label_name = "Events" if component == "events" else "External Regressors"
+    label_name = (
+        "Events + Holidays"
+        if component == "events"
+        else "External Regressors"
+    )
+    
     ax.set_ylabel(label_name, labelpad=10)
     for label in ax.get_xticklabels():
         label.set_rotation(45)
@@ -356,7 +351,7 @@ def get_seasonal_component_df(
     pd.DataFrame
         DataFrame with columns 'ds' (date) and 'y' (seasonality value).
     """
-    start_date = "2017-01-01"
+
     key_str = f"Seasonality__delim__{component}__delim__"
 
     # Filter relevant columns in design matrix
@@ -388,16 +383,17 @@ def get_seasonal_component_df(
     # Calculate component values
     Xb = np.matmul(X_component, beta_component)
 
-    # Create timeline for the seasonality period
-    days = pd.date_range(start=start_date, periods=period) + pd.Timedelta(
-        days=start_offset
-    )
+    period_start = get_period_start(m.history[m.timestamp_name], component)
 
-    relevant_y = Xb.iloc[start_offset : start_offset + period].reset_index(
-        drop=True
-    )
+    timerange = m.history[m.timestamp_name].iloc[
+        period_start + start_offset : period_start + start_offset + period
+    ]
 
-    return pd.DataFrame({m.timestamp_name: days, m.metric_name: relevant_y})
+    Xb = Xb.iloc[
+        period_start + start_offset : period_start + start_offset + period
+    ]
+        
+    return pd.DataFrame({m.timestamp_name: timerange, m.metric_name: Xb})
 
 
 def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
@@ -416,16 +412,30 @@ def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
     pd.DataFrame
         DataFrame with columns 'ds' (date) and 'y' (component value).
     """
+    
     if component == "events":
-        component_name = "Holiday"
+        component_names = [
+            "Holiday",
+            "SingleEvent",
+            "IntermittentEvent",
+            "PeriodicEvent",
+        ]
     else:
-        component_name = "ExternalRegressor"
-
-    key_str = f"{component_name}__delim__"
-
-    filtered_columns = [col for col in m.X.columns if key_str in col]
+        component_names = ["ExternalRegressor"]
+    
+    # Create all possible keys for filtering
+    key_strs = [f"{name}__delim__" for name in component_names]
+    
+    # Filter all columns that contain one of the keys
+    filtered_columns = [
+        col for col in m.X.columns
+        if any(key in col for key in key_strs)
+    ]
+    
     if not filtered_columns:
-        raise ValueError(f"No columns found for component {component_name}.")
+        raise ValueError(
+            f"No columns found for component(s): {', '.join(component_names)}."
+        )
 
     X_component = m.X[filtered_columns]
 
@@ -451,7 +461,7 @@ def get_event_component_df(m: "Gloria", component: str) -> pd.DataFrame:
     Xb = np.matmul(X_component, beta_component)
 
     days = m.history[m.timestamp_name]
-
+    
     return pd.DataFrame({m.timestamp_name: days, m.metric_name: Xb})
 
 
@@ -493,3 +503,47 @@ def add_changepoints_to_plot(
         for cp in signif_changepoints
     ]
     return artists
+
+
+def get_period_start(dates: pd.Series, component: str):
+    """
+    Returns the index in `dates` where a new period starts,
+    depending on the selected `component`.
+    
+    Parameters:
+    -----------
+    dates : pd.Series
+        Series of datetime objects.
+    component : str
+        One of ['yearly', 'quarterly', 'monthly', 'weekly', 'daily'].
+    
+    Returns:
+    --------
+    pd.Index
+        Index of row where a new period begins.
+    """
+    dates = pd.to_datetime(dates)  # Sicherstellen, dass es datetime ist
+
+    if component == "yearly":
+        # Vergleiche Jahr mit Vorgänger
+        mask = dates.dt.year != dates.dt.year.shift(1)
+    elif component == "quarterly":
+        # Quartal erkennen: Q1=1, Q2=2, ...
+        mask = dates.dt.quarter != dates.dt.quarter.shift(1)
+    elif component == "monthly":
+        # Monat erkennen
+        mask = dates.dt.month != dates.dt.month.shift(1)
+    elif component == "weekly":
+        # Kalenderwoche vergleichen
+        mask = dates.dt.isocalendar().week != dates.dt.isocalendar().week.shift(1)
+    elif component == "daily":
+        # Tag vergleichen
+        mask = dates.dt.date != dates.dt.date.shift(1)
+    else:
+        raise ValueError(f"Unknown component: {component}")
+
+    # Erster Index (0) ist immer ein Periodenstart, also setzen wir mask[0] = True
+    mask.iloc[0] = False
+
+    # Rückgabe der Indizes mit True
+    return dates.index[mask][0]
