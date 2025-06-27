@@ -1761,7 +1761,6 @@ class Gloria(BaseModel):
         -------
         :class:`matplotlib.figure.Figure`
             The figure object containing the forecast plot.
-
         """
 
         if not self.is_fitted:

@@ -50,7 +50,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/decomposition_types';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="External Regressors" href="external_regressors.html" />
+    <link rel="next" title="Saturation" href="saturation.html" />
     <link rel="prev" title="Model Selection" href="model_selection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -264,6 +264,7 @@
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
@@ -360,7 +361,7 @@
 </section>
 <section id="comparison-of-types">
 <h2>Comparison of Types<a class="headerlink" href="#comparison-of-types" title="Link to this heading">#</a></h2>
-<p>To illustrate additive vs. multiplicative behaviour, we take a well-known data set showing multiplicative behaviour, namely the <a class="reference external" href="https://www.kaggle.com/datasets/rakannimer/air-passengers">Air Passengers</a> available at Kaggle. The following code fits and plots the data with a <em>poisson</em> model for count data.</p>
+<p>To illustrate additive vs. multiplicative behaviour, we take a look at a well-known example showing multiplicative behaviour, namely the <a class="reference external" href="https://www.kaggle.com/datasets/rakannimer/air-passengers">Air Passengers</a> data set available at Kaggle. The following code fits and plots the data with a <em>poisson</em> model for count data.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It is worth mentioning that the data set is sampled on a monthly basis. As the length of a month varies, Gloria cannot handle monthly data directly. Instead we resample the data using the <em>average</em> length of a month.</p>
@@ -410,10 +411,10 @@
 </pre></div>
 </div>
 <p>The result is shown in the plot below. We can see an exponentially growing trend, nicely tracing the data average. Also, the oscillations scale with the trend as one expects from a multiplicative model.</p>
-<a class="reference internal image-reference" href="../_images/decomposition_types_fig01.png"><img alt="Fitting the air passengers data with a multiplicative decomposition model" src="../_images/decomposition_types_fig01.png" style="width: 700px;" />
+<a class="reference internal image-reference" href="../_images/decomposition_types_fig01.png"><img alt="Fitting the air passengers data with a multiplicative decomposition model" class="align-center" src="../_images/decomposition_types_fig01.png" style="width: 700px;" />
 </a>
 <p>The next image shows the result of the same code, but using the <em>normal</em> distribution. The fit is much worse, showing a strictly linear trend and constant seasonality amplitudes.</p>
-<a class="reference internal image-reference" href="../_images/decomposition_types_fig02.png"><img alt="Fitting the air passengers data with an additive decomposition model" src="../_images/decomposition_types_fig02.png" style="width: 700px;" />
+<a class="reference internal image-reference" href="../_images/decomposition_types_fig02.png"><img alt="Fitting the air passengers data with an additive decomposition model" class="align-center" src="../_images/decomposition_types_fig02.png" style="width: 700px;" />
 </a>
 </section>
 </section>
@@ -438,11 +439,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="external_regressors.html"
+       href="saturation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">External Regressors</p>
+        <p class="prev-next-title">Saturation</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -264,6 +264,7 @@
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 </ul>
@@ -333,7 +334,7 @@
 \[f_\text{seas}(t) \approx \sum_{n=1}^{N}{a_n\sin\left(\frac{2\pi n}{T} t\right)
                 + b_n\cos\left(\frac{2\pi n}{T} t\right)}.\]</div>
 <p>Here <span class="math notranslate nohighlight">\(T\)</span> is the fundamental period of the Fourier series, e.g. <span class="math notranslate nohighlight">\(T\)</span> = 7 days for patterns that repeat on a weekly basis. The upper limit <span class="math notranslate nohighlight">\(N\)</span> of the Fourier sum is known as its <em>order</em>, where higher orders are able to describe faster oscillations. Eventually, the parameters <span class="math notranslate nohighlight">\(a_n\)</span> and <span class="math notranslate nohighlight">\(b_n\)</span> are weighting factors that are specific to the seasonal component at hand and will be estimated by Gloria’s fitting procedure.</p>
-<p>To illustrate how the Fourier order shapes the seasonal fit, we first condense the hourly power consumption data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.</p>
+<p>To illustrate how the Fourier order shapes the seasonal fit, we use the power consumption data already seen in the <a class="reference internal" href="basic_usage.html#ref-basic-usage"><span class="std std-ref">basic usage</span></a> tutorial. First, we condense the hourly power consumption data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># Load the data</span>
@@ -346,7 +347,7 @@
 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Datetime&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>The resulting series spans more than 14 years, and we model it with a single yearly seasonal component.</p>
+<p>The resulting series spans more than 14 years, and we model it with just a yearly seasonal component.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
 
 <span class="c1"># Set up the Gloria model</span>
@@ -378,7 +379,7 @@
 <p>We deliberatly choose <code class="docutils literal notranslate"><span class="pre">fourier_order=2</span></code> because the weekly data show two clear demand peaks each year: one in mid-winter and another in mid-summer. As the plot below confirms, an order 2 Fourier series captures this dominant annual pattern faithfully.</p>
 <a class="reference internal image-reference" href="../_images/05_seasonalities_fig01.png"><img alt="Fitting weekly power consumption data with a yearly seasonality of order 2" class="align-center" src="../_images/05_seasonalities_fig01.png" style="width: 700px;" />
 </a>
-<p>The next plot shows the result when raising the order from 2 to 10, which lets the yearly Fourier series capture fine-grained oscillations - small mid-season bumps and dips that the lower order smoothed out.</p>
+<p>The next plot shows the result when raising the order from 2 to 10, which lets the yearly Fourier series capture fine-grained oscillations such as small mid-season bumps and dips that the lower order smoothed out.</p>
 <a class="reference internal image-reference" href="../_images/05_seasonalities_fig02.png"><img alt="Fitting weekly power consumption data with a yearly seasonality of order 10" class="align-center" src="../_images/05_seasonalities_fig02.png" style="width: 700px;" />
 </a>
 <div class="admonition warning">
@@ -389,12 +390,12 @@
 <h2>Configuring Seasonalities<a class="headerlink" href="#configuring-seasonalities" title="Link to this heading">#</a></h2>
 <p>When considering possible seasonalities and Fourier orders for your model, you can follow these guidelines</p>
 <ul class="simple">
-<li><p><strong>Minimum data span</strong>: include a seasonal component only if your data cover at least two complete periods. One period for learning the pattern, one more for confirming its stability. A weekly seasonality requires at least 2 weeks of data.</p></li>
+<li><p><strong>Minimum data span</strong>: include a seasonal component only if your data cover at least two complete periods. One period for learning the pattern, one more for confirming its stability. For instance, a weekly seasonality requires at least 2 weeks of data.</p></li>
 <li><p><strong>Maximum Fourier order</strong>: the maximum order that can be estimated from data with sampling period <span class="math notranslate nohighlight">\(\Delta t\)</span> is <span class="math notranslate nohighlight">\(\lfloor T / (2 \Delta t) \rfloor\)</span> following the <a class="reference external" href="https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem">Nyquist theorem</a>. For a weekly seasonality (<span class="math notranslate nohighlight">\(T\)</span> = 7 days) on daily data (<span class="math notranslate nohighlight">\(\Delta t\)</span> = 1 day), the order is capped at 3.</p></li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>When using the <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol, these rules are automatically applied setting <code class="docutils literal notranslate"><span class="pre">yearly_seasonality</span></code>, <code class="docutils literal notranslate"><span class="pre">weekly_seasonality</span></code> etc. to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>. For more information, see the <a class="reference internal" href="calendric_data.html#ref-calendric-data"><span class="std std-ref">Calendric Data</span></a> tutorial.</p>
+<p>When using the <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol, these rules are automatically applied setting <code class="docutils literal notranslate"><span class="pre">yearly_seasonality</span></code>, <code class="docutils literal notranslate"><span class="pre">weekly_seasonality</span></code> etc. to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>. For more information, see the <a class="reference internal" href="calendric_data.html#ref-calendric-data"><span class="std std-ref">calendric data</span></a> tutorial.</p>
 </div>
 </section>
 </section>

@@ -63,7 +63,7 @@ LINK_FUNC_MAP = {
 class BinomialPopulation(BaseModel):
     """
     Configuration parameters used by the augment_data method of the model
-    BinomialConstantN and BetaBinomialConstantNto determine the population
+    BinomialConstantN and BetaBinomialConstantN to determine the population
     size.
     """
 

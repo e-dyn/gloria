@@ -5,9 +5,9 @@
 Calendric Data
 ==============
 
-Gloria defines calendric data as time-series that are affected by yearly, quarterly, monthly, weekly, or daily seasonalities as well as public holiday's. As this covers a wide range of diverse data sets, Gloria offers convenience functionalities to set up your models for calendric data.
+Gloria defines calendric data as time-series that are affected by yearly, quarterly, monthly, weekly, or daily seasonalities as well as public holidays. As this covers a wide range of diverse data sets, Gloria offers convenience functionalities to set up your models for calendric data.
 
-To demonstrate them, we once more employ the power consumption data set, but aggregate it on a daily basis and restrict to the last 3 years for the sake of clarity. Also we set up the usual model without changepoints, and include yearly and weekly seasonalities. The plot showing this first bare fit is shown below.
+To demonstrate them, we once more employ the power consumption data set, but aggregate it on a daily basis and restrict it to the last 3 years. Also we set up the usual model without changepoints, and include yearly and weekly seasonalities. The plot showing this first bare fit is shown below.
 
 .. code:: python
 
