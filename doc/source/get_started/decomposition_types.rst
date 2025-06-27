@@ -52,7 +52,7 @@ Gloria uses the logit link function for **binomial**, **beta**, and **beta-binom
 Comparison of Types
 -------------------
 
-To illustrate additive vs. multiplicative behaviour, we take a well-known data set showing multiplicative behaviour, namely the `Air Passengers <https://www.kaggle.com/datasets/rakannimer/air-passengers>`_ available at Kaggle. The following code fits and plots the data with a *poisson* model for count data. 
+To illustrate additive vs. multiplicative behaviour, we take a look at a well-known example showing multiplicative behaviour, namely the `Air Passengers <https://www.kaggle.com/datasets/rakannimer/air-passengers>`_ data set available at Kaggle. The following code fits and plots the data with a *poisson* model for count data. 
 
 .. note::
     It is worth mentioning that the data set is sampled on a monthly basis. As the length of a month varies, Gloria cannot handle monthly data directly. Instead we resample the data using the *average* length of a month.
@@ -105,11 +105,13 @@ To illustrate additive vs. multiplicative behaviour, we take a well-known data s
 The result is shown in the plot below. We can see an exponentially growing trend, nicely tracing the data average. Also, the oscillations scale with the trend as one expects from a multiplicative model.
 
 .. image:: pics/decomposition_types_fig01.png
+   :align: center
    :width: 700
    :alt: Fitting the air passengers data with a multiplicative decomposition model
    
 The next image shows the result of the same code, but using the *normal* distribution. The fit is much worse, showing a strictly linear trend and constant seasonality amplitudes.
 
 .. image:: pics/decomposition_types_fig02.png
+   :align: center
    :width: 700
    :alt: Fitting the air passengers data with an additive decomposition model
