@@ -311,9 +311,11 @@ class ModelBackendBase(ABC):
         # Set the model name as attribute
         self.model_name = model_name
         # The following attributes are evaluated and set during fitting. For
-        # the time being initialize them with None.
+        # the time being initialize them with defaults.
         self.stan_data = ModelInputData()
         self.stan_inits = ModelParams()
+        self.data_offset = 0
+        self.data_scale = 1
         # The type hint helps MyPy to recognize that the stan_fit objects have
         # the stan_variables() method. the '#type:ignore' let's us initialize
         # it with None
@@ -497,7 +499,8 @@ class ModelBackendBase(ABC):
         )
         try:
             optimized_model = self.model.optimize(**optimize_args)
-        except RuntimeError:
+        except RuntimeError as e:
+            raise RuntimeError from e
             # Fall back on Newton
             get_logger().warning(
                 "Optimization terminated abnormally. Falling back to Newton."
@@ -753,7 +756,10 @@ class ModelBackendBase(ABC):
         beta = pars["beta"]
         Xb = np.matmul(X, beta)
 
-        return trend, trend + Xb
+        return (
+            self.data_offset + self.data_scale * trend,
+            self.data_offset + self.data_scale * (trend + Xb),
+        )
 
     def predict_trend(
         self: Self, t: np.ndarray, pars: dict[str, Union[float, np.ndarray]]
@@ -1345,7 +1351,7 @@ class NegativeBinomial(ModelBackendBase):
 
     # These class attributes must be defined by each model backend
     # Location of the stan file
-    stan_file = BASEPATH / "stan_models/negative_binomial.stan"
+    stan_file = BASEPATH / "stan_models/negative_binomial_norm.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
     # Pair of 'link function'/'inverse link function'
@@ -1415,6 +1421,10 @@ class NegativeBinomial(ModelBackendBase):
         # scaled using the natural logarithm, zeros need to be replaced.
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = self.link_pair.link(y_scaled)
+
+        self.data_offset = np.min(y_scaled)
+        self.data_scale = np.max(y_scaled) - self.data_offset
+        y_scaled = (y_scaled - self.data_offset) / self.data_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
