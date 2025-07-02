@@ -48,6 +48,12 @@ data {
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
+  
+  // Get normalization parameters for linear model
+  vector[T] y_real = to_vector(to_array_1d(y));       // Convert y to vector of real values
+  vector[T] y_linked = log(y_real);                   // Apply link function
+  real linked_offset = min(y_linked);                 // Offset of linear model
+  real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
 }
 
 parameters {
@@ -58,8 +64,10 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend;
-  trend = linear_trend(k, m, delta, t, A, t_change);
+  vector[T] trend = linear_trend(
+      k, m, delta,
+      t, A, t_change
+  );
 }
 
 model {
@@ -72,7 +80,12 @@ model {
   // Likelihood
   y ~ poisson_log_glm(
     X,
-    trend,
-    beta
+    linked_offset + linked_scale * trend,    // Denormalized trend
+    linked_scale * beta                      // Denormalized regression coefficients
   );
+}
+
+generated quantities {
+  real print_offset = linked_offset;
+  real print_scale = linked_scale;
 }

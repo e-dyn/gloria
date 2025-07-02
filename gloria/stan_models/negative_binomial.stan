@@ -48,6 +48,12 @@ data {
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
+  
+  // Get normalization parameters for linear model
+  vector[T] y_real = to_vector(to_array_1d(y));       // Convert y to vector of real values
+  vector[T] y_linked = log(y_real);                   // Apply link function
+  real linked_offset = min(y_linked);                 // Offset of linear model
+  real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
 }
 
 parameters {
@@ -59,9 +65,15 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
-  real scale = inv_square(kappa);   // Scale parameter for distribution
-  vector[T] eta = trend + X * beta;
+  vector[T] trend = linear_trend(
+      k, m, delta,
+      t, A, t_change
+  );
+  real scale = inv_square(kappa);       // Scale parameter for distribution
+  vector[T] eta = (                     // Denormalization if linear model
+      linked_offset 
+      + linked_scale*(trend + X * beta)
+  );
 }
 
 model {

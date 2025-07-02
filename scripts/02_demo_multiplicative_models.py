@@ -55,7 +55,7 @@ data["passengers"] = cast_series_to_kind(data["passengers"], "u")
 #   - poisson: amplitude grows with trend. good fit
 #   - normal: amplitude stays constant. only fits on average for mid range values
 m = Gloria(
-    model="poisson",
+    model="gamma",
     metric_name="passengers",
     timestamp_name="date",
     sampling_period=freq,

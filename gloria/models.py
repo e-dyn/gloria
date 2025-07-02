@@ -34,6 +34,8 @@ from gloria.utilities.types import Distribution
 
 stan_logger = logging.getLogger("cmdstanpy")
 stan_logger.setLevel(logging.ERROR)
+for handler in stan_logger.handlers:
+    handler.setLevel(logging.ERROR)
 
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
@@ -314,8 +316,8 @@ class ModelBackendBase(ABC):
         # the time being initialize them with defaults.
         self.stan_data = ModelInputData()
         self.stan_inits = ModelParams()
-        self.data_offset = 0
-        self.data_scale = 1
+        self.linked_offset = 0
+        self.linked_scale = 1
         # The type hint helps MyPy to recognize that the stan_fit objects have
         # the stan_variables() method. the '#type:ignore' let's us initialize
         # it with None
@@ -499,8 +501,7 @@ class ModelBackendBase(ABC):
         )
         try:
             optimized_model = self.model.optimize(**optimize_args)
-        except RuntimeError as e:
-            raise RuntimeError from e
+        except RuntimeError:
             # Fall back on Newton
             get_logger().warning(
                 "Optimization terminated abnormally. Falling back to Newton."
@@ -544,6 +545,9 @@ class ModelBackendBase(ABC):
         if stan_data.X.size:
             self.stan_data.X *= q
             self.fit_params["beta"] /= q
+
+        print(self.stan_fit.stan_variable("print_offset"))
+        print(self.stan_fit.stan_variable("print_scale"))
 
         return self.stan_fit
 
@@ -757,8 +761,8 @@ class ModelBackendBase(ABC):
         Xb = np.matmul(X, beta)
 
         return (
-            self.data_offset + self.data_scale * trend,
-            self.data_offset + self.data_scale * (trend + Xb),
+            self.linked_offset + self.linked_scale * trend,
+            self.linked_offset + self.linked_scale * (trend + Xb),
         )
 
     def predict_trend(
@@ -1250,16 +1254,19 @@ class Normal(ModelBackendBase):
             Guesses for the model parameters depending on the data
 
         """
-        ## -- 1. Augment stan_data -- ##
-        # Add observed noise
-        # stan_data.sigma_obs = 1  # type: ignore[attr-defined]
-
-        ## -- 2. Calculate initial parameter guesses -- ##
+        ## -- 1. Calculate initial parameter guesses -- ##
         # No scaling needed for normal distribution model as its link function
         # is the identity-function.
+        y_scaled = self.link_pair.link(stan_data.y)
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+
+        print("python offset:", self.linked_offset)
+        print("python scale:", self.linked_scale)
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(stan_data.y, stan_data)
+        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
         ini_params.sigma = 2
         return stan_data, ini_params
 
@@ -1339,6 +1346,10 @@ class Poisson(ModelBackendBase):
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = self.link_pair.link(y_scaled)
 
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
+
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
         return stan_data, ini_params
@@ -1351,7 +1362,7 @@ class NegativeBinomial(ModelBackendBase):
 
     # These class attributes must be defined by each model backend
     # Location of the stan file
-    stan_file = BASEPATH / "stan_models/negative_binomial_norm.stan"
+    stan_file = BASEPATH / "stan_models/negative_binomial.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
     # Pair of 'link function'/'inverse link function'
@@ -1422,9 +1433,9 @@ class NegativeBinomial(ModelBackendBase):
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = self.link_pair.link(y_scaled)
 
-        self.data_offset = np.min(y_scaled)
-        self.data_scale = np.max(y_scaled) - self.data_offset
-        y_scaled = (y_scaled - self.data_offset) / self.data_scale
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1507,6 +1518,10 @@ class Gamma(ModelBackendBase):
         # scaled using the natural logarithm, zeros need to be replaced.
         y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
         y_scaled = self.link_pair.link(y_scaled)
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
