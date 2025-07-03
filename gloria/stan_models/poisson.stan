@@ -57,10 +57,10 @@ transformed data {
 }
 
 parameters {
-  real k;                       // Base trend growth rate
-  real m;                       // Trend offset
-  vector[S] delta;              // Trend rate adjustments
-  vector[K] beta;               // Slope for y
+  real<lower=-0.5, upper=0.5> k;                       // Base trend growth rate
+  real<lower=0, upper=1> m;                       // Trend offset
+  vector<lower=-0.5, upper=0.5>[S] delta;              // Trend rate adjustments
+  vector<lower=-1, upper=1>[K] beta;               // Slope for y
 }
 
 transformed parameters {
@@ -72,10 +72,10 @@ transformed parameters {
 
 model {
   // Priors
-  k ~ normal(0, 5);
-  m ~ normal(0, 5);
-  delta ~ double_exponential(0, tau);
-  beta ~ normal(0, sigmas);
+  k ~ normal(0,0.5);
+  m ~ normal(0.5,0.5);
+  delta ~ double_exponential(0, 0.036*tau); // Chosen such that with tau=3 probability to get a delta on its bounds is ~1%
+  beta ~ normal(0, 0.155*sigmas); // Chosen such that with sigma=3 probability to get a beta on its bounds is ~1%
   
   // Likelihood
   y ~ poisson_log_glm(

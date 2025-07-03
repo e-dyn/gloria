@@ -33,9 +33,9 @@ from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
 stan_logger = logging.getLogger("cmdstanpy")
-stan_logger.setLevel(logging.ERROR)
+stan_logger.setLevel(logging.CRITICAL)
 for handler in stan_logger.handlers:
-    handler.setLevel(logging.ERROR)
+    handler.setLevel(logging.CRITICAL)
 
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
@@ -490,8 +490,9 @@ class ModelBackendBase(ABC):
 
         # If the user wishes also initialize beta via an MAP estimation
         get_logger().debug(
-            "Optimizing model parameters using" f" {optimize_mode}."
+            f"Optimizing model parameters using {optimize_mode}."
         )
+
         optimize_args = dict(
             data=stan_data.dict(),
             inits=self.stan_inits.dict(),
@@ -499,9 +500,29 @@ class ModelBackendBase(ABC):
             iter=int(1e4),
             jacobian=jacobian,
         )
-        try:
-            optimized_model = self.model.optimize(**optimize_args)
-        except RuntimeError:
+        run_newton = True
+
+        # Look for the largest possible initial step length that doesn't
+        # lead to a fail of the line search
+        for init_alpha in [10 ** (-4 - i / 2) for i in range(0, 2 * 4)]:
+            optimize_args["init_alpha"] = init_alpha
+            try:
+                optimized_model = self.model.optimize(**optimize_args)
+            except RuntimeError:
+                # If init_alpha fails, try the next one
+                get_logger().debug(
+                    f"Optimization with init_alpha={init_alpha} failed. "
+                    "Moving to next."
+                )
+                continue
+            else:
+                # If it worked, finish loop and skip Newton fallback
+                run_newton = False
+                break
+
+        if run_newton:
+            # Remove init_alpha
+            del optimize_args["init_alpha"]
             # Fall back on Newton
             get_logger().warning(
                 "Optimization terminated abnormally. Falling back to Newton."

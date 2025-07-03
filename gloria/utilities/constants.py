@@ -29,9 +29,9 @@ _GLORIA_DEFAULTS = dict(
     changepoints=None,
     n_changepoints=25,
     changepoint_range=0.8,
-    seasonality_prior_scale=10,
-    event_prior_scale=10,
-    changepoint_prior_scale=0.05,
+    seasonality_prior_scale=3,
+    event_prior_scale=3,
+    changepoint_prior_scale=3,
     interval_width=0.8,
     uncertainty_samples=1000,
 )
