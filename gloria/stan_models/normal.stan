@@ -48,37 +48,48 @@ data {
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
-  real y_max = max(y);
-  real y_min = min(y);
-  vector[T] y_scaled = (y - y_min) / (y_max - y_min);
+  
+  // Get normalization parameters for linear model
+  vector[T] y_real = to_vector(to_array_1d(y));       // Convert y to vector of real values
+  vector[T] y_linked = y_real;                        // Apply link function
+  real linked_offset = min(y_linked);                 // Offset of linear model
+  real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
 }
 
 parameters {
-  real k;                           // Base trend growth rate
-  real m;                           // Trend offset
-  vector[S] delta;                  // Trend rate adjustments
-  vector[K] beta;                   // Slope for y
-  real<lower=0> scale;              // Observation noise
+  real<lower=-0.5, upper=0.5> k;                           // Base trend growth rate
+  real<lower=0, upper=1> m;                           // Trend offset
+  vector<lower=-0.5, upper=0.5>[S] delta;                  // Trend rate adjustments
+  vector<lower=-1, upper=1>[K] beta;                   // Slope for y
+  real<lower=0, upper=2> kappa;              // Dispersion proxy
 }
 
 transformed parameters {
-  vector[T] trend;
-  trend = linear_trend(k, m, delta, t, A, t_change);
+  vector[T] trend = linear_trend(
+      k, m, delta,
+      t, A, t_change
+  );
+  real<lower=0, upper=2*linked_scale> scale = linked_scale * kappa;                  // Scale parameter for distribution
 }
 
 model {
   // Priors
-  k ~ normal(0, 5);
-  m ~ normal(0, 5);
-  delta ~ double_exponential(0, tau);
-  scale ~ normal(0, 0.5);
-  beta ~ normal(0, sigmas);
+  k ~ normal(0,0.5);
+  m ~ normal(0.5,0.5);
+  delta ~ double_exponential(0, 0.036*tau); // Chosen such that with tau=3 probability to get a delta on its bounds is ~1%
+  beta ~ normal(0, 0.155*sigmas); // Chosen such that with sigma=3 probability to get a beta on its bounds is ~1%
+  kappa ~ std_normal();
   
   // Likelihood
-  y_scaled ~ normal_id_glm(
+  y ~ normal_id_glm(
     X,
-    trend,
-    beta,
+    linked_offset + linked_scale * trend,    // Denormalized trend
+    linked_scale * beta,                     // Denormalized regression coefficients
     scale
   );
+}
+
+generated quantities {
+  real print_offset = linked_offset;
+  real print_scale = linked_scale;
 }

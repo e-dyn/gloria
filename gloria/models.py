@@ -548,20 +548,6 @@ class ModelBackendBase(ABC):
             if k != "trend"
         }
 
-        # !! Mind the order of first normal model re-scaling and subsequent
-        # regressor re-scaling. It is the inverse of first scaling the
-        # regressors and later the data as part of the normal-model Stan code.
-
-        # In case of the normal model the data were normalized by the Stan
-        # model. Therefore the optimized model parameters need to be scaled
-        # back
-        if self.model_name == "normal":
-            y_min = stan_data.y.min()
-            y_max = stan_data.y.max()
-            for k in self.fit_params.keys():
-                self.fit_params[k] *= y_max - y_min
-            self.fit_params["m"] += y_min
-
         # Scale back both regressors and fit parameters
         if stan_data.X.size:
             self.stan_data.X *= q
@@ -569,6 +555,7 @@ class ModelBackendBase(ABC):
 
         print(self.stan_fit.stan_variable("print_offset"))
         print(self.stan_fit.stan_variable("print_scale"))
+        # print(self.stan_fit.stan_variable("scale"))
 
         return self.stan_fit
 
@@ -1282,13 +1269,14 @@ class Normal(ModelBackendBase):
 
         self.linked_offset = np.min(y_scaled)
         self.linked_scale = np.max(y_scaled) - self.linked_offset
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         print("python offset:", self.linked_offset)
         print("python scale:", self.linked_scale)
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
-        ini_params.sigma = 2
+        ini_params.kappa = 0.5
         return stan_data, ini_params
 
 

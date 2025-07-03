@@ -70,7 +70,6 @@ transformed parameters {
       t, A, t_change
   );
   real<lower=0> scale = 1 / kappa;                  // Scale parameter for distribution
-  //vector[T] eta = scale * exp(trend + X * beta);    // Relate expectation value to shape parameter
   vector[T] eta = scale * exp(                      // Denormalization if linear model
       linked_offset 
       + linked_scale*(trend + X * beta)
