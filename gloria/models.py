@@ -553,8 +553,8 @@ class ModelBackendBase(ABC):
             self.stan_data.X *= q
             self.fit_params["beta"] /= q
 
-        print(self.stan_fit.stan_variable("print_offset"))
-        print(self.stan_fit.stan_variable("print_scale"))
+        # print(self.stan_fit.stan_variable("print_offset"))
+        # print(self.stan_fit.stan_variable("print_scale"))
         # f = self.stan_fit.stan_variable("print_f")
         # x_max = stan_data.X.max(axis=0) - stan_data.X.min(axis=0)
         # print(x_max**2 / f**2)

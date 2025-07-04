@@ -85,7 +85,7 @@ transformed parameters {
       k, m, delta,
       t, A, t_change
   );
-  real<lower=0, upper=2*linked_scale> scale = linked_scale * kappa;                  // Scale parameter for distribution
+  real<lower=0, upper=2*linked_scale> scale = linked_scale * kappa; // Scale parameter for distribution
 }
 
 model {

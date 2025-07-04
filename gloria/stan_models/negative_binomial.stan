@@ -54,13 +54,29 @@ transformed data {
   vector[T] y_linked = log(y_real);                   // Apply link function
   real linked_offset = min(y_linked);                 // Offset of linear model
   real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
+  
+  // Find regressor-wise scales
+  vector[K] reg_scales;
+  for (j in 1:K) {
+    reg_scales[j] = max(X[, j]) - min(X[, j]);
+  }
+  
+  // Scaling factor for beta-prior to guarantee that it drops to 1% of its
+  // maximum value at beta_max = 1/reg_scales for sigma = 3
+  vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
 }
 
 parameters {
-  real k;                       // Base trend growth rate
-  real m;                       // Trend offset
-  vector[S] delta;              // Trend rate adjustments
-  vector[K] beta;               // Slope for y
+  real<lower=-0.5, upper=0.5> k;             // Base trend growth rate
+  real<lower=0, upper=1> m;                  // Trend offset
+  vector<lower=-1, upper=1>[S] delta;        // Trend rate adjustments
+  vector<                                    // Regressor coefficients
+    lower=-1/reg_scales,
+    upper=1/reg_scales
+  >[K] beta;  
+  // Note: lower and upper bounds 1/reg_scales are chosen such that each 
+  // regressor is able to bridge the entire range of the normalized linear 
+  // model range [0,1]
   real<lower=0> kappa;          // Dispersion proxy
 }
 
@@ -70,6 +86,8 @@ transformed parameters {
       t, A, t_change
   );
   real scale = inv_square(kappa);       // Scale parameter for distribution
+  // No further scaling with respect to linked_scale needed as the scale
+  // parameter of the negative binomial distribution is already unitless
   vector[T] eta = (                     // Denormalization if linear model
       linked_offset 
       + linked_scale*(trend + X * beta)
@@ -80,12 +98,16 @@ model {
   // Priors
   k ~ normal(0, 5);
   m ~ normal(0, 5);
-  delta ~ double_exponential(0, tau);
-  beta ~ normal(0, sigmas);
+  delta ~ double_exponential(0, 0.072*tau);
+  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
+  // drops to 1% of its maximum value for delta_max = 1
+  beta ~ normal(0, f_beta.*sigmas);
   kappa ~ exponential(1.0);
   
   // Likelihood
   for (n in 1:num_elements(y)) {
     y[n] ~ neg_binomial_2_log(eta[n], scale);
   }
+  // Note neg_binomial_2_log_glm tends to overestimate the scale.
+  // neg_binomial_2_log works better in this regards.
 }
