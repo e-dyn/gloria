@@ -555,7 +555,10 @@ class ModelBackendBase(ABC):
 
         print(self.stan_fit.stan_variable("print_offset"))
         print(self.stan_fit.stan_variable("print_scale"))
-        # print(self.stan_fit.stan_variable("scale"))
+        f = self.stan_fit.stan_variable("print_f")
+        x_max = stan_data.X.max(axis=0) - stan_data.X.min(axis=0)
+        print(x_max**2 / f**2)
+        print(np.exp(-((1 / x_max) ** 2) / (2 * (f * stan_data.sigmas) ** 2)))
 
         return self.stan_fit
 

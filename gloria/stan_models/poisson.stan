@@ -54,13 +54,29 @@ transformed data {
   vector[T] y_linked = log(y_real);                   // Apply link function
   real linked_offset = min(y_linked);                 // Offset of linear model
   real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
+  
+  // Find regressor-wise scales
+  vector[K] reg_scales;
+  for (j in 1:K) {
+    reg_scales[j] = max(X[, j]) - min(X[, j]);
+  }
+  
+  // Scaling factor for beta-prior to guarantee that it drops to 1% of its
+  // maximum value at beta_max = 1/reg_scales for sigma = 3
+  vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
 }
 
 parameters {
-  real<lower=-0.5, upper=0.5> k;                       // Base trend growth rate
-  real<lower=0, upper=1> m;                       // Trend offset
-  vector<lower=-0.5, upper=0.5>[S] delta;              // Trend rate adjustments
-  vector<lower=-1, upper=1>[K] beta;               // Slope for y
+  real<lower=-0.5, upper=0.5> k;            // Base trend growth rate
+  real<lower=0, upper=1> m;                 // Trend offset
+  vector<lower=-1, upper=1>[S] delta;       // Trend rate adjustments
+  vector<                                   // Regressor coefficients
+    lower=-1/reg_scales,
+    upper=1/reg_scales
+  >[K] beta;  
+  // Note: lower and upper bounds 1/reg_scales are chosen such that each 
+  // regressor is able to bridge the entire range of the normalized linear 
+  // model range [0,1]
 }
 
 transformed parameters {
@@ -74,8 +90,10 @@ model {
   // Priors
   k ~ normal(0,0.5);
   m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, 0.036*tau); // Chosen such that with tau=3 probability to get a delta on its bounds is ~1%
-  beta ~ normal(0, 0.155*sigmas); // Chosen such that with sigma=3 probability to get a beta on its bounds is ~1%
+  delta ~ double_exponential(0, 0.072*tau);
+  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
+  // drops to 1% of its maximum value for delta_max = 1
+  beta ~ normal(0, f_beta.*sigmas);
   
   // Likelihood
   y ~ poisson_log_glm(
@@ -88,4 +106,5 @@ model {
 generated quantities {
   real print_offset = linked_offset;
   real print_scale = linked_scale;
+  vector[K] print_f = f_beta;
 }
