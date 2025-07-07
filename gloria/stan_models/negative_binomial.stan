@@ -44,16 +44,12 @@ data {
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
+  real linked_offset;           // Offset of linear model
+  real linked_scale;            // Scale of linear model
 }
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
-  
-  // Get normalization parameters for linear model
-  vector[T] y_real = to_vector(to_array_1d(y));       // Convert y to vector of real values
-  vector[T] y_linked = log(y_real);                   // Apply link function
-  real linked_offset = min(y_linked);                 // Offset of linear model
-  real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
   
   // Find regressor-wise scales
   vector[K] reg_scales;
@@ -64,6 +60,11 @@ transformed data {
   // Scaling factor for beta-prior to guarantee that it drops to 1% of its
   // maximum value at beta_max = 1/reg_scales for sigma = 3
   vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
+  
+  // Parameters for dispersion scale
+  vector[T] y_real = to_vector(y);                    // Convert y to vector of real values
+  real mu_mean = mean(y_real);                        // An estimate for the mean expectation value
+  real data_range = max(y_real) - min(y_real);        // Full data range
 }
 
 parameters {
@@ -77,7 +78,7 @@ parameters {
   // Note: lower and upper bounds 1/reg_scales are chosen such that each 
   // regressor is able to bridge the entire range of the normalized linear 
   // model range [0,1]
-  real<lower=0> kappa;          // Dispersion proxy
+  real<lower=0, upper=2> kappa;          // Dispersion proxy
 }
 
 transformed parameters {
@@ -85,7 +86,7 @@ transformed parameters {
       k, m, delta,
       t, A, t_change
   );
-  real scale = inv_square(kappa);       // Scale parameter for distribution
+  real scale = square(2*mu_mean)/(4*data_range^2-mu_mean) * inv_square(kappa); // Scale parameter for distribution
   // No further scaling with respect to linked_scale needed as the scale
   // parameter of the negative binomial distribution is already unitless
   vector[T] eta = (                     // Denormalization if linear model
@@ -96,13 +97,13 @@ transformed parameters {
 
 model {
   // Priors
-  k ~ normal(0, 5);
-  m ~ normal(0, 5);
+  k ~ normal(0,0.5);
+  m ~ normal(0.5,0.5);
   delta ~ double_exponential(0, 0.072*tau);
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
-  kappa ~ exponential(1.0);
+  kappa ~ std_normal();
   
   // Likelihood
   for (n in 1:num_elements(y)) {

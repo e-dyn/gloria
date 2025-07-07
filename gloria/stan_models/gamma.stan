@@ -44,17 +44,13 @@ data {
   vector[S] t_change;           // Times of trend changepoints as integers
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
+  real linked_offset;           // Offset of linear model
+  real linked_scale;            // Scale of linear model
 }
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
   
-  // Get normalization parameters for linear model
-  vector[T] y_real = to_vector(to_array_1d(y));       // Convert y to vector of real values
-  vector[T] y_linked = log(y_real);                   // Apply link function
-  real linked_offset = min(y_linked);                 // Offset of linear model
-  real linked_scale = max(y_linked) - linked_offset;  // Scale of linear model
-
   // Find regressor-wise scales
   vector[K] reg_scales;
   for (j in 1:K) {
@@ -66,8 +62,9 @@ transformed data {
   vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
   
   // Parameters for dispersion scale
-  real mu_min = min(y_real);                          // An estimate for the minimum expectation value
-  real c = (max(y_real) - min(y_real));               // half the data range
+  vector[T] y_real = to_vector(y);                    // Convert y to vector of real values
+  real mu_mean = mean(y_real);                        // An estimate for the mean expectation value
+  real data_range = max(y_real) - min(y_real);        // Full data range
 }
 
 parameters {
@@ -89,7 +86,7 @@ transformed parameters {
       k, m, delta,
       t, A, t_change
   );
-  real scale = mu_min * inv_square(c*kappa);  // Scale parameter for distribution
+  real scale = mu_mean * inv_square(data_range*kappa);  // Scale parameter for distribution
   
   vector[T] eta = scale * exp(                // Denormalization if linear model
       linked_offset 
@@ -99,8 +96,8 @@ transformed parameters {
 
 model {
   // Priors
-  k ~ normal(0, 5);
-  m ~ normal(0, 5);
+  k ~ normal(0,0.5);
+  m ~ normal(0.5,0.5);
   delta ~ double_exponential(0, 0.072*tau);
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1

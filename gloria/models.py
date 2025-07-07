@@ -56,7 +56,9 @@ class LinkPair(BaseModel):
 
 
 LINK_FUNC_MAP = {
-    "id": LinkPair(link=lambda x: x, inverse=lambda x: x),
+    "id": LinkPair(
+        link=lambda x: x.astype(float), inverse=lambda x: x.astype(float)
+    ),
     "log": LinkPair(link=lambda x: np.log(x), inverse=lambda x: np.exp(x)),
     "logit": LinkPair(link=lambda x: logit(x), inverse=lambda x: expit(x)),
 }
@@ -148,6 +150,8 @@ class ModelInputData(BaseModel):
     )  # Times of trend changepoints as integers
     X: np.ndarray = np.array([[]])  # Regressors
     sigmas: np.ndarray = np.array([])  # Scale on seasonality prior
+    linked_offset: Optional[float] = None  # Data offset on linked scale
+    linked_scale: Optional[float] = None  # Data scale on linked scale
 
     @field_validator("S")
     @classmethod
@@ -553,7 +557,7 @@ class ModelBackendBase(ABC):
             self.stan_data.X *= q
             self.fit_params["beta"] /= q
 
-        print(self.stan_fit.stan_variable("kappa"))
+        # print(self.stan_fit.stan_variable("kappa"))
         # print(self.stan_fit.stan_variable("print_scale"))
         # f = self.stan_fit.stan_variable("print_f")
         # x_max = stan_data.X.max(axis=0) - stan_data.X.min(axis=0)
@@ -1076,8 +1080,19 @@ class BinomialConstantN(ModelBackendBase):
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. Replacing the zeros
         # with small values prevents underflow during scaling
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = self.link_pair.link(y_scaled / stan_data.N)  # type: ignore[attr-defined]
+        y_scaled = stan_data.y / stan_data.N
+        y_scaled = np.where(y_scaled == 0, 1e-10, y_scaled)
+        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
+        y_scaled = self.link_pair.link(y_scaled)  # type: ignore[attr-defined]
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
+
+        print("offset", self.linked_offset)
+        print("scale", self.linked_scale)
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1272,10 +1287,9 @@ class Normal(ModelBackendBase):
 
         self.linked_offset = np.min(y_scaled)
         self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
         y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
-
-        print("python offset:", self.linked_offset)
-        print("python scale:", self.linked_scale)
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1447,6 +1461,8 @@ class NegativeBinomial(ModelBackendBase):
 
         self.linked_offset = np.min(y_scaled)
         self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
         y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
@@ -1533,6 +1549,8 @@ class Gamma(ModelBackendBase):
 
         self.linked_offset = np.min(y_scaled)
         self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
         y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
