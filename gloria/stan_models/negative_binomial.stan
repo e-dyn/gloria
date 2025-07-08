@@ -70,7 +70,7 @@ transformed data {
 parameters {
   real<lower=-0.5, upper=0.5> k;             // Base trend growth rate
   real<lower=0, upper=1> m;                  // Trend offset
-  vector<lower=-1, upper=1>[S] delta;        // Trend rate adjustments
+  vector<lower=-4.6, upper=4.6>[S] delta_raw;        // Trend rate adjustments
   vector<                                    // Regressor coefficients
     lower=-1/reg_scales,
     upper=1/reg_scales
@@ -82,13 +82,14 @@ parameters {
 }
 
 transformed parameters {
+  vector[S] delta = 0.072 * delta_raw * tau;
+  real scale = square(2*mu_mean)/(4*data_range^2-mu_mean) * inv_square(kappa); // Scale parameter for distribution
+
   vector[T] trend = linear_trend(
       k, m, delta,
       t, A, t_change
   );
-  real scale = square(2*mu_mean)/(4*data_range^2-mu_mean) * inv_square(kappa); // Scale parameter for distribution
-  // No further scaling with respect to linked_scale needed as the scale
-  // parameter of the negative binomial distribution is already unitless
+  
   vector[T] eta = (                     // Denormalization if linear model
       linked_offset 
       + linked_scale*(trend + X * beta)
@@ -99,7 +100,7 @@ model {
   // Priors
   k ~ normal(0,0.5);
   m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, 0.072*tau);
+  delta_raw ~ double_exponential(0, 1);
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
