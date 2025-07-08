@@ -1201,12 +1201,19 @@ class BinomialVectorizedN(ModelBackendBase):
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. Replacing the zeros
         # with small values prevents underflow during scaling
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        p = np.full(y_scaled.shape, np.finfo(float).eps)
+        p = np.full(stan_data.T, 1e-10)
         p = np.divide(
-            y_scaled, stan_data.N_vec, out=p, where=(stan_data.N_vec != 0)
+            stan_data.y, stan_data.N_vec, out=p, where=(stan_data.N_vec != 0)
         )
+        p = np.where(p == 0, 1e-10, p)
+        p = np.where(p == 1, 1 - 1e-10, p)
         y_scaled = self.link_pair.link(p)  # type: ignore[attr-defined]
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)

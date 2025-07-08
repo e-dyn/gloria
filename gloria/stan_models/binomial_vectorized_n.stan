@@ -45,37 +45,58 @@ data {
   matrix[T,K] X;                // Regressors
   vector[K] sigmas;             // Scale on seasonality prior
   array[T] int N_vec;           // Population size, vectorized form
+  real linked_offset;           // Offset of linear model
+  real linked_scale;            // Scale of linear model
 }
 
 transformed data {
   matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
+  
+  // Find regressor-wise scales
+  vector[K] reg_scales;
+  for (j in 1:K) {
+    reg_scales[j] = max(X[, j]) - min(X[, j]);
+  }
+  
+  // Scaling factor for beta-prior to guarantee that it drops to 1% of its
+  // maximum value at beta_max = 1/reg_scales for sigma = 3
+  vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
 }
 
 parameters {
-  real k;                       // Base trend growth rate
-  real m;                       // Trend offset
-  vector[S] delta;              // Trend rate adjustments
-  vector[K] beta;               // Slope for y
+  real<lower=-0.5, upper=0.5> k;            // Base trend growth rate
+  real<lower=0, upper=1> m;                 // Trend offset
+  vector<lower=-1, upper=1>[S] delta;       // Trend rate adjustments
+  vector<                                   // Regressor coefficients
+    lower=-1/reg_scales,
+    upper=1/reg_scales
+  >[K] beta;  
+  // Note: lower and upper bounds 1/reg_scales are chosen such that each 
+  // regressor is able to bridge the entire range of the normalized linear 
+  // model range [0,1]
 }
 
 transformed parameters {
-  vector[T] trend;
-  
-  trend = linear_trend(k, m, delta, t, A, t_change);
+  vector[T] trend = linear_trend(
+      k, m, delta,
+      t, A, t_change
+  );
 }
 
 model {
   // Priors
-  k ~ std_normal();
-  m ~ std_normal();
-  delta ~ double_exponential(0, tau);
-  beta ~ normal(0, sigmas);
+  k ~ normal(0,0.5);
+  m ~ normal(0.5,0.5);
+  delta ~ double_exponential(0, 0.072*tau);
+  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
+  // drops to 1% of its maximum value for delta_max = 1
+  beta ~ normal(0, f_beta.*sigmas);
   
   // Likelihood
   y ~ binomial_logit_glm(
     N_vec,
     X,
-    trend,
-    beta
+    linked_offset + linked_scale * trend,    // Denormalized trend
+    linked_scale * beta                      // Denormalized regression coefficients
   ); 
 }
