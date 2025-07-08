@@ -82,10 +82,8 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend = linear_trend(
-      k, m, delta,
-      t, A, t_change
-  );
+  vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
+  
   real scale = mu_mean * inv_square(data_range*kappa);  // Scale parameter for distribution
   
   vector[T] eta = scale * exp(                // Denormalization if linear model

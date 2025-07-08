@@ -425,13 +425,17 @@ class ModelBackendBase(ABC):
         # Optimize initial parameters
         res = minimize(trend_optimizer, x0=[m, k, *np.zeros(stan_data.S)])
 
+        # Restrict parameters to allowed range
+        m = min(max(res.x[0], 0), 1)
+        k = min(max(res.x[1], -0.5), 0.5)
+
         # Return initial parameters. Beta is left as zero. It can be
         # additionally pre-fitted using the pre-optimize flag in the interface
         # fit method. In that case the model backend fit method will use a
         # MAP estimate.
         return ModelParams(
-            m=res.x[0],
-            k=res.x[1],
+            m=m,
+            k=k,
             delta=np.array(res.x[2:]),
             beta=np.zeros(stan_data.K),
         )
@@ -1091,9 +1095,6 @@ class BinomialConstantN(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
         y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
-        print("offset", self.linked_offset)
-        print("scale", self.linked_scale)
-
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
         return stan_data, ini_params
@@ -1381,6 +1382,8 @@ class Poisson(ModelBackendBase):
 
         self.linked_offset = np.min(y_scaled)
         self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
         y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
@@ -1641,7 +1644,15 @@ class Beta(ModelBackendBase):
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling
+        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
+        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
         y_scaled = self.link_pair.link(stan_data.y)
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1797,8 +1808,16 @@ class BetaBinomialConstantN(ModelBackendBase):
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. Replacing the zeros
         # with small values prevents underflow during scaling
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = self.link_pair.link(y_scaled / stan_data.N)  # type: ignore[attr-defined]
+        y_scaled = stan_data.y / stan_data.N
+        y_scaled = np.where(y_scaled == 0, 1e-10, y_scaled)
+        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
+        y_scaled = self.link_pair.link(y_scaled)  # type: ignore[attr-defined]
+
+        self.linked_offset = np.min(y_scaled)
+        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        stan_data.linked_offset = self.linked_offset
+        stan_data.linked_scale = self.linked_scale
+        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
