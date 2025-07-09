@@ -42,6 +42,77 @@ BASEPATH = Path(__file__).parent
 
 
 ### --- Class and Function Definitions --- ###
+def get_population_size(
+    y: np.ndarray, mode: str, value: Union[int, float]
+) -> int:
+    """
+    Estimate a population size N suitable for binomial or beta-binomial models
+    based on the response y and one of three selection modes.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Array of observed response variable data
+    mode : str
+        Mode for determining the population size. Must be one of:
+        - ``"constant"`` : Use a fixed population size equal to ``value``.
+        - ``"factor"`` : Set population size to ``ceil(max(y) * value)``.
+        - ``"scale"`` : Optimize population size N so that the implied success
+          probability ``p = y / N`` is close to ``value``.
+    value : int or float
+        Mode-dependent parameter:
+        - For ``"constant"``, the population size (must be ≥ max(y)).
+        - For ``"factor"``, a scaling factor ≥ 1 applied to max(y).
+        - For ``"scale"``, the target mean success probability ``p``.
+
+    Returns
+    -------
+    int
+        Estimated population size N.
+
+    Raises
+    ------
+    ValueError
+        If ``"constant"`` mode is selected and the fixed population size is
+        less than max(y).
+
+    """
+
+    def distance_to_scale(f, y: np.ndarray) -> float:
+        """
+        This function yields the distance between desired scale and data
+        normalized to a fixed population size N.
+        """
+        N = f * y_max
+        p = y / N
+        return ((p - value) ** 2).sum()
+
+    # Find maximum of data
+    y_max = y.max()
+
+    # Determine population size depending on mode
+    if mode == "constant":
+        if value < y_max:
+            raise ValueError(
+                "In population mode 'constant' the population value "
+                f"(={value}) must be an integer >= y_max (={y_max})."
+            )
+        population = int(value)
+    elif mode == "factor":
+        population = int(np.ceil(y_max * value))
+    elif mode == "scale":
+        # Minimize distance_to_scale() with respect to the factor f. f
+        # determines the population size N via N = y_max * f.
+        res = minimize(
+            lambda f: distance_to_scale(f, y),
+            x0=1 / value,
+            bounds=[(1, None)],
+        )
+        population = int(np.ceil(res.x[0] * y_max))
+
+    return population
+
+
 class LinkPair(BaseModel):
     """
     Link function pairs connection the expectation value to Stan's GLM
@@ -76,7 +147,9 @@ class BinomialPopulation(BaseModel):
 
     @field_validator("value")
     @classmethod
-    def validate_value(cls, value: int, info) -> int:
+    def validate_value(
+        cls, value: Union[int, float], info
+    ) -> Union[int, float]:
         """
         Validates the value pass along with the population size estimation
         method.
@@ -320,8 +393,8 @@ class ModelBackendBase(ABC):
         # the time being initialize them with defaults.
         self.stan_data = ModelInputData()
         self.stan_inits = ModelParams()
-        self.linked_offset = 0
-        self.linked_scale = 1
+        self.linked_offset: float = 0.0
+        self.linked_scale: float = 1.0
         # The type hint helps MyPy to recognize that the stan_fit objects have
         # the stan_variables() method. the '#type:ignore' let's us initialize
         # it with None
@@ -364,6 +437,83 @@ class ModelBackendBase(ABC):
 
         """
         pass
+
+    def normalize_data(
+        self: Self,
+        y: np.ndarray,
+        N: Optional[Union[int, np.ndarray]] = None,
+        lower_bound: bool = False,
+        upper_bound: bool = False,
+    ) -> tuple[np.ndarray, float, float]:
+        """
+        Normalize response variable y, apply the model`s link function, and
+        re-scale the result to the open unit interval ``(0, 1)``.
+
+        The routine performs three steps:
+
+        1. **Optional normalization** - If ``N`` is provided, divide ``y`` by
+           ``N`` to convert counts to rates.
+        2. **Boundary adjustment** - Replace exact 0 or 1 with a small offset
+           when ``lower_bound`` or ``upper_bound`` is set to ``True``.
+        3. **Link + scaling** - Apply the link function, then rescale the
+           result to the ``(0, 1)`` interval.
+
+        Parameters
+        ----------
+        y : np.ndarray
+            Raw response variable.  Shape can be any, provided it broadcasts
+            with ``N`` if ``N`` is an array.
+        N : Optional[Union[int, np.ndarray]]
+            Population size(s) for normalisation.  If ``None`` (default) no
+            division is performed.  If an array is given it must have the same
+            shape as ``y``.
+        lower_bound : bool, optional
+            Set to ``True`` when the response is bounded below at zero.
+            Exact zeros are replaced with ``1e-10`` before the link
+            transformation to avoid ``-inf``.
+        upper_bound : bool, optional
+            Set to ``True`` when the response is bounded above at one.
+            Exact ones are replaced with ``1 - 1e-10`` before the link
+            transformation to avoid ``+inf``.
+
+        Returns
+        -------
+        y_scaled : TYPE
+            The linked response min-max-scaled to lie strictly in ``(0, 1)``.
+        linked_offset : TYPE
+            The minimum of the linked, *un*-scaled response; add this to
+            reverse the min-max scaling.
+        linked_scale : TYPE
+            The range (max - min) of the linked, un-scaled response; multiply
+            by this to reverse the min-max scaling.
+        """
+
+        y_scaled = y.copy()
+
+        # Normalize data with respect to population
+        if N is not None:
+            p = np.full(y_scaled.shape, 1e-10)
+            # This safe-divide is necessary for models with vectorized N as
+            # N = 0 can occur here
+            y_scaled = np.divide(y_scaled, N, out=p, where=(N != 0))
+        # Replace true zeros with a small value as link function diverges
+        # otherwise
+        if lower_bound:
+            y_scaled = np.where(y_scaled == 0, 1e-10, y_scaled)
+        # Same for upper bounds. Note that all models with upper bound are
+        # normalized between zero and one at this point
+        if upper_bound:
+            y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
+
+        # Apply link function
+        y_scaled = self.link_pair.link(y_scaled)  # type: ignore[attr-defined]
+
+        # Find offset and scale of data on linked scale
+        linked_offset = np.min(y_scaled)
+        linked_scale = np.max(y_scaled) - self.linked_offset
+        y_scaled = (y_scaled - linked_offset) / linked_scale
+
+        return y_scaled, linked_offset, linked_scale
 
     def calculate_initial_parameters(
         self: Self, y_scaled: np.ndarray, stan_data: ModelInputData
@@ -560,13 +710,6 @@ class ModelBackendBase(ABC):
         if stan_data.X.size:
             self.stan_data.X *= q
             self.fit_params["beta"] /= q
-
-        # print(self.stan_fit.stan_variable("kappa"))
-        # print(self.stan_fit.stan_variable("print_scale"))
-        # f = self.stan_fit.stan_variable("print_f")
-        # x_max = stan_data.X.max(axis=0) - stan_data.X.min(axis=0)
-        # print(x_max**2 / f**2)
-        # print(np.exp(-((1 / x_max) ** 2) / (2 * (f * stan_data.sigmas) ** 2)))# noqa
 
         return self.stan_fit
 
@@ -1038,62 +1181,28 @@ class BinomialConstantN(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        def distance_to_scale(f, y: np.ndarray) -> float:
-            """
-            This function yields the distance between desired scale and data
-            normalized to a fixed population size N.
-            """
-            N = f * y_max
-            p = y / N
-            return ((p - value) ** 2).sum()
-
+        # Check that augmentation config is not missing
         if augmentation_config is None:
             raise ValueError(
                 "Missing configuration argument for augmentation method."
             )
 
-        # Prepare data
-        y = stan_data.y
-        y_max = y.max()
-        mode = augmentation_config.mode
-        value = augmentation_config.value
-        # Determine population size depending on mode
-        if mode == "constant":
-            if value < y_max:
-                raise ValueError(
-                    "In population mode 'constant' the population"
-                    f" value (={value}) cannot be smaller than "
-                    f"y_max (={y_max})"
-                )
-            population = value
-        elif mode == "factor":
-            population = int(np.ceil(y_max * value))
-        elif mode == "scale":
-            # Minimize distance_to_scale() with respect to the factor f. f
-            # determines the population size N via N = y_max * f.
-            res = minimize(
-                lambda f: distance_to_scale(f, y),
-                x0=1 / value,
-                bounds=[(1, None)],
-            )
-            population = int(np.ceil(res.x[0] * y_max))
-
-        # Estimate a constant population size N for the binomial model
-        stan_data.N = population  # type: ignore[attr-defined]
+        # Get population size depending on selected mode
+        stan_data.N = get_population_size(
+            y=stan_data.y,
+            mode=augmentation_config.mode,
+            value=augmentation_config.value,
+        )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling. Replacing the zeros
-        # with small values prevents underflow during scaling
-        y_scaled = stan_data.y / stan_data.N
-        y_scaled = np.where(y_scaled == 0, 1e-10, y_scaled)
-        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
-        y_scaled = self.link_pair.link(y_scaled)  # type: ignore[attr-defined]
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, N=stan_data.N, lower_bound=True, upper_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1200,21 +1309,17 @@ class BinomialVectorizedN(ModelBackendBase):
         # Nothing to augment
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling. Replacing the zeros
-        # with small values prevents underflow during scaling
-        p = np.full(stan_data.T, 1e-10)
-        p = np.divide(
-            stan_data.y, stan_data.N_vec, out=p, where=(stan_data.N_vec != 0)
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y,
+            N=stan_data.N_vec,
+            lower_bound=True,
+            upper_bound=True,
         )
-        p = np.where(p == 0, 1e-10, p)
-        p = np.where(p == 1, 1 - 1e-10, p)
-        y_scaled = self.link_pair.link(p)  # type: ignore[attr-defined]
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1288,16 +1393,19 @@ class Normal(ModelBackendBase):
             Guesses for the model parameters depending on the data
 
         """
-        ## -- 1. Calculate initial parameter guesses -- ##
-        # No scaling needed for normal distribution model as its link function
-        # is the identity-function.
-        y_scaled = self.link_pair.link(stan_data.y)
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        ## -- 1. Augment stan_data -- ##
+        # Nothing to augment
+
+        ## -- 2. Calculate initial parameter guesses -- ##
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y
+        )
+
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1372,19 +1480,17 @@ class Poisson(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        # Nothing to augment for Poisson model
+        # Nothing to augment
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling. As the data are
-        # scaled using the natural logarithm, zeros need to be replaced.
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = self.link_pair.link(y_scaled)
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, lower_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1461,19 +1567,18 @@ class NegativeBinomial(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        # Nothing to augment here
+        # Nothing to augment
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Apply inverse link function for y-value scaling. As the data are
         # scaled using the natural logarithm, zeros need to be replaced.
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = self.link_pair.link(y_scaled)
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, lower_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1549,19 +1654,17 @@ class Gamma(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        # Nothing to augment for Gamma model
+        # Nothing to augment
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling. As the data are
-        # scaled using the natural logarithm, zeros need to be replaced.
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = self.link_pair.link(y_scaled)
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, lower_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1640,19 +1743,17 @@ class Beta(ModelBackendBase):
 
         """
         ## -- 1. Augment stan_data -- ##
-        # Nothing to augment for Beta model
+        # Nothing to augment
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling
-        y_scaled = np.where(stan_data.y == 0, 1e-10, stan_data.y)
-        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
-        y_scaled = self.link_pair.link(stan_data.y)
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, lower_bound=True, upper_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Call the parent class parameter estimation method
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
@@ -1762,62 +1863,28 @@ class BetaBinomialConstantN(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        def distance_to_scale(f, y: np.ndarray) -> float:
-            """
-            This function yields the distance between desired scale and data
-            normalized to a fixed population size N.
-            """
-            N = f * y_max
-            p = y / N
-            return ((p - value) ** 2).sum()
-
+        # Check that augmentation config is not missing
         if augmentation_config is None:
             raise ValueError(
                 "Missing configuration argument for augmentation method."
             )
 
-        # Prepare data
-        y = stan_data.y
-        y_max = y.max()
-        mode = augmentation_config.mode
-        value = augmentation_config.value
-        # Determine population size depending on mode
-        if mode == "constant":
-            if value < y_max:
-                raise ValueError(
-                    "In population mode 'constant' the population"
-                    f" value (={value}) cannot be smaller than "
-                    f"y_max (={y_max})"
-                )
-            population = value
-        elif mode == "factor":
-            population = int(np.ceil(y_max * value))
-        elif mode == "scale":
-            # Minimize distance_to_scale() with respect to the factor f. f
-            # determines the population size N via N = y_max * f.
-            res = minimize(
-                lambda f: distance_to_scale(f, y),
-                x0=1 / value,
-                bounds=[(1, None)],
-            )
-            population = int(np.ceil(res.x[0] * y_max))
-
-        # Estimate a constant population size N for the binomial model
-        stan_data.N = population  # type: ignore[attr-defined]
+        # Get population size depending on selected mode
+        stan_data.N = get_population_size(
+            y=stan_data.y,
+            mode=augmentation_config.mode,
+            value=augmentation_config.value,
+        )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
-        # Apply inverse link function for y-value scaling. Replacing the zeros
-        # with small values prevents underflow during scaling
-        y_scaled = stan_data.y / stan_data.N
-        y_scaled = np.where(y_scaled == 0, 1e-10, y_scaled)
-        y_scaled = np.where(y_scaled == 1, 1 - 1e-10, y_scaled)
-        y_scaled = self.link_pair.link(y_scaled)  # type: ignore[attr-defined]
+        # Get response variable on link scale and normalize
+        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
+            y=stan_data.y, N=stan_data.N, lower_bound=True, upper_bound=True
+        )
 
-        self.linked_offset = np.min(y_scaled)
-        self.linked_scale = np.max(y_scaled) - self.linked_offset
+        # Save normalization parameters
         stan_data.linked_offset = self.linked_offset
         stan_data.linked_scale = self.linked_scale
-        y_scaled = (y_scaled - self.linked_offset) / self.linked_scale
 
         # Calculate the parameters
         ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
