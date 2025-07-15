@@ -32,6 +32,7 @@ _GLORIA_DEFAULTS = dict(
     seasonality_prior_scale=3,
     event_prior_scale=3,
     changepoint_prior_scale=3,
+    dispersion_prior_scale=3,
     interval_width=0.8,
     uncertainty_samples=1000,
 )

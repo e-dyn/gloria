@@ -215,7 +215,8 @@ class ModelInputData(BaseModel):
     T: int = Field(ge=0, default=0)  # Number of time periods
     S: int = Field(ge=0, default=0)  # Number of changepoints
     K: int = Field(ge=0, default=0)  # Number of regressors
-    tau: float = Field(gt=0, default=1)  # Scale on changepoints prior
+    tau: float = Field(gt=0, default=3)  # Scale on changepoints prior
+    gamma: float = Field(gt=0, default=3)  # Scale on dispersion proxy prior
     y: np.ndarray = np.array([])  # Time series
     t: np.ndarray = np.array([])  # Time as integer vector
     t_change: np.ndarray = np.array(
@@ -510,12 +511,12 @@ class ModelBackendBase(ABC):
 
         # Find offset and scale of data on linked scale
         linked_offset = np.min(y_scaled)
-        linked_scale = np.max(y_scaled) - self.linked_offset
+        linked_scale = np.max(y_scaled) - linked_offset
         y_scaled = (y_scaled - linked_offset) / linked_scale
 
         return y_scaled, linked_offset, linked_scale
 
-    def calculate_initial_parameters(
+    def initial_trend_parameters(
         self: Self, y_scaled: np.ndarray, stan_data: ModelInputData
     ) -> ModelParams:
         """
@@ -584,11 +585,47 @@ class ModelBackendBase(ABC):
         # fit method. In that case the model backend fit method will use a
         # MAP estimate.
         return ModelParams(
-            m=m,
-            k=k,
-            delta=np.array(res.x[2:]),
-            beta=np.zeros(stan_data.K),
+            m=m, k=k, delta=np.array(res.x[2:]), beta=np.zeros(stan_data.K)
         )
+
+    def estimate_variance(
+        self: Self, stan_data: ModelInputData, trend_params: ModelParams
+    ) -> float:
+        """
+        Estimate an upper bound for the variance based on the residuals between
+        the observed data and the predicted trend.
+
+        Parameters
+        ----------
+        stan_data : ModelInputData
+            Model agnostic input data provided by the forecaster interface.
+        trend_params : ModelParams
+            Contains parameters from initial trend parameter guess.
+
+        Returns
+        -------
+        float
+            The upper bound of variance estimated from the residuals between
+            data and trend.
+        """
+
+        # Based on the initial parameter guesses for the trend, make a trend
+        # prediction
+
+        # 1. Argument of the GLM
+        trend_arg, _ = self.predict_regression(
+            stan_data.t, stan_data.X, trend_params.dict()
+        )
+        # 2. Apply the inverse link
+        trend_linked = self.link_pair.inverse(trend_arg)
+        # 3. Get the expectation value
+        trend = self.yhat_func(trend_linked)
+
+        # Assume rediuals between data and trend are due to dispersion and
+        # define this as upper bound for variance. Factor 1.5 for some leeway.
+        variance_max = 1.5 * (stan_data.y - trend).std() ** 2
+
+        return variance_max
 
     def fit(
         self: Self,
@@ -624,6 +661,11 @@ class ModelBackendBase(ABC):
         """
 
         jacobian = True if optimize_mode == "MAP" else False
+
+        # Set raw version of stan_data
+        # Do not remove: This step may seem unnecessary, but methods called
+        # by self.preprocess() need self.stan_data
+        self.stan_data = stan_data
 
         # The input stan_data only include data that all models have in common
         # The preprocess method adds additional data that are model dependent.
@@ -1205,7 +1247,7 @@ class BinomialConstantN(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Calculate the parameters
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
         return stan_data, ini_params
 
 
@@ -1322,7 +1364,7 @@ class BinomialVectorizedN(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Calculate the parameters
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
         return stan_data, ini_params
 
 
@@ -1408,8 +1450,11 @@ class Normal(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
-        ini_params.kappa = 0.5
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+        variance_max = self.estimate_variance(stan_data, ini_params)
+
+        stan_data.variance_max = variance_max
+
         return stan_data, ini_params
 
 
@@ -1493,7 +1538,11 @@ class Poisson(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+
+        # Get an upper bound on the variance
+        stan_data.variance_max = self.estimate_variance(stan_data, ini_params)
+
         return stan_data, ini_params
 
 
@@ -1581,7 +1630,11 @@ class NegativeBinomial(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+
+        # Get an upper bound on the variance
+        stan_data.variance_max = self.estimate_variance(stan_data, ini_params)
+
         return stan_data, ini_params
 
 
@@ -1667,7 +1720,11 @@ class Gamma(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+
+        # Get an upper bound on the variance
+        stan_data.variance_max = self.estimate_variance(stan_data, ini_params)
+
         return stan_data, ini_params
 
 
@@ -1756,7 +1813,11 @@ class Beta(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Call the parent class parameter estimation method
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+
+        # Get an upper bound on the variance
+        stan_data.variance_max = self.estimate_variance(stan_data, ini_params)
+
         return stan_data, ini_params
 
 
@@ -1887,7 +1948,11 @@ class BetaBinomialConstantN(ModelBackendBase):
         stan_data.linked_scale = self.linked_scale
 
         # Calculate the parameters
-        ini_params = self.calculate_initial_parameters(y_scaled, stan_data)
+        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
+
+        # No need to define an upper bound on the variance for beta-binomial
+        # model. The model itself has a clear upper bound.
+
         return stan_data, ini_params
 
 

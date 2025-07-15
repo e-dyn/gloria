@@ -162,6 +162,11 @@ class Gloria(BaseModel):
         Parameter modulating the flexibility of the automatic changepoint
         selection. Large values will allow many changepoints, small values will
         allow few changepoints. Must be larger than 0.
+    dispersion_prior_scale : float, optional
+        Parameter controlling the flexibility of the dispersion (i.e. allowed
+        variance) of the model. Larger values allow more dispersion. This
+        parameter does not affect the binomial and poisson model. Must be
+        larger than one.
     interval_width : float, optional
         Width of the uncertainty intervals provided for the prediction. It is
         used for both uncertainty intervals of the expected value (fit) as
@@ -202,6 +207,9 @@ class Gloria(BaseModel):
     )
     changepoint_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["changepoint_prior_scale"]
+    )
+    dispersion_prior_scale: float = Field(
+        gt=0, default=_GLORIA_DEFAULTS["dispersion_prior_scale"]
     )
     interval_width: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["interval_width"]
@@ -1127,6 +1135,7 @@ class Gloria(BaseModel):
             S=len(self.changepoints_int),
             K=self.X.shape[1],
             tau=self.changepoint_prior_scale,
+            gamma=self.dispersion_prior_scale,
             y=np.asarray(self.history[self.metric_name]),
             t=np.asarray(self.history[_T_INT]),
             t_change=np.asarray(self.changepoints_int),
