@@ -2018,124 +2018,192 @@ class Gloria(BaseModel):
         fcst: pd.DataFrame,
         uncertainty: bool = True,
         weekly_start: int = 0,
-        figsize: Optional[tuple[int, int]] = None,
-        dpi: int = 150,
-    ) -> plt.figure:
+        plot_kwargs: Optional[dict] = None,
+        line_kwargs: Optional[dict] = None,
+        interval_kwargs: Optional[dict] = None,
+        xlabel_kwargs: Optional[dict] = None,
+        ylabel_kwargs: Optional[dict] = None,
+        grid_y_kwargs: Optional[dict] = None,
+        despine_kwargs: Optional[dict] = None,
+        ticklabel_kwargs: Optional[dict] = None,
+        rcparams_kwargs: Optional[dict] = None,
+        style_kwargs: Optional[dict] = None,
+    ) -> plt.Figure:
         """
         Plot forecast components of a Gloria model using a modern Seaborn
-        style.
+        style, with global kwargs applied to all subplots.
 
         Parameters
         ----------
-        fcst : :class:`pandas.DataFrame`
-            Forecast DataFrame from the model, used for plotting trend.
-            and uncertainty.
-        uncertainty : bool
+        fcst : pd.DataFrame
+            Forecast DataFrame from the model, used for plotting trend and
+            uncertainty.
+        uncertainty : bool, default True
             Whether to include uncertainty intervals in the trend component
-            plot. The default is True.
-        weekly_start : int
+            plot.
+        weekly_start : int, default 0
             Starting day of the week (0=Monday) for weekly seasonal plots.
-            The default is 0.
-        figsize : tuple[int, int]
-            Figure size as (*width*, *height*) in inches. Used only when
-            creating a new figure. If not provided, it is calculated
-            automatically to arrange subplots in a nearly square grid. The
-            default is None.
-        dpi : int
-            Resolution of the figure in dots-per-inches. Used only when
-            creating a new figure. The default is 150.
-
-        Raises
-        ------
-        NotFittedError
-            The model has not been fitted yet.
+        plot_kwargs : dict, optional
+            Keyword arguments passed to matplotlib.subplots() for figure and
+            axes creation (e.g., figsize, dpi).
+        line_kwargs : dict, optional
+            Styling kwargs for lines in all components (e.g., color, linewidth)
+        interval_kwargs : dict, optional
+            Styling kwargs for uncertainty intervals in all components
+            (e.g., alpha, color).
+        xlabel_kwargs : dict, optional
+            Keyword arguments for x-axis labels in all components.
+        ylabel_kwargs : dict, optional
+            Keyword arguments for y-axis labels in all components.
+        grid_y_kwargs : dict, optional
+            Keyword arguments for customizing the y-axis grid appearance.
+        despine_kwargs : dict, optional
+            Keyword arguments passed to seaborn.despine() for spine removal.
+        ticklabel_kwargs : dict, optional
+            Keyword arguments to customize tick labels in all components.
+        rcparams_kwargs : dict, optional
+            Matplotlib rcParams overrides for all components (e.g., font sizes)
+        style_kwargs : dict, optional
+            Seaborn style kwargs for all components (e.g., style presets).
 
         Returns
         -------
-        :class:`matplotlib.figure.Figure`
+        matplotlib.figure.Figure
             The figure object containing all component subplots.
         """
+        # Third Party
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import seaborn as sns
+
+        # Initialize default kwargs dictionaries
+        plot_kwargs = plot_kwargs or {}
+        line_kwargs = line_kwargs or {}
+        interval_kwargs = interval_kwargs or {}
+        xlabel_kwargs = xlabel_kwargs or {}
+        ylabel_kwargs = ylabel_kwargs or {}
+        grid_y_kwargs = grid_y_kwargs or {}
+        despine_kwargs = despine_kwargs or {}
+        ticklabel_kwargs = ticklabel_kwargs or {}
+        rcparams_kwargs = rcparams_kwargs or {}
+        style_kwargs = style_kwargs or {}
+
         # Set Seaborn style and Matplotlib parameters for consistent aesthetics
-        sns.set(style="whitegrid")
-        plt.rcParams.update(
-            {
-                "font.size": 14,
-                "font.family": "DejaVu Sans",
-                "axes.titlesize": 18,
-                "axes.labelsize": 16,
-                "legend.fontsize": 14,
-                "axes.edgecolor": "#333333",
-                "axes.linewidth": 1.2,
-            }
-        )
+        style_defaults = {"style": "whitegrid"}
+        style_defaults.update(style_kwargs)
+        sns.set(**style_defaults)
 
-        # Define components to plot: always include 'trend'
-        components = ["trend"]
+        rcparams_defaults = {
+            "font.size": 14,
+            "font.family": "DejaVu Sans",
+            "axes.titlesize": 18,
+            "axes.labelsize": 16,
+            "legend.fontsize": 14,
+            "axes.edgecolor": "#333333",
+            "axes.linewidth": 1.2,
+        }
+        rcparams_defaults.update(rcparams_kwargs)
+        plt.rcParams.update(rcparams_defaults)
 
-        # Add seasonalities detected in the model
-        components.extend(self.model_extra["seasonalities"].keys())
+        # Use context managers to isolate styling
+        with plt.rc_context(rc=rcparams_defaults):
+            with sns.axes_style(style_defaults):
 
-        # Add events if available
-        if self.model_extra["events"].keys():
-            components.append("events")
+                # Define components to plot: always include 'trend'
+                components = ["trend"]
+                components.extend(self.model_extra["seasonalities"].keys())
+                if self.model_extra["events"].keys():
+                    components.append("events")
+                if self.model_extra["external_regressors"].keys():
+                    components.append("external_regressors")
 
-        # Add external regressors if available
-        if self.model_extra["external_regressors"].keys():
-            components.append("external_regressors")
+                npanel = len(components)
+                ncols = int(np.floor(np.sqrt(npanel)))
+                nrows = int(np.ceil(npanel / ncols))
 
-        npanel = len(components)
+                # Default subplots configuration
+                plot_defaults = {
+                    "nrows": nrows,
+                    "ncols": ncols,
+                    "figsize": (int(4.5 * ncols), int(3.2 * nrows)),
+                    "facecolor": "w",
+                    "dpi": 150,
+                }
+                plot_defaults.update(plot_kwargs)
 
-        # Calculate number of rows and columns for subplot
-        # grid (as square as possible)
-        ncols = int(np.floor(np.sqrt(npanel)))
-        nrows = int(np.ceil(npanel / ncols))
+                # Create figure and axes
+                fig, axes = plt.subplots(**plot_defaults)
 
-        # Automatically determine figure size if not specified
-        if not figsize:
-            figsize = (int(4.5 * ncols), int(3.2 * nrows))
+                if isinstance(axes, np.ndarray):
+                    axes = axes.flatten()
+                else:
+                    axes = [axes]
 
-        # Create subplots with white background
-        fig, axes = plt.subplots(
-            nrows, ncols, figsize=figsize, facecolor="w", dpi=dpi
-        )
+                for ax, comp in zip(axes, components):
+                    if comp == "trend":
+                        plot_trend_component(
+                            m=self,
+                            fcst=fcst,
+                            component="trend",
+                            ax=ax,
+                            uncertainty=uncertainty,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
+                        )
+                    elif comp in self.model_extra["seasonalities"].keys():
+                        plot_seasonality_component(
+                            m=self,
+                            component=comp,
+                            start_offset=weekly_start,
+                            period=int(
+                                np.rint(
+                                    self.model_extra["seasonalities"][
+                                        comp
+                                    ].period
+                                )
+                            ),
+                            ax=ax,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
+                        )
+                    elif comp in ["events", "external_regressors"]:
+                        plot_event_component(
+                            m=self,
+                            component=comp,
+                            ax=ax,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
+                        )
 
-        # Flatten axes array for easy iteration, handle single subplot case
-        axes = axes.flatten() if npanel > 1 else [axes]
+                    # Remove top and right spines for each subplot
+                    sns.despine(ax=ax, **despine_kwargs)
 
-        # Loop over components and call corresponding plot functions
-        for ax, plot_name in zip(axes, components):
-            if plot_name == "trend":
-                plot_trend_component(
-                    m=self,
-                    fcst=fcst,
-                    component="trend",
-                    ax=ax,
-                    uncertainty=uncertainty,
-                )
-            elif plot_name in self.model_extra["seasonalities"].keys():
-                plot_seasonality_component(
-                    m=self,
-                    component=plot_name,
-                    start_offset=weekly_start,
-                    period=np.rint(
-                        self.model_extra["seasonalities"][plot_name].period
-                    ).astype(int),
-                    ax=ax,
-                )
-            elif plot_name in ["events", "external_regressors"]:
-                plot_event_component(m=self, component=plot_name, ax=ax)
+                # Hide empty axes if any
+                for ax in axes[npanel:]:
+                    ax.set_visible(False)
 
-            # Visual tuning: grid only on y-axis, remove x-axis grid,
-            # remove top/right spines
-            ax.grid(axis="y", linestyle="--", alpha=0.3)
-            ax.grid(visible=False, axis="x")
-            sns.despine(ax=ax)
-
-        # Adjust layout to prevent overlap
-        fig.tight_layout()
-
+                fig.tight_layout()
         return fig
 
-
-if __name__ == "__main__":
     ...
