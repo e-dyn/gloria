@@ -39,6 +39,7 @@ data {
   int<lower=0> S;               // Number of changepoints
   int<lower=0> K;               // Number of regressors
   real<lower=0> tau;            // Scale on changepoints prior
+  real<lower=0> gamma;          // Scale on disperion proxy prior
   array[T] int<lower=0> y;      // Time series
   vector[T] t;                  // Time as integer vector
   vector[S] t_change;           // Times of trend changepoints as integers
@@ -46,6 +47,7 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   real linked_offset;           // Offset of linear model
   real linked_scale;            // Scale of linear model
+  real variance_max;            // Upper bound on the variance
 }
 
 transformed data {
@@ -64,7 +66,6 @@ transformed data {
   // Parameters for dispersion scale
   vector[T] y_real = to_vector(y);                    // Convert y to vector of real values
   real mu_mean = mean(y_real);                        // An estimate for the mean expectation value
-  real data_range = max(y_real) - min(y_real);        // Full data range
 }
 
 parameters {
@@ -82,8 +83,7 @@ parameters {
 }
 
 transformed parameters {
-  //vector[S] delta = 0.072 * delta_raw * tau;
-  real scale = square(2*mu_mean)/(4*data_range^2-mu_mean) * inv_square(kappa); // Scale parameter for distribution
+  real scale = mu_mean^2 / (variance_max-mu_mean) * inv_square(kappa); // Scale parameter for distribution
 
   vector[T] trend = linear_trend(
       k, m, delta,
@@ -104,7 +104,9 @@ model {
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
-  kappa ~ std_normal();
+  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
+  // kappa=0.5 for the default prior scale gamma=3.
+  kappa ~ exponential(gamma / 6);
   
   // Likelihood
   for (n in 1:num_elements(y)) {

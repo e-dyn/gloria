@@ -39,6 +39,7 @@ data {
   int<lower=0> S;               // Number of changepoints
   int<lower=0> K;               // Number of regressors
   real<lower=0> tau;            // Scale on changepoints prior
+  real<lower=0> gamma;          // Scale on disperion proxy prior
   vector[T] y;                  // Time series
   vector[T] t;                  // Time as integer vector
   vector[S] t_change;           // Times of trend changepoints as integers
@@ -46,6 +47,7 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   real linked_offset;           // Offset of linear model
   real linked_scale;            // Scale of linear model
+  real variance_max;            // Upper bound on the variance
 }
 
 transformed data {
@@ -73,7 +75,7 @@ parameters {
   // Note: lower and upper bounds 1/reg_scales are chosen such that each 
   // regressor is able to bridge the entire range of the normalized linear 
   // model range [0,1]
-  real<lower=0, upper=2> kappa;              // Dispersion proxy
+  real<lower=0, upper=2> kappa;               // Dispersion proxy
 }
 
 transformed parameters {
@@ -81,7 +83,7 @@ transformed parameters {
       k, m, delta,
       t, A, t_change
   );
-  real<lower=0, upper=2*linked_scale> scale = linked_scale * kappa; // Scale parameter for distribution
+  real scale = sqrt(variance_max) * kappa; // Scale parameter for distribution
 }
 
 model {
@@ -92,7 +94,9 @@ model {
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
-  kappa ~ std_normal();
+  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
+  // kappa=0.5 for the default prior scale gamma=3.
+  kappa ~ exponential(gamma / 6);
   
   // Likelihood
   y ~ normal_id_glm(
@@ -101,9 +105,4 @@ model {
     linked_scale * beta,                     // Denormalized regression coefficients
     scale
   );
-}
-
-generated quantities {
-  real print_offset = linked_offset;
-  real print_scale = linked_scale;
 }

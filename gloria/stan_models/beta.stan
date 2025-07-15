@@ -39,6 +39,7 @@ data {
   int<lower=0> S;               // Number of changepoints
   int<lower=0> K;               // Number of regressors
   real<lower=0> tau;            // Scale on changepoints prior
+  real<lower=0> gamma;          // Scale on disperion proxy prior
   array[T] real<lower=0> y;     // Time series
   vector[T] t;                  // Time as integer vector
   vector[S] t_change;           // Times of trend changepoints as integers
@@ -46,6 +47,7 @@ data {
   vector[K] sigmas;             // Scale on seasonality prior
   real linked_offset;           // Offset of linear model
   real linked_scale;            // Scale of linear model
+  real variance_max;            // Upper bound on the variance
 }
 
 transformed data {
@@ -61,6 +63,11 @@ transformed data {
   // Scaling factor for beta-prior to guarantee that it drops to 1% of its
   // maximum value at beta_max = 1/reg_scales for sigma = 3
   vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
+  
+  // Parameters for dispersion scale
+  vector[T] y_real = to_vector(y);                    // Convert y to vector of real values
+  real mu_mean = mean(y_real);                        // An estimate for the mean expectation value
+  real kappa_max = fmin(mu_mean * (1-mu_mean) / variance_max -eps, 2.);
 }
 
 parameters {
@@ -74,13 +81,13 @@ parameters {
   // Note: lower and upper bounds 1/reg_scales are chosen such that each 
   // regressor is able to bridge the entire range of the normalized linear 
   // model range [0,1]
-  real<lower=0, upper=1-eps> kappa;          // Dispersion proxy
+  real<lower=0, upper=kappa_max> kappa;          // Dispersion proxy
 }
 
 transformed parameters {
   vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
   // Scale parameter for distribution
-  real scale = inv_square(kappa)-1;
+  real scale = mu_mean * (1-mu_mean) / (variance_max * kappa^2)-1;
   // Expectation value of Beta-distribution
   vector[T] mu = inv_logit(                // Denormalization if linear model
       linked_offset 
@@ -97,7 +104,9 @@ model {
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
-  kappa ~ std_normal();
+  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
+  // kappa=0.5 for the default prior scale gamma=3.
+  kappa ~ exponential(gamma / 6);
   
   // Likelihood
   for (n in 1:num_elements(y)) {

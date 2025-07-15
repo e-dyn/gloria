@@ -39,6 +39,7 @@ data {
   int<lower=0> S;               // Number of changepoints
   int<lower=0> K;               // Number of regressors
   real<lower=0> tau;            // Scale on changepoints prior
+  real<lower=0> gamma;          // Scale on disperion proxy prior
   array[T] int<lower=0> y;      // Time series
   vector[T] t;                  // Time as integer vector
   vector[S] t_change;           // Times of trend changepoints as integers
@@ -73,12 +74,13 @@ parameters {
     lower=-1/reg_scales,
     upper=1/reg_scales
   >[K] beta;  
-  real<lower=0,upper=2> kappa;          // Dispersion proxy
+  real<lower=0,upper=2> kappa;        // Dispersion proxy
 }
 
 transformed parameters {
   vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
   real scale = 4*(N-1)/(N*kappa^2) - 1;         // Scale parameter for distribution
+  //real scale = (f*kappa^2 - N)/(1+f*kappa^2);
   vector[T] p = inv_logit(                      // Model success probability
       linked_offset 
       + linked_scale*(trend + X * beta)
@@ -97,7 +99,9 @@ model {
   // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
   // drops to 1% of its maximum value for delta_max = 1
   beta ~ normal(0, f_beta.*sigmas);
-  kappa ~ std_normal();
+  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
+  // kappa=0.5 for the default prior scale gamma=3.
+  kappa ~ exponential(gamma / 6);
   
   // Likelihood  
   for (n in 1:num_elements(y)) {
