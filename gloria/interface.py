@@ -203,7 +203,7 @@ class Gloria(BaseModel):
 
         return sampling_period
 
-    @field_validator("population_name", mode="before")
+    @field_validator("population_name")
     @classmethod
     def validate_population_name(
         cls: Type[Self],
@@ -214,7 +214,10 @@ class Gloria(BaseModel):
         Check that the population name is set if the 'binomial vectorized n' is
         being used
         """
-        model = other_fields.data["model"]
+        # If the provided model was invalid, the "model" key is not part of
+        # the validation info. .get() returns None in this case and validation
+        # is skipped. A separate ValidationError will be issued for the model.
+        model = other_fields.data.get("model")
         population_name = "" if population_name is None else population_name
         if (model == "binomial vectorized n") and (population_name == ""):
             raise ValueError(
