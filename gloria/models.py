@@ -32,11 +32,6 @@ from gloria.utilities.constants import _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
-stan_logger = logging.getLogger("cmdstanpy")
-stan_logger.setLevel(logging.CRITICAL)
-for handler in stan_logger.handlers:
-    handler.setLevel(logging.CRITICAL)
-
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
 
@@ -388,6 +383,11 @@ class ModelBackendBase(ABC):
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
         self.model = CmdStanModel(stan_file=self.stan_file)
+        # Silence cmdstanpy logger
+        stan_logger = logging.getLogger("cmdstanpy")
+        stan_logger.setLevel(logging.CRITICAL)
+        for handler in stan_logger.handlers:
+            handler.setLevel(logging.CRITICAL)
         # Set the model name as attribute
         self.model_name = model_name
         # The following attributes are evaluated and set during fitting. For
