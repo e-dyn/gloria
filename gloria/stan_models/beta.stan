@@ -1,3 +1,8 @@
+// Copyright (c) 2025 e-dynamics GmbH and affiliates
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
 functions {
   matrix get_changepoint_matrix(vector t, vector t_change, int T, int S) {
     // Assumes t and t_change are sorted.

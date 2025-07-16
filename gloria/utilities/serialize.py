@@ -1,3 +1,8 @@
+# Copyright (c) 2025 e-dynamics GmbH and affiliates
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 """
 Definition of functions and constants used for serializing and deserializing
 fitted Gloria objects.
@@ -639,7 +644,9 @@ SIMPLE_ATTRIBUTES = [
     "n_changepoints",
     "changepoint_range",
     "seasonality_prior_scale",
+    "event_prior_scale",
     "changepoint_prior_scale",
+    "dispersion_prior_scale",
     "interval_width",
     "uncertainty_samples",
     "prior_scales",

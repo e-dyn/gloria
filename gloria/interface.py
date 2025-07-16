@@ -1,42 +1,10 @@
+# Copyright (c) 2025 e-dynamics GmbH and affiliates
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 """
 Definition of the Gloria forecaster class
-
-FUTURE IMPROVEMENTS:
-    - Give option to do a pre-fit with poissonian model. Subsequently using the
-      dispersion_calc() will show whether data are under or overdispersed. With
-      that an appropriate model can be suggested to the user.
-    - Give possibility to pass a list of (country, subdiv) pairs to
-      CalendricData.
-    - Include all Prophet output columns of the prediction to Gloria output
-    - Changepoint protocols: estimate number of changepoints by considering
-      slowest varying seasonality -> density of changepoints should not be able
-      to interfere
-    - Add Disclaimer and copyright note to all modules
-    - Seasonality regressor works with integer timescale. All others with real
-      timestamps. Unify.
-    - Reevaluate configuration.py. Probably a utility like that only adds value
-      if we offer automated pipelines, which we may not want to do. If we
-      decide against configuration.py, move it out of the library and keep it
-      as internal tool.
-    - Currently, many places Timedeltas are just accepted as string. It would
-      be more natural if they are also accepted as pd.Timedelta
-    - Check whether event_prior_scale is serialized
-
-For Documentation
-    - Summarize differences in features and API between Gloria and Prophet. For
-      missing feature, describe workarounds. For additional features, show
-      applications.
-    - Check Docstrings for Errors, as signatures or defaults may have changed.
-    - Currently the fit routine has a boolean argument sample that triggers
-      Laplace sampling in the backend. Also, the predict routine has an
-      argument n_samples that controlls how many samples are drawn for the
-      trend uncertainty. These two parameters can be confused.
-      Clearly document their difference, maybe consider better names for them
-    - Notes on how regressors are added: overwrite by default, manually added
-      regressors take precedence over protocol ones. However, only the name is
-      checked, not the properties!
-    - Make Note that multiplicative model currently only works as expected for
-      normally distributed model
 """
 
 ### --- Module Imports --- ###
@@ -235,7 +203,7 @@ class Gloria(BaseModel):
 
         return sampling_period
 
-    @field_validator("population_name", mode="before")
+    @field_validator("population_name")
     @classmethod
     def validate_population_name(
         cls: Type[Self],
@@ -246,7 +214,10 @@ class Gloria(BaseModel):
         Check that the population name is set if the 'binomial vectorized n' is
         being used
         """
-        model = other_fields.data["model"]
+        # If the provided model was invalid, the "model" key is not part of
+        # the validation info. .get() returns None in this case and validation
+        # is skipped. A separate ValidationError will be issued for the model.
+        model = other_fields.data.get("model")
         population_name = "" if population_name is None else population_name
         if (model == "binomial vectorized n") and (population_name == ""):
             raise ValueError(
@@ -737,7 +708,7 @@ class Gloria(BaseModel):
         """
         if name not in df:
             raise KeyError(
-                f"{col_type} column '{name}' is missing from " "DataFrame."
+                f"{col_type} column '{name}' is missing from DataFrame."
             )
         m_dtype_kind = df[name].dtype.kind
         allowed_types = list(MODEL_MAP[self.model].kind)
@@ -1328,14 +1299,13 @@ class Gloria(BaseModel):
         # Validate and extract population to pass it to predict
         N_vec = None
         if self.model == "binomial vectorized n":
-            if self.population_name not in data:
-                raise KeyError(
-                    "Prediction input data require a population size column "
-                    f"'{self.population_name}' for vectorized binomial model."
-                )
+            self.validate_metric_column(
+                df=data, name=self.population_name, col_type="Population"
+            )
             N_vec = data[self.population_name].copy()
 
         # Validate external regressors
+        # 1. Collect missing columns
         missing_regressors = [
             f"'{name}'"
             for name in self.external_regressors
@@ -1347,6 +1317,13 @@ class Gloria(BaseModel):
                 "Prediction input data miss the external regressor column(s) "
                 f"{missing_regressors_str}."
             )
+
+        # 2. Check that columns are numeric and don't contain NaN
+        for name in self.external_regressors:
+            if data[name].dtype.kind not in "biuf":
+                raise TypeError(f"Regressor column '{name}' is non-numeric.")
+            if data[name].isnull().any():
+                raise ValueError(f"Regressor column '{name}' contains NaN.")
 
         # First convert to integer timestamps with respect to first timestamp
         # and sampling_delta of training data
