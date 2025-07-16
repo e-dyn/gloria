@@ -1,42 +1,10 @@
+# Copyright (c) 2025 e-dynamics GmbH and affiliates
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 """
 Definition of the Gloria forecaster class
-
-FUTURE IMPROVEMENTS:
-    - Give option to do a pre-fit with poissonian model. Subsequently using the
-      dispersion_calc() will show whether data are under or overdispersed. With
-      that an appropriate model can be suggested to the user.
-    - Give possibility to pass a list of (country, subdiv) pairs to
-      CalendricData.
-    - Include all Prophet output columns of the prediction to Gloria output
-    - Changepoint protocols: estimate number of changepoints by considering
-      slowest varying seasonality -> density of changepoints should not be able
-      to interfere
-    - Add Disclaimer and copyright note to all modules
-    - Seasonality regressor works with integer timescale. All others with real
-      timestamps. Unify.
-    - Reevaluate configuration.py. Probably a utility like that only adds value
-      if we offer automated pipelines, which we may not want to do. If we
-      decide against configuration.py, move it out of the library and keep it
-      as internal tool.
-    - Currently, many places Timedeltas are just accepted as string. It would
-      be more natural if they are also accepted as pd.Timedelta
-    - Check whether event_prior_scale is serialized
-
-For Documentation
-    - Summarize differences in features and API between Gloria and Prophet. For
-      missing feature, describe workarounds. For additional features, show
-      applications.
-    - Check Docstrings for Errors, as signatures or defaults may have changed.
-    - Currently the fit routine has a boolean argument sample that triggers
-      Laplace sampling in the backend. Also, the predict routine has an
-      argument n_samples that controlls how many samples are drawn for the
-      trend uncertainty. These two parameters can be confused.
-      Clearly document their difference, maybe consider better names for them
-    - Notes on how regressors are added: overwrite by default, manually added
-      regressors take precedence over protocol ones. However, only the name is
-      checked, not the properties!
-    - Make Note that multiplicative model currently only works as expected for
-      normally distributed model
 """
 
 ### --- Module Imports --- ###
