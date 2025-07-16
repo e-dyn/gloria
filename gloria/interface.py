@@ -708,7 +708,7 @@ class Gloria(BaseModel):
         """
         if name not in df:
             raise KeyError(
-                f"{col_type} column '{name}' is missing from " "DataFrame."
+                f"{col_type} column '{name}' is missing from DataFrame."
             )
         m_dtype_kind = df[name].dtype.kind
         allowed_types = list(MODEL_MAP[self.model].kind)
@@ -1299,14 +1299,13 @@ class Gloria(BaseModel):
         # Validate and extract population to pass it to predict
         N_vec = None
         if self.model == "binomial vectorized n":
-            if self.population_name not in data:
-                raise KeyError(
-                    "Prediction input data require a population size column "
-                    f"'{self.population_name}' for vectorized binomial model."
-                )
+            self.validate_metric_column(
+                df=data, name=self.population_name, col_type="Population"
+            )
             N_vec = data[self.population_name].copy()
 
         # Validate external regressors
+        # 1. Collect missing columns
         missing_regressors = [
             f"'{name}'"
             for name in self.external_regressors
@@ -1318,6 +1317,13 @@ class Gloria(BaseModel):
                 "Prediction input data miss the external regressor column(s) "
                 f"{missing_regressors_str}."
             )
+
+        # 2. Check that columns are numeric and don't contain NaN
+        for name in self.external_regressors:
+            if data[name].dtype.kind not in "biuf":
+                raise TypeError(f"Regressor column '{name}' is non-numeric.")
+            if data[name].isnull().any():
+                raise ValueError(f"Regressor column '{name}' contains NaN.")
 
         # First convert to integer timestamps with respect to first timestamp
         # and sampling_delta of training data
