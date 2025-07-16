@@ -1,5 +1,5 @@
 # Standard Library
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 # Third Party
 import numpy as np
@@ -39,15 +39,15 @@ def plot_trend_component(
     component: str,
     ax: Optional[plt.Axes] = None,
     uncertainty: bool = True,
-    plot_kwargs: Optional[dict] = None,
-    line_kwargs: Optional[dict] = None,
-    interval_kwargs: Optional[dict] = None,
-    xlabel_kwargs: Optional[dict] = None,
-    ylabel_kwargs: Optional[dict] = None,
-    grid_y_kwargs: Optional[dict] = None,
-    ticklabel_kwargs: Optional[dict] = None,
-    rcparams_kwargs: Optional[dict] = None,
-    style_kwargs: Optional[dict] = None,
+    plot_kwargs: Optional[dict[str, Any]] = None,
+    line_kwargs: Optional[dict[str, Any]] = None,
+    interval_kwargs: Optional[dict[str, Any]] = None,
+    xlabel_kwargs: Optional[dict[str, Any]] = None,
+    ylabel_kwargs: Optional[dict[str, Any]] = None,
+    grid_y_kwargs: Optional[dict[str, Any]] = None,
+    ticklabel_kwargs: Optional[dict[str, Any]] = None,
+    rcparams_kwargs: Optional[dict[str, Any]] = None,
+    style_kwargs: Optional[dict[str, Any]] = None,
 ) -> list[Artist]:
     """
     Plot the trend component of a forecast with extensive customization.
@@ -224,15 +224,15 @@ def plot_seasonality_component(
     ax: Optional[Artist] = None,
     start_offset: int = 0,
     figsize: Tuple[int, int] = (10, 6),
-    plot_kwargs: Optional[dict] = None,
-    line_kwargs: Optional[dict] = None,
-    interval_kwargs: Optional[dict] = None,
-    xlabel_kwargs: Optional[dict] = None,
-    ylabel_kwargs: Optional[dict] = None,
-    grid_y_kwargs: Optional[dict] = None,
-    ticklabel_kwargs: Optional[dict] = None,
-    rcparams_kwargs: Optional[dict] = None,
-    style_kwargs: Optional[dict] = None,
+    plot_kwargs: Optional[dict[str, Any]] = None,
+    line_kwargs: Optional[dict[str, Any]] = None,
+    interval_kwargs: Optional[dict[str, Any]] = None,
+    xlabel_kwargs: Optional[dict[str, Any]] = None,
+    ylabel_kwargs: Optional[dict[str, Any]] = None,
+    grid_y_kwargs: Optional[dict[str, Any]] = None,
+    ticklabel_kwargs: Optional[dict[str, Any]] = None,
+    rcparams_kwargs: Optional[dict[str, Any]] = None,
+    style_kwargs: Optional[dict[str, Any]] = None,
 ) -> list[Artist]:
     """
     Plot a seasonality component (e.g., weekly, yearly) with customizable
@@ -460,15 +460,15 @@ def plot_event_component(
     component: str,
     ax: Optional[Artist] = None,
     figsize: Tuple[int, int] = (10, 6),
-    line_kwargs: Optional[dict] = None,
-    plot_kwargs: Optional[dict] = None,
-    interval_kwargs: Optional[dict] = None,
-    xlabel_kwargs: Optional[dict] = None,
-    ylabel_kwargs: Optional[dict] = None,
-    grid_y_kwargs: Optional[dict] = None,
-    ticklabel_kwargs: Optional[dict] = None,
-    rcparams_kwargs: Optional[dict] = None,
-    style_kwargs: Optional[dict] = None,
+    line_kwargs: Optional[dict[str, Any]] = None,
+    plot_kwargs: Optional[dict[str, Any]] = None,
+    interval_kwargs: Optional[dict[str, Any]] = None,
+    xlabel_kwargs: Optional[dict[str, Any]] = None,
+    ylabel_kwargs: Optional[dict[str, Any]] = None,
+    grid_y_kwargs: Optional[dict[str, Any]] = None,
+    ticklabel_kwargs: Optional[dict[str, Any]] = None,
+    rcparams_kwargs: Optional[dict[str, Any]] = None,
+    style_kwargs: Optional[dict[str, Any]] = None,
 ) -> list[Artist]:
     """
     Plot an event or external regressor component with customizable styling.

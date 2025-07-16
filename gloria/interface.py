@@ -50,6 +50,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.dates import AutoDateFormatter, AutoDateLocator
+from matplotlib.ticker import Formatter, Locator
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -1707,26 +1708,26 @@ class Gloria(BaseModel):
         print("  ====================  ".center(70))
 
     def plot(
-        self,
+        self: Self,
         fcst: pd.DataFrame,
         ax: Optional[plt.Axes] = None,
         uncertainty: Optional[bool] = True,
         show_changepoints: Optional[bool] = False,
         include_legend: Optional[bool] = False,
-        plot_kwargs: Optional[dict] = None,
-        rcparams_kwargs: Optional[dict] = None,
-        style_kwargs: Optional[dict] = None,
-        scatter_kwargs: Optional[dict] = None,
-        trend_kwargs: Optional[dict] = None,
-        forecast_kwargs: Optional[dict] = None,
-        interval_kwargs: Optional[dict] = None,
-        xlabel_kwargs: Optional[dict] = None,
-        ylabel_kwargs: Optional[dict] = None,
-        grid_y_kwargs: Optional[dict] = None,
-        despine_kwargs: Optional[dict] = None,
-        ticklabel_kwargs: Optional[dict] = None,
-        date_locator: Optional[object] = None,
-        date_formatter: Optional[object] = None,
+        plot_kwargs: Optional[dict[str, Any]] = None,
+        rcparams_kwargs: Optional[dict[str, Any]] = None,
+        style_kwargs: Optional[dict[str, Any]] = None,
+        scatter_kwargs: Optional[dict[str, Any]] = None,
+        trend_kwargs: Optional[dict[str, Any]] = None,
+        forecast_kwargs: Optional[dict[str, Any]] = None,
+        interval_kwargs: Optional[dict[str, Any]] = None,
+        xlabel_kwargs: Optional[dict[str, Any]] = None,
+        ylabel_kwargs: Optional[dict[str, Any]] = None,
+        grid_y_kwargs: Optional[dict[str, Any]] = None,
+        despine_kwargs: Optional[dict[str, Any]] = None,
+        ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        date_locator: Optional[Locator] = None,
+        date_formatter: Optional[Formatter] = None,
     ) -> plt.Figure:
         """
         Plot the forecast, trend, and observed data with extensive
@@ -1800,7 +1801,7 @@ class Gloria(BaseModel):
 
         Returns
         -------
-        matplotlib.figure.Figure
+        :class:`matplotlib.figure.Figure`
             The matplotlib Figure object containing the visualization.
 
         Raises
@@ -2018,16 +2019,16 @@ class Gloria(BaseModel):
         fcst: pd.DataFrame,
         uncertainty: bool = True,
         weekly_start: int = 0,
-        plot_kwargs: Optional[dict] = None,
-        line_kwargs: Optional[dict] = None,
-        interval_kwargs: Optional[dict] = None,
-        xlabel_kwargs: Optional[dict] = None,
-        ylabel_kwargs: Optional[dict] = None,
-        grid_y_kwargs: Optional[dict] = None,
-        despine_kwargs: Optional[dict] = None,
-        ticklabel_kwargs: Optional[dict] = None,
-        rcparams_kwargs: Optional[dict] = None,
-        style_kwargs: Optional[dict] = None,
+        plot_kwargs: Optional[dict[str, Any]] = None,
+        line_kwargs: Optional[dict[str, Any]] = None,
+        interval_kwargs: Optional[dict[str, Any]] = None,
+        xlabel_kwargs: Optional[dict[str, Any]] = None,
+        ylabel_kwargs: Optional[dict[str, Any]] = None,
+        grid_y_kwargs: Optional[dict[str, Any]] = None,
+        despine_kwargs: Optional[dict[str, Any]] = None,
+        ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        rcparams_kwargs: Optional[dict[str, Any]] = None,
+        style_kwargs: Optional[dict[str, Any]] = None,
     ) -> plt.Figure:
         """
         Plot forecast components of a Gloria model using a modern Seaborn
@@ -2035,7 +2036,7 @@ class Gloria(BaseModel):
 
         Parameters
         ----------
-        fcst : pd.DataFrame
+        fcst : :class:`pandas.DataFrame`
             Forecast DataFrame from the model, used for plotting trend and
             uncertainty.
         uncertainty : bool, default True
@@ -2068,7 +2069,7 @@ class Gloria(BaseModel):
 
         Returns
         -------
-        matplotlib.figure.Figure
+        :class:`matplotlib.figure.Figure`
             The figure object containing all component subplots.
         """
         # Third Party
