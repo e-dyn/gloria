@@ -699,8 +699,8 @@ class Gloria(BaseModel):
         if p_type in existing_types:
             get_logger().warning(
                 f"The model already has a protocol of type {p_type}. Adding "
-                "another one may lead to unexpected interference between these"
-                " protocols."
+                "another one may lead to unexpected behaviour due to "
+                "interferences."
             )
         self.protocols.append(protocol)
 
@@ -820,7 +820,7 @@ class Gloria(BaseModel):
         # is expected, but the data are sampled every other day. A logger info
         # is issued if that's the case
         if (sample_multiples.diff() > 1).any():
-            get_logger().info(
+            get_logger().debug(
                 "All timestamps are multiples of the sampling period, but gaps"
                 " were found."
             )
@@ -916,7 +916,7 @@ class Gloria(BaseModel):
                 )
                 self.n_changepoints = hist_size - 1
 
-            get_logger().info(
+            get_logger().debug(
                 f"Distributing {self.n_changepoints} equidistant"
                 " changepoints."
             )

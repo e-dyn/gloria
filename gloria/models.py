@@ -32,11 +32,6 @@ from gloria.utilities.constants import _CMDSTAN_VERSION
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
-stan_logger = logging.getLogger("cmdstanpy")
-stan_logger.setLevel(logging.CRITICAL)
-for handler in stan_logger.handlers:
-    handler.setLevel(logging.CRITICAL)
-
 ### --- Global Constants Definitions --- ###
 BASEPATH = Path(__file__).parent
 
@@ -379,15 +374,30 @@ class ModelBackendBase(ABC):
         # If not yet installed, install CmdStan with desired version
         if not cmdstan_path.is_dir():
             get_logger().info(
-                f"Cannot find cmdstan version {_CMDSTAN_VERSION}"
-                ". Installing now."
+                f"Cannot find CmdStan version {_CMDSTAN_VERSION}. "
+                "Installing now."
             )
-            install_cmdstan(
-                version=_CMDSTAN_VERSION, dir=str(models_path), compiler=True
-            )
+            try:
+                install_cmdstan(
+                    version=_CMDSTAN_VERSION,
+                    dir=str(models_path),
+                    compiler=True,
+                )
+            except Exception as e:
+                get_logger().error(
+                    f"CmdStan installation failed with error '{e}'."
+                )
+                raise RuntimeError("CmdStan installation failed.") from e
+            else:
+                get_logger().info("CmdStan successfully installed.")
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
         self.model = CmdStanModel(stan_file=self.stan_file)
+        # Silence cmdstanpy logger
+        stan_logger = logging.getLogger("cmdstanpy")
+        stan_logger.setLevel(logging.CRITICAL)
+        for handler in stan_logger.handlers:
+            handler.setLevel(logging.CRITICAL)
         # Set the model name as attribute
         self.model_name = model_name
         # The following attributes are evaluated and set during fitting. For
@@ -707,6 +717,7 @@ class ModelBackendBase(ABC):
         for init_alpha in [10 ** (-4 - i / 2) for i in range(0, 2 * 4)]:
             optimize_args["init_alpha"] = init_alpha
             try:
+                get_logger().info("Starting optimization.")
                 optimized_model = self.model.optimize(**optimize_args)
             except RuntimeError:
                 # If init_alpha fails, try the next one

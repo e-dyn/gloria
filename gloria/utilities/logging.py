@@ -3,17 +3,7 @@ Definition of Gloria logger and its configuration
 """
 
 # Standard Library
-import json
-import locale
 import logging
-import multiprocessing
-import os
-import platform
-import pprint
-import shutil
-import subprocess
-import sys
-import time
 import traceback
 from functools import lru_cache
 from pathlib import Path
@@ -111,75 +101,6 @@ def error_with_traceback(func: Callable[[str], Any]) -> Callable[[str], Any]:
     return wrapper
 
 
-def collect_sysinfo() -> str:
-    """
-    Collect basic information about system and environment Gloria was run in.
-
-    Returns
-    -------
-    str
-        Formated string containing all collected information about the system
-
-    """
-    # Collect system infos
-    info = {
-        "pointer_size": "64bit" if sys.maxsize > 2**32 else "32bit",
-        "binary_format": platform.architecture()[1],
-        "machine": platform.machine(),
-        "os": platform.system(),
-        "os_release": platform.release(),
-        "os_version": platform.version(),
-        "cpu_count": multiprocessing.cpu_count(),
-        "processor": platform.processor() or platform.machine(),  # Fallback
-        "python_version": platform.python_version(),
-        "python_implementation": platform.python_implementation(),
-        "python_build": sys.version,
-        "python_executable": sys.executable,
-        "virtual_env": os.environ.get("VIRTUAL_ENV"),
-        "locale": locale.getdefaultlocale(),
-        "preferred_encoding": locale.getpreferredencoding(False),
-        "timezone": time.tzname,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    }
-
-    # List all installed packages along with versions
-    try:
-        pkgs = subprocess.check_output(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "list",
-                "--format=json",
-                "--disable-pip-version-check",
-            ],
-            text=True,
-        )
-        info["packages"] = json.loads(pkgs)
-    except Exception:
-        info["packages"] = "unavailable"
-
-    # In case Gloria was executed from a git repo, identify the commit
-    # Identify full git exectuable path
-    git_exe = shutil.which("git")
-
-    if git_exe:
-        try:
-            git_root = subprocess.check_output(
-                [git_exe, "rev-parse", "--show-toplevel"], text=True
-            ).strip()
-            commit = subprocess.check_output(
-                [git_exe, "-C", git_root, "rev-parse", "HEAD"], text=True
-            ).strip()
-            info["git_commit"] = commit
-        except Exception:
-            info["git_commit"] = "unavailable"
-    else:
-        info["git_commit"] = "unavailable"
-    out = pprint.pformat(info, sort_dicts=False)
-    return out
-
-
 @lru_cache(maxsize=None)
 def get_logger() -> logging.Logger:
     """
@@ -243,19 +164,7 @@ def get_logger() -> logging.Logger:
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / f"{_RUN_TIMESTAMP}.log"
         Path(log_config.log_path).mkdir(parents=True, exist_ok=True)
-        # Write system info to file
-        with open(log_file, "w") as file:
-            output = (
-                "\n\n".join(
-                    [
-                        " System Info ".center(50, "-"),
-                        collect_sysinfo(),
-                        " Execution Log ".center(50, "-"),
-                    ]
-                )
-                + "\n\n"
-            )
-            file.write(output)
+
         file_handler = logging.FileHandler(
             log_file,
             mode="a",
