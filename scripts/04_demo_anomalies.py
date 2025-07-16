@@ -34,7 +34,7 @@ data_prophet = data.loc[data["project"] == "prophet"]
 # Create the model. Note the interval width of "0.95", ie. 95% of all data
 # should be inside the interval
 m = Gloria(
-    model="poisson",
+    model="negative binomial",
     metric_name="downloads",
     timestamp_name="date",
     sampling_period="1d",

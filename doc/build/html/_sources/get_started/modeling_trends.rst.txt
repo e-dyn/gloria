@@ -3,7 +3,7 @@
 Modeling Trends
 ===============
 
-The *trend* is the component of your data that desribes its local mean value, around which the seasonalities oscillate. Typically, trends are not constant, but evolve upwards or downwards and are subject to sudden changes. Gloria assumes a continuous linear trend model, that is it models a piecewise-linear trend function whose rate is allowed to change at specified *changepoints* without introducing discontinuities.
+The *trend* is the component of your data that desribes its local mean value, around which the seasonalities oscillate. Typically, trends are not constant, but evolve upwards or downwards and are subject to sudden changes. Gloria assumes a continuous linear trend model, that is, it models a piecewise-linear trend function whose rate is allowed to change at specified *changepoints* without introducing discontinuities.
 
 In our introductory example :ref:`basic usage <ref-basic-usage>`, we deliberately chose a section of the power-consumption data set, which does not exhibit trend changes. By setting ``n_changepoints=0`` we forced the Gloria model to fit a simple linear trend. Now let's look at a different part of the same data set, several days further back in time.
 
@@ -21,6 +21,7 @@ In our introductory example :ref:`basic usage <ref-basic-usage>`, we deliberatel
 
     # Convert to datetime
     data[timestamp_name] = pd.to_datetime(data[timestamp_name])
+    
     # Restrict data
     window_duration = 400
     window_start = 800
@@ -28,19 +29,15 @@ In our introductory example :ref:`basic usage <ref-basic-usage>`, we deliberatel
         -window_start : -window_start + window_duration
     ]
 
-    # Inspect data
-    plot_data(
-        x=data[timestamp_name],
-        y=data[metric_name],
-        xlabel="date",
-        ylabel="power consumption [MW]",
-    )
+    # Inspect the data
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=150)
+    ax.plot(data[timestamp_name], data[metric_name], "o")
 
 We quickly realize that the overall patterns are the same, but there is a three-day drop in the power consumption starting *2018-07-06*, probably related to the North American `heat wave <https://en.wikipedia.org/wiki/2018_North_American_heat_wave>`_.
 
 .. image:: pics/02_changepoints_fig01.png
   :align: center
-  :width: 600
+  :width: 700
   :alt: Power consumption with dip in the data
   
 We now try to model this drop by allowing Gloria to include trend changes. Note that the only change compared with the code in :ref:`basic usage <ref-basic-usage>` is to omit ``n_changepoints=0``:
@@ -68,33 +65,23 @@ We now try to model this drop by allowing Gloria to include trend changes. Note 
     prediction = m.predict(periods=1)
 
     # Plot
-    plot_fit(
-        x_data=data[timestamp_name],
-        y_data=data[metric_name],
-        x_fit=prediction[timestamp_name], 
-        y_fit=prediction["yhat"],
-        y_trend=prediction["trend"],
-        y_upper=prediction["observed_upper"],
-        y_lower=prediction["observed_lower"],
-        xlabel="date",
-        ylabel="power consumption [MW]"
-    )
+    m.plot(prediction)
     
 .. image:: pics/02_changepoints_fig02.png
   :align: center
-  :width: 600
+  :width: 700
   :alt: Fit of power consumption data with strong trend changes.
 
-Examining the plot, we see that the data are fitted nicely, but the trend changes are erratic. Most likely, Gloria was too flexible and over-fitted the data. Evidence for this is the almost negligible confidence band. There are overall three main strategies to customise the trend fit and make it more robust:
+Examining the plot, we see that the data are fitted nicely, but the trend changes are too frequently and too noisy. Most likely, Gloria was too flexible and over-fitted the data as affirmed by the narrow confidence band. There are overall three main strategies to customise the trend fit and make it more robust:
 
 Number of Changepoints
 ----------------------
 
-If nothing else is specified - as in our first attempt - Gloria's default is to allow 25 changepoints. These changepoints are placed on an equidistant grid across the first 80 % of the data. To make the trend more well-behaved, we can again reduce the number of changepoints by setting ``n_changepoints = 2``, which produces the plot shown below.
+If nothing else is specified - as in our first attempt - Gloria's default is to allow 25 changepoints. These changepoints are placed on an equidistant grid across the first 80 % of the data. To make the trend more well-behaved, we can reduce the number of changepoints by setting ``n_changepoints = 2``, which produces the plot shown below.
 
 .. image:: pics/02_changepoints_fig03.png
   :align: center
-  :width: 600
+  :width: 700
   :alt: Fit of power consumption data with restricted number of changepoints.
 
 .. note::
@@ -123,21 +110,21 @@ While the last result is already more well-behaved, we see that one of the autom
 
 .. image:: pics/02_changepoints_fig04.png
   :align: center
-  :width: 600
+  :width: 700
   :alt: Fit of power consumption data with predefined changepoints
   
 Adjust the Prior Scale
 ----------------------
 
-Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale = 2e-4``, which is much stricter than the default value of ``0.05``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
+Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale = 1e-4``, which is much stricter than the default value of ``0.05``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
 
 .. image:: pics/02_changepoints_fig05.png
   :align: center
-  :width: 600
+  :width: 700
   :alt: Fit of power consumption data with strict ``changepoint_prior_scale``
   
 
 .. tip::
 
-    To choose ``changepoint_prior_scale`` objectively, use time-series cross-validation (:func:`~gloria.cross_validation`) and pick the value that minimises out-of-sample error.
+    To choose ``changepoint_prior_scale`` objectively, use time-series :func:`~gloria.cross_validation` together with :func:`~gloria.performance_metrics` and pick the value that minimises out-of-sample error.
   

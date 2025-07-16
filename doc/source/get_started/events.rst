@@ -12,9 +12,9 @@ Gloria provides a flexible framework for representing events in your dataset. Im
 In Gloria, every event has two key parts:
 
 1. **Anchor**: a reference instant that marks where the event is aligned in time. Anchors are managed through *event regressors*, namely :class:`SingleEvent`, :class:`IntermittentEvent`, :class:`PeriodicEvent`, and :class:`Holiday`.
-2. **Profile**: the temporal shape that unfolds around any anchor. All profiles available in Gloria are of type :ref:`Event <ref-events>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
+2. **Profile**: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type :ref:`Event <ref-events>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
 
-The figure illustrates the idea. In the first column you see :class:`SingleEvent` instances that occur only once: each row shows a different profiles (black solid line), all aligned to the same anchor time (red dashed vertical line).
+The figure illustrates the idea. In the first column you see :class:`SingleEvent` instances that occur only once: each row shows a different profile (black solid line), all aligned to the same anchor time (red dashed vertical line).
 
 You can place several anchors along the time axis - irregularly or at equal intervals - yielding the patterns in the second and third columns and corresponding to :class:`IntermittentEvent` and :class:`PeriodicEvent`, respectively. At every anchor, the same profile is stamped. Mathematically, the full signal is the convolution of one profile with the collection of anchor times.
 
@@ -51,7 +51,6 @@ The :meth:`~Gloria.add_event` method takes the profile via ``event=event`` and s
 The following script is a full example modelling the drop in the power consumption dataset using the event we just created. Note that compared to the :ref:`modeling trends <ref-modeling-trends>` section we turned off changepoints using ``n_changepoints=0``:
 
 .. code-block:: python
-    :emphasize-lines: 26
     
     import pandas as pd
     from gloria import Gloria, BoxCar
@@ -123,7 +122,7 @@ Besides modelling single-occurrence events with :class:`SingleEvent`, Gloria off
 * :class:`Holiday` for country- and region-specific public holidays.
 
 .. tip::
-  :class:`Holiday` is Gloria's analogue to Prophet's holiday component, but it is more flexible: you may attach any event profile, whereas Prophet is limited to 1-day boxcars. See the :class:`CalendricData` protocol as well as our :ref:`Calendric Data <ref-calendric-data>` tutorial on configuring Gloria models similar to Prophet.
+  :class:`Holiday` is Gloria's analogue to Prophet's holiday component, but it is more flexible: you may attach any event profile, whereas Prophet is limited to 1-day boxcars. See the :class:`CalendricData` protocol as well as our :ref:`calendric data <ref-calendric-data>` tutorial on configuring Gloria models similar to Prophet.
 
 The next example shows how to capture the regular weekend drop in power consumption discussed in :ref:`Basic Usage <ref-basic-usage>`. We omit the weekly seasonality term and instead insert a :class:`PeriodicEvent` that places a Gaussian profile at the midpoint of each weekend.
 
