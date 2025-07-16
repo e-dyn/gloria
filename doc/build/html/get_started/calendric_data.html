@@ -263,6 +263,7 @@
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Calendric Data</a></li>
 </ul>
@@ -327,8 +328,8 @@
                   
   <section id="calendric-data">
 <span id="ref-calendric-data"></span><h1>Calendric Data<a class="headerlink" href="#calendric-data" title="Link to this heading">#</a></h1>
-<p>Gloria defines calendric data as time-series that are affected by yearly, quarterly, monthly, weekly, or daily seasonalities as well as public holiday’s. As this covers a wide range of diverse data sets, Gloria offers convenience functionalities to set up your models for calendric data.</p>
-<p>To demonstrate them, we once more employ the power consumption data set, but aggregate it on a daily basis and restrict to the last 3 years for the sake of clarity. Also we set up the usual model without changepoints, and include yearly and weekly seasonalities. The plot showing this first bare fit is shown below.</p>
+<p>Gloria defines calendric data as time-series that are affected by yearly, quarterly, monthly, weekly, or daily seasonalities as well as public holidays. As this covers a wide range of diverse data sets, Gloria offers convenience functionalities to set up your models for calendric data.</p>
+<p>To demonstrate them, we once more employ the power consumption data set, but aggregate it on a daily basis and restrict it to the last 3 years. Also we set up the usual model without changepoints, and include yearly and weekly seasonalities. The plot showing this first bare fit is shown below.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
 

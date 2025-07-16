@@ -162,6 +162,11 @@ class Gloria(BaseModel):
         Parameter modulating the flexibility of the automatic changepoint
         selection. Large values will allow many changepoints, small values will
         allow few changepoints. Must be larger than 0.
+    dispersion_prior_scale : float, optional
+        Parameter controlling the flexibility of the dispersion (i.e. allowed
+        variance) of the model. Larger values allow more dispersion. This
+        parameter does not affect the binomial and poisson model. Must be
+        larger than one.
     interval_width : float, optional
         Width of the uncertainty intervals provided for the prediction. It is
         used for both uncertainty intervals of the expected value (fit) as
@@ -202,6 +207,9 @@ class Gloria(BaseModel):
     )
     changepoint_prior_scale: float = Field(
         gt=0, default=_GLORIA_DEFAULTS["changepoint_prior_scale"]
+    )
+    dispersion_prior_scale: float = Field(
+        gt=0, default=_GLORIA_DEFAULTS["dispersion_prior_scale"]
     )
     interval_width: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["interval_width"]
@@ -691,8 +699,8 @@ class Gloria(BaseModel):
         if p_type in existing_types:
             get_logger().warning(
                 f"The model already has a protocol of type {p_type}. Adding "
-                "another one may lead to unexpected interference between these"
-                " protocols."
+                "another one may lead to unexpected behaviour due to "
+                "interferences."
             )
         self.protocols.append(protocol)
 
@@ -812,7 +820,7 @@ class Gloria(BaseModel):
         # is expected, but the data are sampled every other day. A logger info
         # is issued if that's the case
         if (sample_multiples.diff() > 1).any():
-            get_logger().info(
+            get_logger().debug(
                 "All timestamps are multiples of the sampling period, but gaps"
                 " were found."
             )
@@ -908,7 +916,7 @@ class Gloria(BaseModel):
                 )
                 self.n_changepoints = hist_size - 1
 
-            get_logger().info(
+            get_logger().debug(
                 f"Distributing {self.n_changepoints} equidistant"
                 " changepoints."
             )
@@ -1127,6 +1135,7 @@ class Gloria(BaseModel):
             S=len(self.changepoints_int),
             K=self.X.shape[1],
             tau=self.changepoint_prior_scale,
+            gamma=self.dispersion_prior_scale,
             y=np.asarray(self.history[self.metric_name]),
             t=np.asarray(self.history[_T_INT]),
             t_change=np.asarray(self.changepoints_int),
@@ -1829,6 +1838,9 @@ class Gloria(BaseModel):
             >>> fig = model.plot(fcst, plot_kwargs={"figsize": (12, 8),
                                                     "dpi": 200})
         """
+        
+        if not self.is_fitted:
+            raise NotFittedError()
 
         # Initialize all kwargs to empty dicts if None
         plot_kwargs = plot_kwargs or {}
@@ -1864,10 +1876,6 @@ class Gloria(BaseModel):
         # Use context managers to isolate styling
         with plt.rc_context(rc=rcparams_defaults):
             with sns.axes_style(style_defaults):
-
-                if not self.is_fitted:
-                    raise NotFittedError()
-
                 # Default axis labels if not provided
                 if "xlabel" not in xlabel_kwargs:
                     xlabel_kwargs["xlabel"] = self.timestamp_name
