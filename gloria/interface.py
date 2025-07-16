@@ -49,8 +49,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-from matplotlib.artist import Artist
 from matplotlib.dates import AutoDateFormatter, AutoDateLocator
+from matplotlib.ticker import Formatter, Locator
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -1719,165 +1719,306 @@ class Gloria(BaseModel):
     def plot(
         self: Self,
         fcst: pd.DataFrame,
-        ax: Optional[Artist] = None,
-        uncertainty: bool = True,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        figsize: tuple[int, int] = (10, 6),
-        dpi: int = 150,
-        show_changepoints: bool = False,
-        include_legend: bool = False,
-    ) -> plt.figure:
+        ax: Optional[plt.Axes] = None,
+        uncertainty: Optional[bool] = True,
+        show_changepoints: Optional[bool] = False,
+        include_legend: Optional[bool] = False,
+        plot_kwargs: Optional[dict[str, Any]] = None,
+        rcparams_kwargs: Optional[dict[str, Any]] = None,
+        style_kwargs: Optional[dict[str, Any]] = None,
+        scatter_kwargs: Optional[dict[str, Any]] = None,
+        trend_kwargs: Optional[dict[str, Any]] = None,
+        forecast_kwargs: Optional[dict[str, Any]] = None,
+        interval_kwargs: Optional[dict[str, Any]] = None,
+        xlabel_kwargs: Optional[dict[str, Any]] = None,
+        ylabel_kwargs: Optional[dict[str, Any]] = None,
+        grid_y_kwargs: Optional[dict[str, Any]] = None,
+        despine_kwargs: Optional[dict[str, Any]] = None,
+        ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        date_locator: Optional[Locator] = None,
+        date_formatter: Optional[Formatter] = None,
+    ) -> plt.Figure:
         """
-        Plot the forecast of a Gloria model, including trend line, predictions,
-        and confidence intervals.
+        Plot the forecast, trend, and observed data with extensive
+        customization options.
 
         Parameters
         ----------
-        fcst : :class:`pandas.DataFrame`
-            DataFrame with forecast results. Must be the output of
-            :meth:`Gloria.predict`
-        ax : Optional[Artist]
-            An existing matplotlib axis to draw on. If ``None`` (default), a
-            new figure and axis will be created.
-        uncertainty : bool
-            Whether to plot the uncertainty/confidence intervals. The default
-            is ``True``
-        xlabel : Optional[str], optional
-            Label for the x-axis. If ``None`` (default), the ``timestamp_name``
-            of the corresponding Gloria model will be used.
-        ylabel : Optional[str], optional
-            Label for the y-axis. If ``None`` (default), the ``metric_name`` of
-            the corresponding Gloria model will be used.
-        figsize : tuple[int, int]
-            Figure size as (*width*, *height*) in inches. Used only when
-            creating a new figure. The default is (10, 6).
-        dpi : int
-            Resolution of the figure in dots-per-inches. Used only when
-            creating a new figure. The default is 150.
-        show_changepoints : bool
-            Whether to display significant changepoints on the plot. The
-            default is False.
-        include_legend : bool
-            Whether to display a legend on the plot. The default is False.
+        fcst : pandas.DataFrame
+            Forecast DataFrame containing:
+              - Timestamp column (matching `self.timestamp_name`)
+              - 'yhat' (predicted values)
+              - 'trend' (trend component)
+              - 'observed_lower' and 'observed_upper' (confidence intervals)
 
-        Raises
-        ------
-        NotFittedError
-            The model has not been fitted yet.
+        ax : matplotlib.axes.Axes, optional
+            Existing matplotlib axis to draw on.
+            If None, a new figure and axis will be created.
+
+        uncertainty : bool, default=True
+            Whether to plot the confidence interval bands.
+
+        show_changepoints : bool, default=False
+            Whether to annotate changepoints in the forecast.
+
+        include_legend : bool, default=False
+            Whether to include a legend in the plot.
+
+        plot_kwargs : dict, optional
+            Arguments for `plt.subplots()` if creating a new figure.
+
+        rcparams_kwargs : dict, optional
+            Overrides for matplotlib rcParams to control global styling.
+
+        style_kwargs : dict, optional
+            Keyword arguments passed to `sns.set()` for Seaborn style
+            configuration.
+
+        scatter_kwargs : dict, optional
+            Styling for the historical data scatter plot (`sns.scatterplot`).
+
+        trend_kwargs : dict, optional
+            Styling for the trend line (`ax.plot`).
+
+        forecast_kwargs : dict, optional
+            Styling for the forecast line (`ax.plot`).
+
+        interval_kwargs : dict, optional
+            Styling for the confidence interval area (`ax.fill_between`).
+
+        xlabel_kwargs : dict, optional
+            Settings for the x-axis label (`ax.set_xlabel`).
+
+        ylabel_kwargs : dict, optional
+            Settings for the y-axis label (`ax.set_ylabel`).
+
+        grid_y_kwargs : dict, optional
+            Settings for the y-axis gridlines (`ax.grid`).
+
+        despine_kwargs : dict, optional
+            Arguments to `sns.despine()` for removing spines.
+
+        ticklabel_kwargs : dict, optional
+            Settings for customizing tick labels (rotation, alignment,
+            fontsize).
+
+        date_locator : matplotlib.ticker.Locator, optional
+            Locator for x-axis ticks. Defaults to `AutoDateLocator`.
+
+        date_formatter : matplotlib.ticker.Formatter, optional
+            Formatter for x-axis tick labels. Defaults to `AutoDateFormatter`.
 
         Returns
         -------
         :class:`matplotlib.figure.Figure`
-            The figure object containing the forecast plot.
-        """
+            The matplotlib Figure object containing the visualization.
 
+        Raises
+        ------
+        NotFittedError
+            If the model has not been fitted before calling this method.
+
+        Notes
+        -----
+        This method is designed for flexible, reproducible, and highly
+        customizable visualization of forecasts and their uncertainty
+        intervals. You can control nearly every aspect of the figure appearance
+        via the provided keyword argument dictionaries.
+
+        Examples
+        --------
+        Basic usage:
+            >>> fig = model.plot(fcst)
+
+        Custom scatter point styling:
+            >>> fig = model.plot(fcst, scatter_kwargs={"s": 40,
+                                                       "color": "purple"})
+
+        Specifying figure size and dpi:
+            >>> fig = model.plot(fcst, plot_kwargs={"figsize": (12, 8),
+                                                    "dpi": 200})
+        """
+        
         if not self.is_fitted:
             raise NotFittedError()
 
-        # Set x and y label if None were provided
-        if xlabel is None:
-            xlabel = self.timestamp_name
-        if ylabel is None:
-            ylabel = self.metric_name
+        # Initialize all kwargs to empty dicts if None
+        plot_kwargs = plot_kwargs or {}
+        rcparams_kwargs = rcparams_kwargs or {}
+        style_kwargs = style_kwargs or {}
+        scatter_kwargs = scatter_kwargs or {}
+        trend_kwargs = trend_kwargs or {}
+        forecast_kwargs = forecast_kwargs or {}
+        interval_kwargs = interval_kwargs or {}
+        xlabel_kwargs = xlabel_kwargs or {}
+        ylabel_kwargs = ylabel_kwargs or {}
+        grid_y_kwargs = grid_y_kwargs or {}
+        despine_kwargs = despine_kwargs or {}
+        ticklabel_kwargs = ticklabel_kwargs or {}
 
-        # Check if a custom axis was passed
-        user_provided_ax = ax is not None
+        # Set default Seaborn style
+        style_defaults = dict(style="whitegrid")
+        style_defaults.update(style_kwargs)
+        sns.set(**style_defaults)
 
-        # Create new figure and axis if none provided
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, facecolor="w", dpi=dpi)
-        else:
-            fig = ax.get_figure()
+        # Prepare rcParams overrides
+        rcparams_defaults = {
+            "font.size": 14,
+            "font.family": "DejaVu Sans",
+            "axes.titlesize": 18,
+            "axes.labelsize": 16,
+            "legend.fontsize": 14,
+            "axes.edgecolor": "#333333",
+            "axes.linewidth": 1.2,
+        }
+        rcparams_defaults.update(rcparams_kwargs)
 
-        # Set Seaborn style and update plot aesthetics
-        sns.set(style="whitegrid")
-        plt.rcParams.update(
-            {
-                "font.size": 14,
-                "font.family": "DejaVu Sans",
-                "axes.titlesize": 18,
-                "axes.labelsize": 16,
-                "legend.fontsize": 14,
-                "axes.edgecolor": "#333333",
-                "axes.linewidth": 1.2,
-            }
-        )
+        # Use context managers to isolate styling
+        with plt.rc_context(rc=rcparams_defaults):
+            with sns.axes_style(style_defaults):
+                # Default axis labels if not provided
+                if "xlabel" not in xlabel_kwargs:
+                    xlabel_kwargs["xlabel"] = self.timestamp_name
+                if "ylabel" not in ylabel_kwargs:
+                    ylabel_kwargs["ylabel"] = self.metric_name
 
-        # Plot historical data as scatter points
-        sns.scatterplot(
-            x=self.history[self.timestamp_name],
-            y=self.history[self.metric_name],
-            ax=ax,
-            color="#016a86",
-            edgecolor="w",
-            s=20,
-            alpha=0.7,
-            label="Data",
-        )
+                # Create figure and axis if none provided
+                user_provided_ax = ax is not None
+                if ax is None:
+                    plot_defaults = dict(
+                        figsize=(10, 6), dpi=150, facecolor="w"
+                    )
+                    plot_defaults.update(plot_kwargs)
+                    fig, ax = plt.subplots(**plot_defaults)
+                else:
+                    fig = ax.get_figure()
 
-        # Plot the model's trend line
-        ax.plot(
-            fcst[self.timestamp_name],
-            fcst["trend"],
-            color="#264653",
-            linewidth=1.0,
-            alpha=0.8,
-            label="Trend",
-        )
+                # Default styles for each plot element
+                scatter_defaults = dict(
+                    color="#016a86",
+                    edgecolor="w",
+                    s=20,
+                    alpha=0.7,
+                    label="Observed",
+                    ax=ax,
+                )
+                scatter_defaults.update(scatter_kwargs)
 
-        # Plot the forecast line
-        ax.plot(
-            fcst[self.timestamp_name],
-            fcst["yhat"],
-            color="#e6794a",
-            linewidth=1.5,
-            label="Fit",
-        )
+                trend_defaults = dict(
+                    color="#264653",
+                    linewidth=1.0,
+                    alpha=0.8,
+                    label="Trend",
+                )
+                trend_defaults.update(trend_kwargs)
 
-        # Plot the confidence interval (if enabled)
-        if uncertainty:
-            ax.fill_between(
-                fcst[self.timestamp_name],
-                fcst["observed_lower"],
-                fcst["observed_upper"],
-                color="#819997",
-                alpha=0.3,
-                label="Confidence Interval",
-            )
+                forecast_defaults = dict(
+                    color="#e6794a",
+                    linewidth=1.5,
+                    label="Forecast",
+                )
+                forecast_defaults.update(forecast_kwargs)
 
-        if show_changepoints:
-            add_changepoints_to_plot(self, fcst, ax)
+                interval_defaults = dict(
+                    color="#819997",
+                    alpha=0.3,
+                    label="Confidence Interval",
+                )
+                interval_defaults.update(interval_kwargs)
 
-        # Set date format for x-axis
-        locator = AutoDateLocator(interval_multiples=False)
-        formatter = AutoDateFormatter(locator)
-        ax.xaxis.set_major_locator(locator)
-        ax.xaxis.set_major_formatter(formatter)
+                # Plot observed data as scatter
+                sns.scatterplot(
+                    x=self.history[self.timestamp_name],
+                    y=self.history[self.metric_name],
+                    **scatter_defaults,
+                )
 
-        # Set axis labels
-        ax.set_xlabel(xlabel, labelpad=15)
-        ax.set_ylabel(ylabel, labelpad=15)
+                # Plot trend line
+                ax.plot(
+                    fcst[self.timestamp_name],
+                    fcst["trend"],
+                    **trend_defaults,
+                )
 
-        # Add gridlines (only horizontal)
-        ax.grid(True, axis="y", linestyle="--", alpha=0.3)
-        ax.grid(visible=False, axis="x")
+                # Plot forecast line
+                ax.plot(
+                    fcst[self.timestamp_name],
+                    fcst["yhat"],
+                    **forecast_defaults,
+                )
 
-        # Remove top and right spines for cleaner look
-        sns.despine(ax=ax)
+                # Plot uncertainty intervals if enabled
+                if uncertainty:
+                    ax.fill_between(
+                        fcst[self.timestamp_name],
+                        fcst["observed_lower"],
+                        fcst["observed_upper"],
+                        **interval_defaults,
+                    )
 
-        # Remove default legend unless specified
-        try:
-            ax.get_legend().remove()
-        except AttributeError:
-            pass
+                # Add changepoints if enabled
+                if show_changepoints:
+                    add_changepoints_to_plot(self, fcst, ax)
 
-        if include_legend:
-            ax.legend(frameon=True, shadow=True, loc="best", fontsize=10)
+                # Configure date ticks
+                locator = date_locator or AutoDateLocator(
+                    interval_multiples=False
+                )
+                formatter = date_formatter or AutoDateFormatter(locator)
+                ax.xaxis.set_major_locator(locator)
+                ax.xaxis.set_major_formatter(formatter)
 
-        # Adjust layout if we created the figure
-        if not user_provided_ax:
-            fig.tight_layout()
+                # Axis labels
+                ax.set_xlabel(**xlabel_kwargs)
+                ax.set_ylabel(**ylabel_kwargs)
+
+                # Y-axis grid
+                grid_y_defaults = dict(
+                    visible=True,
+                    axis="y",
+                    linestyle="--",
+                    alpha=0.3,
+                )
+                grid_y_defaults.update(grid_y_kwargs)
+                ax.grid(**grid_y_defaults)
+
+                # Hide X-axis grid
+                ax.grid(visible=False, axis="x")
+
+                # Remove top and right spines
+                sns.despine(ax=ax, **despine_kwargs)
+
+                # Customize tick labels
+                ticklabel_defaults = dict(
+                    rotation=45,
+                    horizontalalignment="right",
+                )
+                ticklabel_defaults.update(ticklabel_kwargs)
+                for label in ax.get_xticklabels():
+                    label.set_rotation(ticklabel_defaults.get("rotation", 0))
+                    label.set_horizontalalignment(
+                        ticklabel_defaults.get("horizontalalignment", "center")
+                    )
+                    if "fontsize" in ticklabel_defaults:
+                        label.set_fontsize(ticklabel_defaults["fontsize"])
+                    if "color" in ticklabel_defaults:
+                        label.set_color(ticklabel_defaults["color"])
+
+                # Remove Seaborn's default legend
+                try:
+                    ax.get_legend().remove()
+                except AttributeError:
+                    pass
+
+                # Add legend if requested
+                if include_legend:
+                    ax.legend(
+                        frameon=True, shadow=True, loc="best", fontsize=10
+                    )
+
+                # Apply tight layout if figure was created here
+                if not user_provided_ax:
+                    fig.tight_layout()
 
         return fig
 
@@ -1886,126 +2027,192 @@ class Gloria(BaseModel):
         fcst: pd.DataFrame,
         uncertainty: bool = True,
         weekly_start: int = 0,
-        figsize: Optional[tuple[int, int]] = None,
-        dpi: int = 150,
-    ) -> plt.figure:
+        plot_kwargs: Optional[dict[str, Any]] = None,
+        line_kwargs: Optional[dict[str, Any]] = None,
+        interval_kwargs: Optional[dict[str, Any]] = None,
+        xlabel_kwargs: Optional[dict[str, Any]] = None,
+        ylabel_kwargs: Optional[dict[str, Any]] = None,
+        grid_y_kwargs: Optional[dict[str, Any]] = None,
+        despine_kwargs: Optional[dict[str, Any]] = None,
+        ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        rcparams_kwargs: Optional[dict[str, Any]] = None,
+        style_kwargs: Optional[dict[str, Any]] = None,
+    ) -> plt.Figure:
         """
         Plot forecast components of a Gloria model using a modern Seaborn
-        style.
+        style, with global kwargs applied to all subplots.
 
         Parameters
         ----------
         fcst : :class:`pandas.DataFrame`
-            Forecast DataFrame from the model, used for plotting trend.
-            and uncertainty.
-        uncertainty : bool
+            Forecast DataFrame from the model, used for plotting trend and
+            uncertainty.
+        uncertainty : bool, default True
             Whether to include uncertainty intervals in the trend component
-            plot. The default is True.
-        weekly_start : int
+            plot.
+        weekly_start : int, default 0
             Starting day of the week (0=Monday) for weekly seasonal plots.
-            The default is 0.
-        figsize : tuple[int, int]
-            Figure size as (*width*, *height*) in inches. Used only when
-            creating a new figure. If not provided, it is calculated
-            automatically to arrange subplots in a nearly square grid. The
-            default is None.
-        dpi : int
-            Resolution of the figure in dots-per-inches. Used only when
-            creating a new figure. The default is 150.
-
-        Raises
-        ------
-        NotFittedError
-            The model has not been fitted yet.
+        plot_kwargs : dict, optional
+            Keyword arguments passed to matplotlib.subplots() for figure and
+            axes creation (e.g., figsize, dpi).
+        line_kwargs : dict, optional
+            Styling kwargs for lines in all components (e.g., color, linewidth)
+        interval_kwargs : dict, optional
+            Styling kwargs for uncertainty intervals in all components
+            (e.g., alpha, color).
+        xlabel_kwargs : dict, optional
+            Keyword arguments for x-axis labels in all components.
+        ylabel_kwargs : dict, optional
+            Keyword arguments for y-axis labels in all components.
+        grid_y_kwargs : dict, optional
+            Keyword arguments for customizing the y-axis grid appearance.
+        despine_kwargs : dict, optional
+            Keyword arguments passed to seaborn.despine() for spine removal.
+        ticklabel_kwargs : dict, optional
+            Keyword arguments to customize tick labels in all components.
+        rcparams_kwargs : dict, optional
+            Matplotlib rcParams overrides for all components (e.g., font sizes)
+        style_kwargs : dict, optional
+            Seaborn style kwargs for all components (e.g., style presets).
 
         Returns
         -------
         :class:`matplotlib.figure.Figure`
             The figure object containing all component subplots.
         """
+        # Third Party
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import seaborn as sns
+
+        # Initialize default kwargs dictionaries
+        plot_kwargs = plot_kwargs or {}
+        line_kwargs = line_kwargs or {}
+        interval_kwargs = interval_kwargs or {}
+        xlabel_kwargs = xlabel_kwargs or {}
+        ylabel_kwargs = ylabel_kwargs or {}
+        grid_y_kwargs = grid_y_kwargs or {}
+        despine_kwargs = despine_kwargs or {}
+        ticklabel_kwargs = ticklabel_kwargs or {}
+        rcparams_kwargs = rcparams_kwargs or {}
+        style_kwargs = style_kwargs or {}
+
         # Set Seaborn style and Matplotlib parameters for consistent aesthetics
-        sns.set(style="whitegrid")
-        plt.rcParams.update(
-            {
-                "font.size": 14,
-                "font.family": "DejaVu Sans",
-                "axes.titlesize": 18,
-                "axes.labelsize": 16,
-                "legend.fontsize": 14,
-                "axes.edgecolor": "#333333",
-                "axes.linewidth": 1.2,
-            }
-        )
+        style_defaults = {"style": "whitegrid"}
+        style_defaults.update(style_kwargs)
+        sns.set(**style_defaults)
 
-        # Define components to plot: always include 'trend'
-        components = ["trend"]
+        rcparams_defaults = {
+            "font.size": 14,
+            "font.family": "DejaVu Sans",
+            "axes.titlesize": 18,
+            "axes.labelsize": 16,
+            "legend.fontsize": 14,
+            "axes.edgecolor": "#333333",
+            "axes.linewidth": 1.2,
+        }
+        rcparams_defaults.update(rcparams_kwargs)
+        plt.rcParams.update(rcparams_defaults)
 
-        # Add seasonalities detected in the model
-        components.extend(self.model_extra["seasonalities"].keys())
+        # Use context managers to isolate styling
+        with plt.rc_context(rc=rcparams_defaults):
+            with sns.axes_style(style_defaults):
 
-        # Add events if available
-        if self.model_extra["events"].keys():
-            components.append("events")
+                # Define components to plot: always include 'trend'
+                components = ["trend"]
+                components.extend(self.model_extra["seasonalities"].keys())
+                if self.model_extra["events"].keys():
+                    components.append("events")
+                if self.model_extra["external_regressors"].keys():
+                    components.append("external_regressors")
 
-        # Add external regressors if available
-        if self.model_extra["external_regressors"].keys():
-            components.append("external_regressors")
+                npanel = len(components)
+                ncols = int(np.floor(np.sqrt(npanel)))
+                nrows = int(np.ceil(npanel / ncols))
 
-        npanel = len(components)
+                # Default subplots configuration
+                plot_defaults = {
+                    "nrows": nrows,
+                    "ncols": ncols,
+                    "figsize": (int(4.5 * ncols), int(3.2 * nrows)),
+                    "facecolor": "w",
+                    "dpi": 150,
+                }
+                plot_defaults.update(plot_kwargs)
 
-        # Calculate number of rows and columns for subplot
-        # grid (as square as possible)
-        ncols = int(np.floor(np.sqrt(npanel)))
-        nrows = int(np.ceil(npanel / ncols))
+                # Create figure and axes
+                fig, axes = plt.subplots(**plot_defaults)
 
-        # Automatically determine figure size if not specified
-        if not figsize:
-            figsize = (int(4.5 * ncols), int(3.2 * nrows))
+                if isinstance(axes, np.ndarray):
+                    axes = axes.flatten()
+                else:
+                    axes = [axes]
 
-        # Create subplots with white background
-        fig, axes = plt.subplots(
-            nrows, ncols, figsize=figsize, facecolor="w", dpi=dpi
-        )
-
-        # Flatten axes array for easy iteration, handle single subplot case
-        axes = axes.flatten() if npanel > 1 else [axes]
-
-        # Loop over components and call corresponding plot functions
-        for ax, plot_name in zip(axes, components):
-            if plot_name == "trend":
-                plot_trend_component(
-                    m=self,
-                    fcst=fcst,
-                    component="trend",
-                    ax=ax,
-                    uncertainty=uncertainty,
-                )
-            elif plot_name in self.model_extra["seasonalities"].keys():
-                plot_seasonality_component(
-                    m=self,
-                    component=plot_name,
-                    start_offset=weekly_start,
-                    period=int(
-                        np.floor(
-                            self.model_extra["seasonalities"][plot_name].period
+                for ax, comp in zip(axes, components):
+                    if comp == "trend":
+                        plot_trend_component(
+                            m=self,
+                            fcst=fcst,
+                            component="trend",
+                            ax=ax,
+                            uncertainty=uncertainty,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
                         )
-                    ),
-                    ax=ax,
-                )
-            elif plot_name in ["events", "external_regressors"]:
-                plot_event_component(m=self, component=plot_name, ax=ax)
+                    elif comp in self.model_extra["seasonalities"].keys():
+                        plot_seasonality_component(
+                            m=self,
+                            component=comp,
+                            start_offset=weekly_start,
+                            period=int(
+                                np.rint(
+                                    self.model_extra["seasonalities"][
+                                        comp
+                                    ].period
+                                )
+                            ),
+                            ax=ax,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
+                        )
+                    elif comp in ["events", "external_regressors"]:
+                        plot_event_component(
+                            m=self,
+                            component=comp,
+                            ax=ax,
+                            plot_kwargs=plot_kwargs,
+                            line_kwargs=line_kwargs,
+                            interval_kwargs=interval_kwargs,
+                            xlabel_kwargs=xlabel_kwargs,
+                            ylabel_kwargs=ylabel_kwargs,
+                            grid_y_kwargs=grid_y_kwargs,
+                            ticklabel_kwargs=ticklabel_kwargs,
+                            rcparams_kwargs=rcparams_kwargs,
+                            style_kwargs=style_kwargs,
+                        )
 
-            # Visual tuning: grid only on y-axis, remove x-axis grid,
-            # remove top/right spines
-            ax.grid(axis="y", linestyle="--", alpha=0.3)
-            ax.grid(visible=False, axis="x")
-            sns.despine(ax=ax)
+                    # Remove top and right spines for each subplot
+                    sns.despine(ax=ax, **despine_kwargs)
 
-        # Adjust layout to prevent overlap
-        fig.tight_layout()
+                # Hide empty axes if any
+                for ax in axes[npanel:]:
+                    ax.set_visible(False)
 
+                fig.tight_layout()
         return fig
 
-
-if __name__ == "__main__":
     ...
