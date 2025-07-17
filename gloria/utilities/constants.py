@@ -9,7 +9,7 @@ Constant definitions used throughout the Gloria code
 
 # Standard Library
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Literal, Optional, TypedDict
 
 # Third Party
 import pandas as pd
@@ -46,13 +46,17 @@ _GLORIA_DEFAULTS = dict(
 class FitDefaults(TypedDict):
     optimize_mode: Literal["MAP", "MLE"]
     sample: bool
-    augmentation_config: dict[str, Any]
+    capacity: Optional[int]
+    capacity_mode: Optional[str]
+    capacity_value: Optional[float]
 
 
 _FIT_DEFAULTS: FitDefaults = {
     "optimize_mode": "MAP",
     "sample": False,
-    "augmentation_config": dict(mode="scale", value=0.5),
+    "capacity": None,
+    "capacity_mode": None,
+    "capacity_value": None,
 }
 
 

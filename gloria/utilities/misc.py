@@ -187,12 +187,7 @@ def simple_poisson_model(stan_data: "ModelInputData") -> pd.Series:
     from gloria.models import Poisson
 
     m_poisson = Poisson(model_name="poisson")
-    m_poisson.fit(
-        stan_data=stan_data,
-        optimize_mode="MLE",
-        sample=False,
-        augmentation_config=None,
-    )
+    m_poisson.fit(stan_data=stan_data, optimize_mode="MLE", sample=False)
     result = m_poisson.predict(
         t=stan_data.t,
         X=stan_data.X,

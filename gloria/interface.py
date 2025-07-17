@@ -51,7 +51,6 @@ from gloria.regressors import (
 )
 from gloria.utilities.configuration import (
     assemble_config,
-    convert_augmentation_config,
     model_from_toml,
 )
 
@@ -208,7 +207,7 @@ class Gloria(BaseModel):
     def validate_population_name(
         cls: Type[Self],
         population_name: Optional[str],
-        other_fields: ValidationInfo,
+        info: ValidationInfo,
     ) -> str:
         """
         Check that the population name is set if the 'binomial vectorized n' is
@@ -217,7 +216,7 @@ class Gloria(BaseModel):
         # If the provided model was invalid, the "model" key is not part of
         # the validation info. .get() returns None in this case and validation
         # is skipped. A separate ValidationError will be issued for the model.
-        model = other_fields.data.get("model")
+        model = info.data.get("model")
         population_name = "" if population_name is None else population_name
         if (model == "binomial vectorized n") and (population_name == ""):
             raise ValueError(
@@ -296,8 +295,6 @@ class Gloria(BaseModel):
             "predict": _PREDICT_DEFAULTS.copy(),
             "load_data": _LOAD_DATA_DEFAULTS.copy(),
         }
-        # Convert augmentation config
-        self._config["fit"] = convert_augmentation_config(self._config["fit"])
 
     @property
     def is_fitted(self: Self) -> bool:
@@ -1149,12 +1146,27 @@ class Gloria(BaseModel):
         sample : bool, optional
             If ``True`` (default), the optimization is followed by a sampling
             over the Laplace approximation around the posterior mode.
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for augmenting the input data. Currently,
-            it is only required for the ``"binomial constant n"`` and
-            ``"beta-binomial constant n"`` models. For  all other models it
-            defaults to None. The default setting is ``mode="scale"`` with an
-            associated ``value=0.5``.
+        capacity : int, optional
+            An upper bound used for ``binomial`` and ``beta-binomial`` models.
+            Note that ``capacity`` must be >= all values in the metric column
+            of ``data``. Default is ``None``. Specifying ``capacity`` is
+            mutually exclusive with providing a  ``capacity_mode`` and
+            ``capacity_value`` pair.
+        capacity_mode : str, optional
+            A method used to estimate the capacity. Two modes are available:
+            - ``"factor"``: The capacity is the maximum of the response
+              variable times ``capacity_value``
+            - ``"scale"``: The capacity is optimized such that the response
+              variable is distributed around the expectation value
+              :math:`N \\times p` with :math:`N=` capacity and :math:`p=`
+              ``capacity_value``. This mode is the default using
+              ``capacity_value=0.5``.
+        capacity_value : float, optional
+            A value associated with the selected ``capacity_mode``:
+            - If ``capacity_mode = "factor"``, ``capacity_value`` must be
+              :math:`\\ge` 1
+            - If ``capacity_mode = "factor"``, ``capacity_value`` must be in
+              :math:`[0,1]`.
 
         Raises
         ------
@@ -1168,9 +1180,8 @@ class Gloria(BaseModel):
 
         Notes
         -----
-        The configuration of the fit method via ``optimize_mode``, ``sample``
-        and ``augmentation_config`` is composed in four layers, each
-        one overriding the previous:
+        The configuration of the fit method via its parameters is composed in
+        four layers, each one overriding the previous:
 
         1. **Model defaults** - the baseline configuration with defaults given
            above.
@@ -1192,10 +1203,13 @@ class Gloria(BaseModel):
         config = assemble_config(
             method="fit", model=self, toml_path=toml_path, **kwargs
         )
+
         self.fit_kwargs = dict(
             optimize_mode=config["optimize_mode"],
             sample=config["sample"],
-            augmentation_config=dict(config["augmentation_config"]),
+            capacity=config["capacity"],
+            capacity_mode=config["capacity_mode"],
+            capacity_value=config["capacity_value"],
         )
 
         # Prepare the model and input data
@@ -1208,7 +1222,9 @@ class Gloria(BaseModel):
             input_data,
             optimize_mode=config["optimize_mode"],
             sample=config["sample"],
-            augmentation_config=config["augmentation_config"],
+            capacity=config["capacity"],
+            capacity_mode=config["capacity_mode"],
+            capacity_value=config["capacity_value"],
         )
 
         return self
@@ -1815,7 +1831,7 @@ class Gloria(BaseModel):
             >>> fig = model.plot(fcst, plot_kwargs={"figsize": (12, 8),
                                                     "dpi": 200})
         """
-        
+
         if not self.is_fitted:
             raise NotFittedError()
 

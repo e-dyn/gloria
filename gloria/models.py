@@ -13,7 +13,7 @@ used in Gloria.
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional, Type, Union, cast
+from typing import Any, Callable, Literal, Mapping, Optional, Type, Union, cast
 
 # Third Party
 import numpy as np
@@ -25,7 +25,13 @@ from cmdstanpy import (
     install_cmdstan,
     set_cmdstan_path,
 )
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+)
 from scipy.optimize import minimize
 from scipy.special import expit, logit
 from scipy.stats import beta, betabinom, binom, gamma, nbinom, norm, poisson
@@ -94,8 +100,8 @@ def get_population_size(
     if mode == "constant":
         if value < y_max:
             raise ValueError(
-                "In population mode 'constant' the population value "
-                f"(={value}) must be an integer >= y_max (={y_max})."
+                f"The capacity (={value}) must be an integer >= y_max "
+                f"(={y_max})."
             )
         population = int(value)
     elif mode == "factor":
@@ -179,6 +185,32 @@ class BinomialPopulation(BaseModel):
                 )
         return value
 
+    @classmethod
+    def from_parameters(cls, capacity, capacity_mode, capacity_value):
+        cap_is_given = capacity is not None
+        mode_is_given = (
+            capacity_mode is not None and capacity_value is not None
+        )
+        mode_is_incomplete = (capacity_mode is not None) ^ (
+            capacity_value is not None
+        )
+
+        if mode_is_incomplete:
+            raise ValueError(
+                "Provide either both 'capacity_mode' and 'capacity_value', "
+                "or neither."
+            )
+        if not (cap_is_given ^ mode_is_given):
+            raise ValueError(
+                "Provide either 'capacity' or a 'capacity_mode' / "
+                "'capacity_value' pair."
+            )
+        if cap_is_given:
+            capacity_mode = "constant"
+            capacity_value = capacity
+
+        return cls(mode=capacity_mode, value=capacity_value)
+
 
 class ModelParams(BaseModel):
     """
@@ -219,9 +251,8 @@ class ModelInputData(BaseModel):
     gamma: float = Field(gt=0, default=3)  # Scale on dispersion proxy prior
     y: np.ndarray = np.array([])  # Time series
     t: np.ndarray = np.array([])  # Time as integer vector
-    t_change: np.ndarray = np.array(
-        []
-    )  # Times of trend changepoints as integers
+    # Times of trend changepoints as integers
+    t_change: np.ndarray = np.array([])
     X: np.ndarray = np.array([[]])  # Regressors
     sigmas: np.ndarray = np.array([])  # Scale on seasonality prior
     linked_offset: Optional[float] = None  # Data offset on linked scale
@@ -229,7 +260,7 @@ class ModelInputData(BaseModel):
 
     @field_validator("S")
     @classmethod
-    def validate_S(cls, S: int, info) -> int:
+    def validate_S(cls, S: int, info: ValidationInfo) -> int:
         if S > info.data["T"]:
             raise ValueError(
                 "Number of changepoints must be less or"
@@ -239,7 +270,9 @@ class ModelInputData(BaseModel):
 
     @field_validator("y")
     @classmethod
-    def validate_y_shape(cls, y: np.ndarray, info) -> np.ndarray:
+    def validate_y_shape(
+        cls, y: np.ndarray, info: ValidationInfo
+    ) -> np.ndarray:
         if len(y.shape) != 1:
             raise ValueError("Data array must be 1d-ndarray.")
         if info.data["T"] != len(y):
@@ -248,7 +281,9 @@ class ModelInputData(BaseModel):
 
     @field_validator("t")
     @classmethod
-    def validate_t_shape(cls, t: np.ndarray, info) -> np.ndarray:
+    def validate_t_shape(
+        cls, t: np.ndarray, info: ValidationInfo
+    ) -> np.ndarray:
         if len(t.shape) != 1:
             raise ValueError("Timestamp array must be 1d-ndarray.")
         if info.data["T"] != len(t):
@@ -257,7 +292,9 @@ class ModelInputData(BaseModel):
 
     @field_validator("t_change")
     @classmethod
-    def validate_t_change_shape(cls, t_change: np.ndarray, info) -> np.ndarray:
+    def validate_t_change_shape(
+        cls, t_change: np.ndarray, info: ValidationInfo
+    ) -> np.ndarray:
         if len(t_change.shape) != 1:
             raise ValueError("Changepoint array must be 1d-ndarray.")
         if info.data["S"] != len(t_change):
@@ -266,7 +303,9 @@ class ModelInputData(BaseModel):
 
     @field_validator("X")
     @classmethod
-    def validate_X_shape(cls, X: np.ndarray, info) -> np.ndarray:
+    def validate_X_shape(
+        cls, X: np.ndarray, info: ValidationInfo
+    ) -> np.ndarray:
         if len(X.shape) != 2:
             raise ValueError("Regressor matrix X must be 2d-ndarray.")
         # In case there are no regressors
@@ -286,7 +325,9 @@ class ModelInputData(BaseModel):
 
     @field_validator("sigmas")
     @classmethod
-    def validate_sigmas(cls, sigmas: np.ndarray, info) -> np.ndarray:
+    def validate_sigmas(
+        cls, sigmas: np.ndarray, info: ValidationInfo
+    ) -> np.ndarray:
         if len(sigmas.shape) != 1:
             raise ValueError("Sigmas array must be 1d-ndarray.")
         if info.data["K"] != len(sigmas):
@@ -420,9 +461,7 @@ class ModelBackendBase(ABC):
 
     @abstractmethod
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -432,11 +471,6 @@ class ModelBackendBase(ABC):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augmentation process. Currently,
-            it is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Raises
         ------
@@ -647,7 +681,9 @@ class ModelBackendBase(ABC):
         stan_data: ModelInputData,
         optimize_mode: Literal["MAP", "MLE"],
         sample: bool,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        capacity: Optional[int] = None,
+        capacity_mode: Optional[str] = None,
+        capacity_value: Optional[float] = None,
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
         Calculates initial parameters and fits the model to the input data.
@@ -663,11 +699,15 @@ class ModelBackendBase(ABC):
         sample : bool, optional
             If True (default), the optimization is followed by a sampling over
             the Laplace approximation around the posterior mode.
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
+        capacity : int, optional
+            An upper bound used for ``binomial`` and ``beta-binomial`` models.
+            Specifying ``capacity`` is mutually exclusive with providing a
+            ``capacity_mode`` and ``capacity_value`` pair.
+        capacity_mode : str, optional
+            A method used to estimate the capacity. Must be eitherr ``"scale"``
+            or ``"factor"``.
+        capacity_value : float, optional
+            A value associated with the selected ``capacity_mode``.
 
         Returns
         -------
@@ -687,7 +727,12 @@ class ModelBackendBase(ABC):
         # Additionally it estimates initial guesses for model parameters m, k,
         # and delta
         self.stan_data, self.stan_inits = self.preprocess(
-            stan_data, augmentation_config
+            stan_data,
+            # Pass capacity parameters as kwargs as only binomial and beta-
+            # binomial models process them at all
+            capacity=capacity,
+            capacity_mode=capacity_mode,
+            capacity_value=capacity_value,
         )
 
         # Scale regressors. The goal is to give each regressor a similar impact
@@ -719,11 +764,14 @@ class ModelBackendBase(ABC):
 
         # Look for the largest possible initial step length that doesn't
         # lead to a fail of the line search
+        get_logger().info("Starting optimization.")
         for init_alpha in [10 ** (-4 - i / 2) for i in range(0, 2 * 4)]:
             optimize_args["init_alpha"] = init_alpha
             try:
-                get_logger().info("Starting optimization.")
-                optimized_model = self.model.optimize(**optimize_args)
+                # Do cast for mypy: cmdstanpy only accepts mappings, not dicts
+                optimized_model = self.model.optimize(
+                    **cast(Mapping[str, Any], optimize_args)
+                )
             except RuntimeError:
                 # If init_alpha fails, try the next one
                 get_logger().debug(
@@ -744,7 +792,10 @@ class ModelBackendBase(ABC):
                 "Optimization terminated abnormally. Falling back to Newton."
             )
             optimize_args["algorithm"] = "Newton"
-            optimized_model = self.model.optimize(**optimize_args)
+            # Do cast for mypy: cmdstanpy only accepts mappings, not dicts
+            optimized_model = self.model.optimize(
+                **cast(Mapping[str, Any], optimize_args)
+            )
 
         if sample:
             get_logger().info("Starting Laplace sampling.")
@@ -1142,9 +1193,9 @@ class ModelBackendBase(ABC):
         return fn(a, *args, **kwargs)  # type: ignore
 
 
-class BinomialConstantN(ModelBackendBase):
+class Binomial(ModelBackendBase):
     """
-    Implementation of model backend for binomial distribution with constant N
+    Implementation of model backend for binomial distribution
     """
 
     # These class attributes must be defined by each model backend
@@ -1209,7 +1260,10 @@ class BinomialConstantN(ModelBackendBase):
     def preprocess(
         self: Self,
         stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        capacity: Optional[int] = None,
+        capacity_mode: Optional[str] = None,
+        capacity_value: Optional[float] = None,
+        **kwargs: Any,
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1219,15 +1273,15 @@ class BinomialConstantN(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : BinomialPopulation
-            Contains configuration parameters 'mode' and 'value' used to
-            determine the population size. Three modes are supported:
-
-            1. 'constant': value equals the population size
-            2. 'factor': the population size is the maximum of y times value
-            3. 'scale': the population size is a value optimized such that the
-                data are distributed around the expectation value N*p with
-                p = value and N = population size
+        capacity : int, optional
+            An upper bound used for ``binomial`` and ``beta-binomial`` models.
+            Specifying ``capacity`` is mutually exclusive with providing a
+            ``capacity_mode`` and ``capacity_value`` pair.
+        capacity_mode : str, optional
+            A method used to estimate the capacity. Must be eitherr ``"scale"``
+            or ``"factor"``.
+        capacity_value : float, optional
+            A value associated with the selected ``capacity_mode``.
 
         Returns
         -------
@@ -1239,17 +1293,18 @@ class BinomialConstantN(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        # Check that augmentation config is not missing
-        if augmentation_config is None:
-            raise ValueError(
-                "Missing configuration argument for augmentation method."
-            )
+        # Validate capacity parameters
+        capacity_settings = BinomialPopulation.from_parameters(
+            capacity=capacity,
+            capacity_mode=capacity_mode,
+            capacity_value=capacity_value,
+        )
 
         # Get population size depending on selected mode
         stan_data.N = get_population_size(
             y=stan_data.y,
-            mode=augmentation_config.mode,
-            value=augmentation_config.value,
+            mode=capacity_settings.mode,
+            value=capacity_settings.value,
         )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
@@ -1304,6 +1359,7 @@ class BinomialVectorizedN(ModelBackendBase):
             Predicted values
 
         """
+        # For fitting N_vec is saved in stan_data, for predicting it's in scale
         N_vec = self.stan_data.N_vec if scale is None else scale
         return N_vec * linked_arg
 
@@ -1333,13 +1389,12 @@ class BinomialVectorizedN(ModelBackendBase):
             Quantile at given level
 
         """
+        # For fitting N_vec is saved in stan_data, for predicting it's in scale
         N_vec = self.stan_data.N_vec if scale is None else scale
         return binom.ppf(level, N_vec, yhat / N_vec)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1349,11 +1404,7 @@ class BinomialVectorizedN(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
+
         Returns
         -------
         ModelInputData
@@ -1425,9 +1476,7 @@ class Normal(ModelBackendBase):
         return norm.ppf(level, loc=yhat, scale=scale)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1437,11 +1486,6 @@ class Normal(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Returns
         -------
@@ -1514,9 +1558,7 @@ class Poisson(ModelBackendBase):
         return poisson.ppf(level, yhat)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1526,11 +1568,6 @@ class Poisson(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Returns
         -------
@@ -1605,9 +1642,7 @@ class NegativeBinomial(ModelBackendBase):
         return nbinom.ppf(level, n=scale, p=p)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1617,11 +1652,6 @@ class NegativeBinomial(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Returns
         -------
@@ -1696,9 +1726,7 @@ class Gamma(ModelBackendBase):
         return gamma.ppf(level, yhat * scale, scale=1 / scale)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1708,11 +1736,6 @@ class Gamma(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Returns
         -------
@@ -1789,9 +1812,7 @@ class Beta(ModelBackendBase):
         return beta.ppf(level, a, b)
 
     def preprocess(
-        self: Self,
-        stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        self: Self, stan_data: ModelInputData, **kwargs: Any
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1801,11 +1822,6 @@ class Beta(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : Optional[BinomialPopulation], optional
-            Configuration parameters for the augment_data method. Currently, it
-            is only required for the BinomialConstantN and
-            BetaBinomialConstantN model. For all other models it defaults to
-            None.
 
         Returns
         -------
@@ -1837,7 +1853,7 @@ class Beta(ModelBackendBase):
         return stan_data, ini_params
 
 
-class BetaBinomialConstantN(ModelBackendBase):
+class BetaBinomial(ModelBackendBase):
     """
     Implementation of model backend for beta-binomial distribution with
     constant N
@@ -1910,7 +1926,10 @@ class BetaBinomialConstantN(ModelBackendBase):
     def preprocess(
         self: Self,
         stan_data: ModelInputData,
-        augmentation_config: Optional[BinomialPopulation] = None,
+        capacity: Optional[int] = None,
+        capacity_mode: Optional[str] = None,
+        capacity_value: Optional[float] = None,
+        **kwargs: Any,
     ) -> tuple[ModelInputData, ModelParams]:
         """
         Augment the input data for the stan model with model dependent data
@@ -1920,15 +1939,15 @@ class BetaBinomialConstantN(ModelBackendBase):
         ----------
         stan_data : ModelInputData
             Model agnostic input data provided by the forecaster interface
-        augmentation_config : BinomialPopulation
-            Contains configuration parameters 'mode' and 'value' used to
-            determine the population size. Three modes are supported:
-
-            1. 'constant': value equals the population size
-            2. 'factor': the population size is the maximum of y times value
-            3. 'scale': the population size is a value optimized such that the
-                data are distributed around the expectation value N*p with
-                p = value and N = population size
+        capacity : int, optional
+            An upper bound used for ``binomial`` and ``beta-binomial`` models.
+            Specifying ``capacity`` is mutually exclusive with providing a
+            ``capacity_mode`` and ``capacity_value`` pair.
+        capacity_mode : str, optional
+            A method used to estimate the capacity. Must be eitherr ``"scale"``
+            or ``"factor"``.
+        capacity_value : float, optional
+            A value associated with the selected ``capacity_mode``.
 
         Returns
         -------
@@ -1940,17 +1959,18 @@ class BetaBinomialConstantN(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        # Check that augmentation config is not missing
-        if augmentation_config is None:
-            raise ValueError(
-                "Missing configuration argument for augmentation method."
-            )
+        # Validate capacity parameters
+        capacity_settings = BinomialPopulation.from_parameters(
+            capacity=capacity,
+            capacity_mode=capacity_mode,
+            capacity_value=capacity_value,
+        )
 
         # Get population size depending on selected mode
         stan_data.N = get_population_size(
             y=stan_data.y,
-            mode=augmentation_config.mode,
-            value=augmentation_config.value,
+            mode=capacity_settings.mode,
+            value=capacity_settings.value,
         )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
@@ -1974,26 +1994,18 @@ class BetaBinomialConstantN(ModelBackendBase):
 
 # A TypeAlias for all existing Model Backends
 ModelBackend: TypeAlias = Union[
-    BinomialConstantN,
-    BinomialVectorizedN,
-    Normal,
-    Poisson,
-    NegativeBinomial,
-    Gamma,
-    Beta,
-    BetaBinomialConstantN,
+    Binomial, Normal, Poisson, NegativeBinomial, Gamma, Beta, BetaBinomial
 ]
 
 # Map model names to respective model backend classes
 MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
-    "binomial constant n": BinomialConstantN,
-    "binomial vectorized n": BinomialVectorizedN,
+    "binomial": Binomial,
     "poisson": Poisson,
     "normal": Normal,
     "negative binomial": NegativeBinomial,
     "gamma": Gamma,
     "beta": Beta,
-    "beta-binomial constant n": BetaBinomialConstantN,
+    "beta-binomial": BetaBinomial,
 }
 
 

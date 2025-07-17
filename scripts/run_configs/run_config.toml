@@ -1,13 +1,13 @@
 [model]
-model = "poisson"
+model = "beta-binomial"
 sampling_period = "1d"
 timestamp_name = "ds"
 metric_name = "y"
 n_changepoints = 2
 changepoint_range = 0.8
-seasonality_prior_scale = 10.0
-event_prior_scale = 2
-changepoint_prior_scale = 0.05
+seasonality_prior_scale = 3
+event_prior_scale = 3
+changepoint_prior_scale = 3
 interval_width = 0.8
 uncertainty_samples = 100
 
@@ -17,10 +17,9 @@ dtype_kind = "u"
 
 [fit]
 optimize_mode = "MAP"
-sample = true
-[fit.augmentation_config]
-mode = "scale"
-value = 0.5
+sample = false
+capacity_mode = "scale"
+capacity_value = 0.5
 
 [predict]
 periods = 30
