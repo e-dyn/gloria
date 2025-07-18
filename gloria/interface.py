@@ -23,7 +23,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    ValidationInfo,
     field_validator,
 )
 from typing_extensions import Self
@@ -87,9 +86,8 @@ class Gloria(BaseModel):
     ----------
     model : str
         The distribution model to be used. Can be any of ``"poisson"``,
-        ``"binomial constant n"``, ``"binomial vectorized n"``,
-        ``"negative binomial"``, ``"gamma"``, ``"beta"``, ``"beta-binomial
-        constant n"``, or ``"normal"``. See :ref:`Model Selection
+        ``"binomial"``, ``"negative binomial"``, ``"gamma"``, ``"beta"``,
+        ``"beta-binomial"``, or ``"normal"``. See :ref:`Model Selection
         <ref-model-selection>` tutorial for further information.
     sampling_period : Union[pd.Timedelta, str]
         Minimum spacing between two adjacent samples either as ``pd.Timedelta``
@@ -101,8 +99,8 @@ class Gloria(BaseModel):
         The name of the expected metric column of the input data frame for
         :meth:`~Gloria.fit`.
     population_name : str, optional
-        The name of the column containing population size data for the model
-        'binomial vectorized n'.
+        The name of the column containing capacity data for the models
+        ``"binomial"`` and ``"beta-binomial"``.
     changepoints : pd.Series, optional
         List of timestamps at which to include potential changepoints. If not
         specified (default), potential changepoints are selected automatically.
@@ -202,29 +200,6 @@ class Gloria(BaseModel):
 
         return sampling_period
 
-    @field_validator("population_name")
-    @classmethod
-    def validate_population_name(
-        cls: Type[Self],
-        population_name: Optional[str],
-        info: ValidationInfo,
-    ) -> str:
-        """
-        Check that the population name is set if the 'binomial vectorized n' is
-        being used
-        """
-        # If the provided model was invalid, the "model" key is not part of
-        # the validation info. .get() returns None in this case and validation
-        # is skipped. A separate ValidationError will be issued for the model.
-        model = info.data.get("model")
-        population_name = "" if population_name is None else population_name
-        if (model == "binomial vectorized n") and (population_name == ""):
-            raise ValueError(
-                "The name of population must be set for model 'binomial "
-                "vectorized n' but is an empty string."
-            )
-        return population_name
-
     @field_validator("changepoints", mode="before")
     @classmethod
     def validate_changepoints(
@@ -271,6 +246,14 @@ class Gloria(BaseModel):
         # Instantiate the model backend that manages communication with the
         # Stan model and performs predictions based on the fit
         self.model_backend = get_model_backend(model=self.model)
+
+        # If a capacity name was given, the capacity will be expected to be
+        # part of the input data during fit() and predict(). The vectorized
+        # attribute will indicate that.
+        self.vectorized = (self.population_name != "") and self.model in (
+            "binomial",
+            "beta-binomial",
+        )
 
         # The following attributes will be set during fitting or by other
         # methods
@@ -360,7 +343,7 @@ class Gloria(BaseModel):
         reserved_names.extend(
             [self.timestamp_name, self.metric_name, _T_INT, _DTYPE_KIND]
         )
-        if self.model == "binomial vectorized n":
+        if self.vectorized:
             reserved_names.append(self.population_name)
 
         if name in reserved_names:
@@ -678,7 +661,7 @@ class Gloria(BaseModel):
         self: Self,
         df: pd.DataFrame,
         name: str,
-        col_type: Literal["Metric", "Population"] = "Metric",
+        col_type: Literal["Metric", "Capacity"] = "Metric",
     ) -> None:
         """
         Validate that the metric column exists and contains only valid values.
@@ -689,7 +672,7 @@ class Gloria(BaseModel):
             Input pandas DataFrame of data to be fitted.
         name : str
             The metric column name
-        col_type : Literal["Metric", "Population"], optional
+        col_type : Literal["Metric", "Capacity"], optional
             Specifies whether the metric column or population column is to be
             validated. The default is "Metric".
 
@@ -730,8 +713,9 @@ class Gloria(BaseModel):
         df : pd.DataFrame
             DataFrame that contains at the very least a timestamp column with
             name self.timestamp_name and a numeric column with name
-            self.metric_name. If the Gloria model is 'binomial vectorized n'
-            a column with name self.population.name must exists. If external
+            self.metric_name. If the Gloria models is 'binomial' and
+            'beta-binomial' in vectorized capacity form are to be used, a
+            column with name self.population.name must exists. If external
             regressors were added to the model, the respective columns must be
             present as well.
 
@@ -796,17 +780,17 @@ class Gloria(BaseModel):
         self.validate_metric_column(
             df=df, name=self.metric_name, col_type="Metric"
         )
-        # Population validation
-        if self.model == "binomial vectorized n":
+        # Capcacity validation
+        if self.vectorized:
             self.validate_metric_column(
-                df=df, name=self.population_name, col_type="Population"
+                df=df, name=self.population_name, col_type="Capacity"
             )
-            # Check values in the population column
+            # Check values in the capacity column
             if (df[self.population_name] < df[self.metric_name]).any():
                 raise ValueError(
                     "There are values in the metric column that exceed the "
-                    "corresponding values in the population column, which is "
-                    "not allowed for model 'binomial vectorized n'."
+                    "corresponding values in the capacity column, which is "
+                    "not allowed for models 'binomial' and 'beta-binomial'."
                 )
 
         # Regressor validation
@@ -829,8 +813,9 @@ class Gloria(BaseModel):
             ],
         ].copy()
 
-        if self.model == "binomial vectorized n":
+        if self.vectorized:
             history[self.population_name] = df[self.population_name].copy()
+
         return history
 
     def set_changepoints(self: Self) -> Self:
@@ -1110,9 +1095,11 @@ class Gloria(BaseModel):
             X=self.X.values,
             sigmas=np.array(list(self.prior_scales.values())),
         )
-        # Add population size for vectorized binomial model
-        if self.model == "binomial vectorized n":
-            input_data.N_vec = np.asarray(self.history[self.population_name])
+        # Add capacity is vectorized, add it now
+        if self.vectorized:
+            input_data.capacity = np.asarray(
+                self.history[self.population_name]
+            )
         return input_data
 
     def fit(
@@ -1225,6 +1212,7 @@ class Gloria(BaseModel):
             capacity=config["capacity"],
             capacity_mode=config["capacity_mode"],
             capacity_value=config["capacity_value"],
+            vectorized=self.vectorized,
         )
 
         return self
@@ -1312,13 +1300,13 @@ class Gloria(BaseModel):
         # At this point 'data' is a pd.DataFrame. Let MyPy know
         data = cast(pd.DataFrame, data)
 
-        # Validate and extract population to pass it to predict
-        N_vec = None
-        if self.model == "binomial vectorized n":
+        # Validate and extract capacity to pass it to predict
+        capacity_vec = None
+        if self.vectorized:
             self.validate_metric_column(
-                df=data, name=self.population_name, col_type="Population"
+                df=data, name=self.population_name, col_type="Capacity"
             )
-            N_vec = data[self.population_name].copy()
+            capacity_vec = data[self.population_name].copy()
 
         # Validate external regressors
         # 1. Collect missing columns
@@ -1359,7 +1347,7 @@ class Gloria(BaseModel):
             X=np.asarray(X),
             interval_width=self.interval_width,
             n_samples=self.uncertainty_samples,
-            N_vec=N_vec,
+            capacity_vec=capacity_vec,
         )
 
         # Insert timestamp into result

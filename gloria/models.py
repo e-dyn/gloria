@@ -38,8 +38,10 @@ from scipy.stats import beta, betabinom, binom, gamma, nbinom, norm, poisson
 from typing_extensions import Self, TypeAlias
 
 # Gloria
-# Inhouse Packages
 from gloria.utilities.constants import _CMDSTAN_VERSION
+
+# Inhouse Packages
+from gloria.utilities.errors import NotFittedError
 from gloria.utilities.logging import get_logger
 from gloria.utilities.types import Distribution
 
@@ -48,11 +50,9 @@ BASEPATH = Path(__file__).parent
 
 
 ### --- Class and Function Definitions --- ###
-def get_population_size(
-    y: np.ndarray, mode: str, value: Union[int, float]
-) -> int:
+def get_capacity(y: np.ndarray, mode: str, value: Union[int, float]) -> int:
     """
-    Estimate a population size N suitable for binomial or beta-binomial models
+    Estimate a capacity suitable for binomial or beta-binomial models
     based on the response y and one of three selection modes.
 
     Parameters
@@ -60,34 +60,34 @@ def get_population_size(
     y : np.ndarray
         Array of observed response variable data
     mode : str
-        Mode for determining the population size. Must be one of:
-        - ``"constant"`` : Use a fixed population size equal to ``value``.
-        - ``"factor"`` : Set population size to ``ceil(max(y) * value)``.
-        - ``"scale"`` : Optimize population size N so that the implied success
+        Mode for determining the capacity. Must be one of:
+        - ``"constant"`` : Use a fixed capacity equal to ``value``.
+        - ``"factor"`` : Set capacity to ``ceil(max(y) * value)``.
+        - ``"scale"`` : Optimize capacity such that the implied success
           probability ``p = y / N`` is close to ``value``.
     value : int or float
         Mode-dependent parameter:
-        - For ``"constant"``, the population size (must be ≥ max(y)).
+        - For ``"constant"``, the capacity (must be ≥ max(y)).
         - For ``"factor"``, a scaling factor ≥ 1 applied to max(y).
         - For ``"scale"``, the target mean success probability ``p``.
 
     Returns
     -------
     int
-        Estimated population size N.
+        Estimated capacity
 
     Raises
     ------
     ValueError
-        If ``"constant"`` mode is selected and the fixed population size is
-        less than max(y).
+        If ``"constant"`` mode is selected and the capacity is less than
+        max(y).
 
     """
 
     def distance_to_scale(f, y: np.ndarray) -> float:
         """
         This function yields the distance between desired scale and data
-        normalized to a fixed population size N.
+        normalized to a capacity.
         """
         N = f * y_max
         p = y / N
@@ -96,27 +96,27 @@ def get_population_size(
     # Find maximum of data
     y_max = y.max()
 
-    # Determine population size depending on mode
+    # Determine capacity depending on mode
     if mode == "constant":
         if value < y_max:
             raise ValueError(
                 f"The capacity (={value}) must be an integer >= y_max "
                 f"(={y_max})."
             )
-        population = int(value)
+        capacity = int(value)
     elif mode == "factor":
-        population = int(np.ceil(y_max * value))
+        capacity = int(np.ceil(y_max * value))
     elif mode == "scale":
         # Minimize distance_to_scale() with respect to the factor f. f
-        # determines the population size N via N = y_max * f.
+        # determines the capacity via N = y_max * f.
         res = minimize(
             lambda f: distance_to_scale(f, y),
             x0=1 / value,
             bounds=[(1, None)],
         )
-        population = int(np.ceil(res.x[0] * y_max))
+        capacity = int(np.ceil(res.x[0] * y_max))
 
-    return population
+    return capacity
 
 
 class LinkPair(BaseModel):
@@ -368,9 +368,7 @@ class ModelBackendBase(ABC):
     link_pair = LINK_FUNC_MAP["id"]
 
     def yhat_func(
-        self: Self,
-        linked_arg: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        self: Self, linked_arg: np.ndarray, **kwargs: Any
     ) -> np.ndarray:
         """
         Produces the predicted values yhat.
@@ -393,10 +391,7 @@ class ModelBackendBase(ABC):
         return linked_arg
 
     def quant_func(
-        self: Self,
-        level: float,
-        yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        self: Self, level: float, yhat: np.ndarray, **kwargs: Any
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -491,7 +486,7 @@ class ModelBackendBase(ABC):
     def normalize_data(
         self: Self,
         y: np.ndarray,
-        N: Optional[Union[int, np.ndarray]] = None,
+        capacity: Optional[Union[int, np.ndarray]] = None,
         lower_bound: bool = False,
         upper_bound: bool = False,
     ) -> tuple[np.ndarray, float, float]:
@@ -513,7 +508,7 @@ class ModelBackendBase(ABC):
         y : np.ndarray
             Raw response variable.  Shape can be any, provided it broadcasts
             with ``N`` if ``N`` is an array.
-        N : Optional[Union[int, np.ndarray]]
+        capacity : Optional[Union[int, np.ndarray]]
             Population size(s) for normalisation.  If ``None`` (default) no
             division is performed.  If an array is given it must have the same
             shape as ``y``.
@@ -540,12 +535,14 @@ class ModelBackendBase(ABC):
 
         y_scaled = y.copy()
 
-        # Normalize data with respect to population
-        if N is not None:
+        # Normalize data with respect to capacity
+        if capacity is not None:
             p = np.full(y_scaled.shape, 1e-10)
             # This safe-divide is necessary for models with vectorized N as
             # N = 0 can occur here
-            y_scaled = np.divide(y_scaled, N, out=p, where=(N != 0))
+            y_scaled = np.divide(
+                y_scaled, capacity, out=p, where=(capacity != 0)
+            )
         # Replace true zeros with a small value as link function diverges
         # otherwise
         if lower_bound:
@@ -684,6 +681,7 @@ class ModelBackendBase(ABC):
         capacity: Optional[int] = None,
         capacity_mode: Optional[str] = None,
         capacity_value: Optional[float] = None,
+        vectorized: bool = False,
     ) -> Union[CmdStanMLE, CmdStanLaplace]:
         """
         Calculates initial parameters and fits the model to the input data.
@@ -708,6 +706,10 @@ class ModelBackendBase(ABC):
             or ``"factor"``.
         capacity_value : float, optional
             A value associated with the selected ``capacity_mode``.
+        vectorized : bool
+            If True, the capacity is already part of stan_data as a numpy
+            array. If False the capacity must be constructed from capacity
+            parameters
 
         Returns
         -------
@@ -733,6 +735,7 @@ class ModelBackendBase(ABC):
             capacity=capacity,
             capacity_mode=capacity_mode,
             capacity_value=capacity_value,
+            vectorized=vectorized,
         )
 
         # Scale regressors. The goal is to give each regressor a similar impact
@@ -753,8 +756,17 @@ class ModelBackendBase(ABC):
             f"Optimizing model parameters using {optimize_mode}."
         )
 
+        # Make local copy of stan data and vectorize capacity. Only the Stan-
+        # files need the vectorized form even though the capacity is a single
+        # value. Therefore, it can be discarded after the fit.
+        stan_data_opt = self.stan_data.copy()
+        if hasattr(stan_data_opt, "capacity") and not vectorized:
+            stan_data_opt.capacity = (
+                np.ones(stan_data_opt.T, dtype=int) * stan_data_opt.capacity
+            )
+
         optimize_args = dict(
-            data=stan_data.dict(),
+            data=stan_data_opt.dict(),
             inits=self.stan_inits.dict(),
             algorithm="BFGS",
             iter=int(1e4),
@@ -828,7 +840,7 @@ class ModelBackendBase(ABC):
         X: np.ndarray,
         interval_width: float,
         n_samples: int,
-        N_vec: Optional[np.ndarray] = None,
+        capacity_vec: Optional[np.ndarray] = None,
     ) -> pd.DataFrame:
         """
         Based on the fitted model parameters predicts values and uncertainties
@@ -844,9 +856,9 @@ class ModelBackendBase(ABC):
             Confidence interval width: Must fall in [0, 1]
         n_samples : int
             Number of samples to draw from
-        N_vec : Optional[np.ndarray], optional
-            Vectorized population size - only relevant for model
-            'binomial vectorized n'. Default is None.
+        capacity_vec : Optional[np.ndarray], optional
+            Vectorized capacity - only relevant for models 'binomial' and
+            'beta-binomial'. Default is None.
 
         Raises
         ------
@@ -868,7 +880,7 @@ class ModelBackendBase(ABC):
         """
 
         if self.fit_params == dict():
-            raise ValueError("Can't predict prior to fit.")
+            raise NotFittedError("Can't predict prior to fit.")
 
         # Get optimized parameters (or their samples) from fit
         params_dict = self.fit_params
@@ -899,9 +911,7 @@ class ModelBackendBase(ABC):
 
             # Single out scale parameter
             scale = (
-                params_dict["scale"].mean()
-                if "scale" in params_dict
-                else N_vec
+                params_dict["scale"].mean() if "scale" in params_dict else None
             )
 
             # For each parameter sample produced by the fit method, calculate
@@ -937,17 +947,25 @@ class ModelBackendBase(ABC):
             yhat_linked_upper = self.link_pair.inverse(
                 yhat_upper_arg + trend_uncertainty.upper
             )
-            yhat = self.yhat_func(yhat_linked, scale=scale)
-            yhat_lower = self.yhat_func(yhat_linked_lower, scale=scale)
-            yhat_upper = self.yhat_func(yhat_linked_upper, scale=scale)
+            yhat = self.yhat_func(
+                yhat_linked, scale=scale, capacity_vec=capacity_vec
+            )
+            yhat_lower = self.yhat_func(
+                yhat_linked_lower, scale=scale, capacity_vec=capacity_vec
+            )
+            yhat_upper = self.yhat_func(
+                yhat_linked_upper, scale=scale, capacity_vec=capacity_vec
+            )
         else:
             trend_arg, yhat_arg = self.predict_regression(t, X, params_dict)
-            scale = params_dict["scale"] if "scale" in params_dict else N_vec
+            scale = params_dict["scale"] if "scale" in params_dict else None
 
             yhat_linked = self.link_pair.inverse(yhat_arg)
             yhat_linked_lower = yhat_linked
             yhat_linked_upper = yhat_linked
-            yhat = self.yhat_func(yhat_linked, scale=scale)
+            yhat = self.yhat_func(
+                yhat_linked, scale=scale, capacity_vec=capacity_vec
+            )
             yhat_lower = yhat
             yhat_upper = yhat
 
@@ -958,17 +976,29 @@ class ModelBackendBase(ABC):
         trend_linked_upper = self.link_pair.inverse(
             trend_arg + trend_uncertainty.upper
         )
-        trend = self.yhat_func(trend_linked, scale=scale)
-        trend_lower = self.yhat_func(trend_linked_lower, scale=scale)
-        trend_upper = self.yhat_func(trend_linked_upper, scale=scale)
+        trend = self.yhat_func(
+            trend_linked, scale=scale, capacity_vec=capacity_vec
+        )
+        trend_lower = self.yhat_func(
+            trend_linked_lower, scale=scale, capacity_vec=capacity_vec
+        )
+        trend_upper = self.yhat_func(
+            trend_linked_upper, scale=scale, capacity_vec=capacity_vec
+        )
         # For the observed uncertainties, we need to plug the yhats into
         # the actual distribution function and evaluate their respective
         # quantiles
         observed_lower = self.quant_func(
-            lower_level, yhat - trend + trend_lower, scale=scale
+            lower_level,
+            yhat - trend + trend_lower,
+            scale=scale,
+            capacity_vec=capacity_vec,
         )
         observed_upper = self.quant_func(
-            upper_level, yhat - trend + trend_upper, scale=scale
+            upper_level,
+            yhat - trend + trend_upper,
+            scale=scale,
+            capacity_vec=capacity_vec,
         )
 
         # Reconstruct
@@ -1200,7 +1230,7 @@ class Binomial(ModelBackendBase):
 
     # These class attributes must be defined by each model backend
     # Location of the stan file
-    stan_file = BASEPATH / "stan_models/binomial_constant_n.stan"
+    stan_file = BASEPATH / "stan_models/binomial.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
     # Pair of 'link function'/'inverse link function'
@@ -1209,7 +1239,8 @@ class Binomial(ModelBackendBase):
     def yhat_func(
         self: Self,
         linked_arg: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        capacity_vec: Optional[np.ndarray] = None,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Produces the predicted values yhat
@@ -1218,9 +1249,9 @@ class Binomial(ModelBackendBase):
         ----------
         linked_arg : np.ndarray
             Linked GLM output
-        scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. None for binomial constant n
-            model
+        capacity_vec : np.ndarray
+            An array containing the capacity for each timestamp. Only used for
+            prediction.
 
         Returns
         -------
@@ -1228,13 +1259,19 @@ class Binomial(ModelBackendBase):
             Predicted values
 
         """
-        return self.stan_data.N * linked_arg  # type: ignore[attr-defined]
+        # In vectorized capacity mode the capacity is saved in stan_data for
+        # fitting, but for predicting it's in capacity_vec
+        capacity = (
+            self.stan_data.capacity if capacity_vec is None else capacity_vec
+        )
+        return capacity * linked_arg
 
     def quant_func(
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        capacity_vec: Optional[np.ndarray] = None,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1245,9 +1282,9 @@ class Binomial(ModelBackendBase):
             Level of confidence in (0,1)
         yhat : np.ndarray
             Predicted values.
-        scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. None for binomial constant n
-            model
+        capacity_vec : np.ndarray
+            An array containing the capacity for each timestamp. Only used for
+            prediction.
 
         Returns
         -------
@@ -1255,7 +1292,12 @@ class Binomial(ModelBackendBase):
             Quantile at given level
 
         """
-        return binom.ppf(level, self.stan_data.N, yhat / self.stan_data.N)  # type: ignore[attr-defined]
+        # In vectorized capacity mode the capacity is saved in stan_data for
+        # fitting, but for predicting it's in capacity_vec
+        capacity = (
+            self.stan_data.capacity if capacity_vec is None else capacity_vec
+        )
+        return binom.ppf(level, capacity, yhat / capacity)
 
     def preprocess(
         self: Self,
@@ -1263,6 +1305,7 @@ class Binomial(ModelBackendBase):
         capacity: Optional[int] = None,
         capacity_mode: Optional[str] = None,
         capacity_value: Optional[float] = None,
+        vectorized: bool = False,
         **kwargs: Any,
     ) -> tuple[ModelInputData, ModelParams]:
         """
@@ -1282,6 +1325,10 @@ class Binomial(ModelBackendBase):
             or ``"factor"``.
         capacity_value : float, optional
             A value associated with the selected ``capacity_mode``.
+        vectorized : bool
+            If True, the capacity is already part of stan_data as a numpy
+            array. If False the capacity must be constructed from capacity
+            parameters
 
         Returns
         -------
@@ -1293,135 +1340,27 @@ class Binomial(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        # Validate capacity parameters
-        capacity_settings = BinomialPopulation.from_parameters(
-            capacity=capacity,
-            capacity_mode=capacity_mode,
-            capacity_value=capacity_value,
-        )
 
-        # Get population size depending on selected mode
-        stan_data.N = get_population_size(
-            y=stan_data.y,
-            mode=capacity_settings.mode,
-            value=capacity_settings.value,
-        )  # type: ignore[attr-defined]
+        if not vectorized:
+            # Validate capacity parameters
+            capacity_settings = BinomialPopulation.from_parameters(
+                capacity=capacity,
+                capacity_mode=capacity_mode,
+                capacity_value=capacity_value,
+            )
 
-        ## -- 2. Calculate initial parameter guesses -- ##
-        # Get response variable on link scale and normalize
-        y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
-            y=stan_data.y, N=stan_data.N, lower_bound=True, upper_bound=True
-        )
-
-        # Save normalization parameters
-        stan_data.linked_offset = self.linked_offset
-        stan_data.linked_scale = self.linked_scale
-
-        # Calculate the parameters
-        ini_params = self.initial_trend_parameters(y_scaled, stan_data)
-        return stan_data, ini_params
-
-
-class BinomialVectorizedN(ModelBackendBase):
-    """
-    Implementation of model backend for binomial distribution with vectorized N
-    """
-
-    # These class attributes must be defined by each model backend
-    # Location of the stan file
-    stan_file = BASEPATH / "stan_models/binomial_vectorized_n.stan"
-    # Kind of data (integer, float, ...). Is used for data validation
-    kind = "bu"  # must be any combination of 'biuf'
-    # Pair of 'link function'/'inverse link function'
-    link_pair = LINK_FUNC_MAP["logit"]
-
-    def yhat_func(
-        self: Self,
-        linked_arg: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
-    ) -> np.ndarray:
-        """
-        Produces the predicted values yhat
-
-        Parameters
-        ----------
-        linked_arg : np.ndarray
-            Linked GLM output
-        scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. Equals vectorized population
-            size for binomial vectorized n model. Default is None, in which
-            case it will be taken from self.stan_data.
-
-
-        Returns
-        -------
-        np.ndarray
-            Predicted values
-
-        """
-        # For fitting N_vec is saved in stan_data, for predicting it's in scale
-        N_vec = self.stan_data.N_vec if scale is None else scale
-        return N_vec * linked_arg
-
-    def quant_func(
-        self: Self,
-        level: float,
-        yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
-    ) -> np.ndarray:
-        """
-        Quantile function of the underlying distribution
-
-        Parameters
-        ----------
-        level : float
-            Level of confidence in (0,1)
-        yhat : np.ndarray
-            Predicted values.
-        scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. Equals vectorized population
-            size for binomial vectorized n model. Default is None, in which
-            case it will be taken from self.stan_data.
-
-        Returns
-        -------
-        np.ndarray
-            Quantile at given level
-
-        """
-        # For fitting N_vec is saved in stan_data, for predicting it's in scale
-        N_vec = self.stan_data.N_vec if scale is None else scale
-        return binom.ppf(level, N_vec, yhat / N_vec)
-
-    def preprocess(
-        self: Self, stan_data: ModelInputData, **kwargs: Any
-    ) -> tuple[ModelInputData, ModelParams]:
-        """
-        Augment the input data for the stan model with model dependent data
-        and calculate initial guesses for model parameters.
-
-        Parameters
-        ----------
-        stan_data : ModelInputData
-            Model agnostic input data provided by the forecaster interface
-
-        Returns
-        -------
-        ModelInputData
-            Updated stan_data
-        ModelParams
-            Guesses for the model parameters depending on the data
-
-        """
-
-        ## -- 1. Augment stan_data -- ##
-        # Nothing to augment
+            # Get population size depending on selected mode
+            stan_data.capacity = get_capacity(
+                y=stan_data.y,
+                mode=capacity_settings.mode,
+                value=capacity_settings.value,
+            )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Get response variable on link scale and normalize
         y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
             y=stan_data.y,
-            N=stan_data.N_vec,
+            capacity=stan_data.capacity,
             lower_bound=True,
             upper_bound=True,
         )
@@ -1452,7 +1391,8 @@ class Normal(ModelBackendBase):
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1532,10 +1472,7 @@ class Poisson(ModelBackendBase):
     link_pair = LINK_FUNC_MAP["log"]
 
     def quant_func(
-        self: Self,
-        level: float,
-        yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        self: Self, level: float, yhat: np.ndarray, **kwargs: Any
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1616,7 +1553,8 @@ class NegativeBinomial(ModelBackendBase):
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1701,7 +1639,8 @@ class Gamma(ModelBackendBase):
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1721,8 +1660,6 @@ class Gamma(ModelBackendBase):
             Quantile at given level
 
         """
-        # Tell mypy that in case of Gamma distribution scale will be a float.
-        scale = cast(float, scale)
         return gamma.ppf(level, yhat * scale, scale=1 / scale)
 
     def preprocess(
@@ -1784,7 +1721,8 @@ class Beta(ModelBackendBase):
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1855,13 +1793,12 @@ class Beta(ModelBackendBase):
 
 class BetaBinomial(ModelBackendBase):
     """
-    Implementation of model backend for beta-binomial distribution with
-    constant N
+    Implementation of model backend for beta-binomial distribution
     """
 
     # These class attributes must be defined by each model backend
     # Location of the stan file
-    stan_file = BASEPATH / "stan_models/beta_binomial_constant_n.stan"
+    stan_file = BASEPATH / "stan_models/beta_binomial.stan"
     # Kind of data (integer, float, ...). Is used for data validation
     kind = "bu"  # must be any combination of 'biuf'
     # Pair of 'link function'/'inverse link function'
@@ -1870,7 +1807,9 @@ class BetaBinomial(ModelBackendBase):
     def yhat_func(
         self: Self,
         linked_arg: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        capacity_vec: Optional[np.ndarray] = None,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Produces the predicted values yhat
@@ -1880,8 +1819,7 @@ class BetaBinomial(ModelBackendBase):
         linked_arg : np.ndarray
             Linked GLM output
         scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. None for binomial constant n
-            model
+            Scale parameter of the distribution.
 
         Returns
         -------
@@ -1889,13 +1827,20 @@ class BetaBinomial(ModelBackendBase):
             Predicted values
 
         """
-        return self.stan_data.N * linked_arg  # type: ignore[attr-defined]
+        # In vectorized capacity mode the capacity is saved in stan_data for
+        # fitting, but for predicting it's in capacity_vec
+        capacity = (
+            self.stan_data.capacity if capacity_vec is None else capacity_vec
+        )
+        return capacity * linked_arg
 
     def quant_func(
         self: Self,
         level: float,
         yhat: np.ndarray,
-        scale: Union[float, np.ndarray, None] = None,
+        scale: float = 1,
+        capacity_vec: Optional[np.ndarray] = None,
+        **kwargs: Any,
     ) -> np.ndarray:
         """
         Quantile function of the underlying distribution
@@ -1907,8 +1852,7 @@ class BetaBinomial(ModelBackendBase):
         yhat : np.ndarray
             Predicted values.
         scale : Union[float, np.ndarray, None]
-            Scale parameter of the distribution. None for binomial constant n
-            model
+            Scale parameter of the distribution.
 
         Returns
         -------
@@ -1916,12 +1860,24 @@ class BetaBinomial(ModelBackendBase):
             Quantile at given level
 
         """
+        # In vectorized capacity mode the capacity is saved in stan_data for
+        # fitting, but for predicting it's in capacity_vec
+        capacity = (
+            self.stan_data.capacity if capacity_vec is None else capacity_vec
+        )
+
+        if capacity_vec is not None:
+            scale = (
+                4 * (capacity - 1) / (capacity * self.fit_params["kappa"] ** 2)
+                - 1
+            )
+
         # Calculate success probability
-        p = yhat / self.stan_data.N
+        p = yhat / capacity
         # Relate Stan model parameters to Scipy parameters for Beta-Binomial
         a = p * scale
         b = (1 - p) * scale
-        return betabinom.ppf(level, self.stan_data.N, a, b)  # type: ignore[attr-defined]
+        return betabinom.ppf(level, capacity, a, b)
 
     def preprocess(
         self: Self,
@@ -1929,6 +1885,7 @@ class BetaBinomial(ModelBackendBase):
         capacity: Optional[int] = None,
         capacity_mode: Optional[str] = None,
         capacity_value: Optional[float] = None,
+        vectorized: bool = False,
         **kwargs: Any,
     ) -> tuple[ModelInputData, ModelParams]:
         """
@@ -1938,7 +1895,7 @@ class BetaBinomial(ModelBackendBase):
         Parameters
         ----------
         stan_data : ModelInputData
-            Model agnostic input data provided by the forecaster interface
+            Model agnostic input data provided by the forecaster interface.
         capacity : int, optional
             An upper bound used for ``binomial`` and ``beta-binomial`` models.
             Specifying ``capacity`` is mutually exclusive with providing a
@@ -1948,6 +1905,10 @@ class BetaBinomial(ModelBackendBase):
             or ``"factor"``.
         capacity_value : float, optional
             A value associated with the selected ``capacity_mode``.
+        vectorized : bool
+            If True, the capacity is already part of stan_data as a numpy
+            array. If False the capacity must be constructed from capacity
+            parameters
 
         Returns
         -------
@@ -1959,24 +1920,29 @@ class BetaBinomial(ModelBackendBase):
         """
 
         ## -- 1. Augment stan_data -- ##
-        # Validate capacity parameters
-        capacity_settings = BinomialPopulation.from_parameters(
-            capacity=capacity,
-            capacity_mode=capacity_mode,
-            capacity_value=capacity_value,
-        )
 
-        # Get population size depending on selected mode
-        stan_data.N = get_population_size(
-            y=stan_data.y,
-            mode=capacity_settings.mode,
-            value=capacity_settings.value,
-        )  # type: ignore[attr-defined]
+        if not vectorized:
+            # Validate capacity parameters
+            capacity_settings = BinomialPopulation.from_parameters(
+                capacity=capacity,
+                capacity_mode=capacity_mode,
+                capacity_value=capacity_value,
+            )
+
+            # Get population size depending on selected mode
+            stan_data.capacity = get_capacity(
+                y=stan_data.y,
+                mode=capacity_settings.mode,
+                value=capacity_settings.value,
+            )  # type: ignore[attr-defined]
 
         ## -- 2. Calculate initial parameter guesses -- ##
         # Get response variable on link scale and normalize
         y_scaled, self.linked_offset, self.linked_scale = self.normalize_data(
-            y=stan_data.y, N=stan_data.N, lower_bound=True, upper_bound=True
+            y=stan_data.y,
+            capacity=stan_data.capacity,
+            lower_bound=True,
+            upper_bound=True,
         )
 
         # Save normalization parameters
@@ -2009,9 +1975,7 @@ MODEL_MAP: dict[str, Type[ModelBackendBase]] = {
 }
 
 
-def get_model_backend(
-    model: Distribution, **kwargs: dict[str, Any]
-) -> ModelBackend:
+def get_model_backend(model: Distribution, **kwargs: Any) -> ModelBackend:
     """
     Creates a Model Backend Instance for the desired distribution type
 
