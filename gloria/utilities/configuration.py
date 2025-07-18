@@ -28,35 +28,11 @@ if TYPE_CHECKING:
     from gloria.interface import Gloria
 
 # Gloria
-from gloria.models import BinomialPopulation
 from gloria.protocols.protocol_base import get_protocol_map
 from gloria.utilities.logging import get_logger
 
 
 ### --- Class and Function Definitions --- ###
-def convert_augmentation_config(dict_in: dict[str, Any]) -> dict[str, Any]:
-    """
-    Turns augmentation_config in a fit configuration dictionary into an actual
-    BinomialPopulation object.
-
-    Parameters
-    ----------
-    dict_in : dict[str, Any]
-        Dictionary containing configurations for the fit method.
-
-    Returns
-    -------
-    dict[str, Any]
-        Updated dictionary
-
-    """
-    if "augmentation_config" in dict_in:
-        dict_in["augmentation_config"] = BinomialPopulation(
-            **dict_in["augmentation_config"]
-        )
-    return dict_in
-
-
 def model_from_toml(
     toml_path: Union[str, Path],
     ignore: Union[Collection[str], str] = set(),
@@ -192,9 +168,6 @@ def model_from_toml(
         "load_data", config.get("load_data", dict())
     )
 
-    # Convert augmentation config if there is any
-    fit_config = convert_augmentation_config(fit_config)
-
     m._config["fit"] = m._config["fit"] | fit_config
     m._config["predict"] = m._config["predict"] | predict_config
     m._config["load_data"] = m._config["load_data"] | load_config
@@ -203,7 +176,13 @@ def model_from_toml(
 
 
 ACCEPTED_PARS = {
-    "fit": ("optimize_mode", "sample", "augmentation_config"),
+    "fit": (
+        "optimize_mode",
+        "sample",
+        "capacity",
+        "capacity_mode",
+        "capacity_value",
+    ),
     "predict": ("periods", "include_history"),
     "load_data": ("dtype_kind", "source"),
 }
@@ -311,22 +290,10 @@ def assemble_config(
         # Get method table of config file
         toml_config = toml_config.get(method, dict())
 
-        # Validate augmentation config if there is any
-        if method == "fit" and "augmentation_config" in toml_config:
-            toml_config["augmentation_config"] = BinomialPopulation(
-                **toml_config["augmentation_config"]
-            )
-
         # Overwrite config with keys in TOML config
         config = config | toml_config
 
     # 2. Update with kwarg config
-
-    # Validate augmentation config if there is any
-    if method == "fit" and "augmentation_config" in kwargs:
-        kwargs["augmentation_config"] = BinomialPopulation(
-            **kwargs["augmentation_config"]
-        )
 
     # Overwrite config with keys in TOML config
     config = config | kwargs
