@@ -58,7 +58,7 @@ Next, we add a single holiday, namely Christmas Eve, using :meth:`~Gloria.add_ev
 
 .. code-block:: python
 
-    from gloria import Holiday
+    from gloria import Holiday, Gaussian
     
     # Add Christmas
     m.add_event(
