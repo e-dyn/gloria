@@ -2001,7 +2001,8 @@ class Gloria(BaseModel):
                 if not user_provided_ax:
                     fig.tight_layout()
 
-        return fig
+                plt.show()
+        return
 
     def plot_components(
         self: Self,
@@ -2194,6 +2195,8 @@ class Gloria(BaseModel):
                     ax.set_visible(False)
 
                 fig.tight_layout()
-        return fig
+
+                plt.show()
+        return
 
     ...

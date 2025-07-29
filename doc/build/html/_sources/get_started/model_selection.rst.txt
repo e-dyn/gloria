@@ -74,8 +74,8 @@ This configuration allows us to explore the fit of the default model under reali
     # For forecasting and setting up Gloria
     from gloria import CalendricData, Gloria, cast_series_to_kind  
 
-    # Load the data
-    df = pd.read_csv(file)
+     # Load the data
+     df = pd.read_csv("data/real/Open_Data_Website_Traffic.csv")
 
     # Convert to datetime
     df['Date'] = pd.DatetimeIndex(df['Date'])
@@ -93,7 +93,7 @@ This configuration allows us to explore the fit of the default model under reali
     n_changepoints = 3
 
     # Set up the model
-    my_model = Gloria(
+    m = Gloria(
     metric_name = metric_name,
     timestamp_name = timestamp_name,
     sampling_period = sampling_period,
@@ -105,16 +105,16 @@ This configuration allows us to explore the fit of the default model under reali
         yearly_seasonality = False,
         weekly_seasonality = True
     )
-    my_model.add_protocol(protocol)
+    m.add_protocol(protocol)
 
     # Fit the model to the data
-    my_model.fit(df_gloria)
+    m.fit(df_gloria)
 
     # Predict
-    prediction = my_model.predict(periods=30)
+    prediction = m.predict(periods=30)
 
     # Plot
-    my_model.plot(prediction, include_legend = True)
+    m.plot(prediction, include_legend = True)
 
 
 .. image:: pics/model_selection_figure01.png
@@ -163,16 +163,16 @@ Since data is often read from CSV files as floating-point numbers, we first need
         weekly_seasonality = True
     )
 
-    my_model.add_protocol(protocol)
+    m.add_protocol(protocol)
 
     # Fit the model to the data
-    my_model.fit(df_gloria)
+    m.fit(df_gloria)
 
     # Predict
-    forecast = my_model.predict(periods=30)
+    forecast = m.predict(periods=30)
 
     # Plot
-    my_model.plot(forecast, include_legend = True)
+    m.plot(forecast, include_legend = True)
 
 
 The revised model leads to:
@@ -209,7 +209,7 @@ Choosing the correct distribution depends on:
 
 The following decision tree helps guide model choice [#f3]_:
 
-.. image:: pics/model_selection_tree.png
+.. image:: pics/DecisionTreeData.png
    :width: 700
    :alt: Model selection decision tree
 
@@ -217,4 +217,4 @@ The following decision tree helps guide model choice [#f3]_:
 
 .. [#f1] The data are available through `Data.gov <https://data.lacity.org/api/views/d4kt-8j3n/rows.csv?accessType=DOWNLOAD>`_.
 .. [#f2] See also the `/scripts/03_demo_version switch.py <https://github.com/benkambs/gloria-betatest/blob/main/scripts/03_demo_version%20switch.py>`_ example.
-.. [#f3] Figure was taken from `here <https://schmettow.github.io/New_Stats/glm.html>`_ 
+.. [#f3] Figure inspired from `here <https://schmettow.github.io/New_Stats/glm.html>`_ 
