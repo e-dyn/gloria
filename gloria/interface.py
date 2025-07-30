@@ -1704,6 +1704,7 @@ class Gloria(BaseModel):
         uncertainty: Optional[bool] = True,
         show_changepoints: Optional[bool] = False,
         include_legend: Optional[bool] = False,
+        mark_anomalies: Optional[bool] = False,
         plot_kwargs: Optional[dict[str, Any]] = None,
         rcparams_kwargs: Optional[dict[str, Any]] = None,
         style_kwargs: Optional[dict[str, Any]] = None,
@@ -1716,6 +1717,7 @@ class Gloria(BaseModel):
         grid_y_kwargs: Optional[dict[str, Any]] = None,
         despine_kwargs: Optional[dict[str, Any]] = None,
         ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        anomaly_kwargs: Optional[dict[str, Any]] = None,
         date_locator: Optional[Locator] = None,
         date_formatter: Optional[Formatter] = None,
     ) -> plt.Figure:
@@ -1791,8 +1793,7 @@ class Gloria(BaseModel):
 
         Returns
         -------
-        :class:`matplotlib.figure.Figure`
-            The matplotlib Figure object containing the visualization.
+        None
 
         Raises
         ------
@@ -1836,6 +1837,7 @@ class Gloria(BaseModel):
         grid_y_kwargs = grid_y_kwargs or {}
         despine_kwargs = despine_kwargs or {}
         ticklabel_kwargs = ticklabel_kwargs or {}
+        anomaly_kwargs = anomaly_kwargs or {}
 
         # Set default Seaborn style
         style_defaults = dict(style="whitegrid")
@@ -1985,6 +1987,41 @@ class Gloria(BaseModel):
                     if "color" in ticklabel_defaults:
                         label.set_color(ticklabel_defaults["color"])
 
+                # Apply tight layout if figure was created here
+                if not user_provided_ax:
+                    fig.tight_layout()
+
+                # Add a red scatter plot showing the anomalies if requested
+                if mark_anomalies:
+                    # Default styles for each plot element
+                    anomaly_defaults = dict(
+                        color="#ff0000",
+                        edgecolor="w",
+                        s=20,
+                        alpha=0.7,
+                        label="Anomalies",
+                        ax=ax,
+                    )
+                    anomaly_defaults.update(anomaly_kwargs)
+
+                    # Extra boolean column that is true if a data point is
+                    # outside the confidence interval
+                    fcst["is_anomaly"] = (
+                        fcst["observed_upper"] < self.history[self.metric_name]
+                    ) | (  # upper anomalies
+                        fcst["observed_lower"] > self.history[self.metric_name]
+                    )  # lower anomalies
+
+                    sns.scatterplot(
+                        x=self.history.loc[
+                            fcst["is_anomaly"], self.timestamp_name
+                        ],
+                        y=self.history.loc[
+                            fcst["is_anomaly"], self.metric_name
+                        ],
+                        **anomaly_defaults,
+                    )
+
                 # Remove Seaborn's default legend
                 try:
                     ax.get_legend().remove()
@@ -1996,10 +2033,6 @@ class Gloria(BaseModel):
                     ax.legend(
                         frameon=True, shadow=True, loc="best", fontsize=10
                     )
-
-                # Apply tight layout if figure was created here
-                if not user_provided_ax:
-                    fig.tight_layout()
 
                 plt.show()
         return

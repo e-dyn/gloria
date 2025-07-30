@@ -55,24 +55,4 @@ m.fit(data_prophet)
 prediction = m.predict().iloc[:-1]
 
 # Plot
-fig = m.plot(prediction)
-
-# Extra boolean column that is true if a data point is outside the confidence
-# interval
-prediction["is_anomaly"] = (
-    prediction["observed_upper"] < m.history[m.metric_name]
-) | (  # upper anomalies
-    prediction["observed_lower"] > m.history[m.metric_name]
-)  # lower anomalies
-
-# Add a red scatter plot showing the anomalies
-sns.scatterplot(
-    x=m.history.loc[prediction["is_anomaly"], m.timestamp_name],
-    y=m.history.loc[prediction["is_anomaly"], m.metric_name],
-    ax=fig.gca(),
-    color="#ff0000",
-    edgecolor="w",
-    s=20,
-    alpha=0.7,
-    label="Anomalies",
-)
+fig = m.plot(prediction, mark_anomalies=True, include_legend=True)
