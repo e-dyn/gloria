@@ -50,6 +50,16 @@ BASEPATH = Path(__file__).parent
 
 
 ### --- Class and Function Definitions --- ###
+def distance_to_scale(f, y: np.ndarray, value) -> float:
+    """
+    This function yields the distance between desired scale and data
+    normalized to a capacity.
+    """
+    N = f * max(y)
+    p = y / N
+    return ((p - value) ** 2).sum()
+
+
 def get_capacity(y: np.ndarray, mode: str, value: Union[int, float]) -> int:
     """
     Estimate a capacity suitable for binomial or beta-binomial models
@@ -84,15 +94,6 @@ def get_capacity(y: np.ndarray, mode: str, value: Union[int, float]) -> int:
 
     """
 
-    def distance_to_scale(f, y: np.ndarray) -> float:
-        """
-        This function yields the distance between desired scale and data
-        normalized to a capacity.
-        """
-        N = f * y_max
-        p = y / N
-        return ((p - value) ** 2).sum()
-
     # Find maximum of data
     y_max = y.max()
 
@@ -110,7 +111,7 @@ def get_capacity(y: np.ndarray, mode: str, value: Union[int, float]) -> int:
         # Minimize distance_to_scale() with respect to the factor f. f
         # determines the capacity via N = y_max * f.
         res = minimize(
-            lambda f: distance_to_scale(f, y),
+            lambda f: distance_to_scale(f, y, value),
             x0=1 / value,
             bounds=[(1, None)],
         )

@@ -40,10 +40,10 @@ Here’s a **quick reference**:
      - ``"negative binomial"``
    * - Binomial
      - Discrete; bounded between 0 and n; fixed number of trials
-     - ``"binomial constant n"`` or ``"binomial vectorized n"``
+     - ``"binomial"``
    * - Beta-Binomial
      - Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)
-     - ``"beta-binomial constant n"``
+     - ``"beta-binomial"``
 
 
 The last column in this table refers to the value you have to set for the ``model`` argument in the :class:`Gloria` constructor. 
@@ -87,23 +87,23 @@ This configuration allows us to explore the fit of the default model under reali
     df_gloria = df.sort_values(by="Date")
 
     # Save the column names and data configurations for later usage
-    metric_name = "Socrata Sessions"
-    timestamp_name = "Date"
-    sampling_period = "1 d"
-    n_changepoints = 3
+    metric_name="Socrata Sessions"
+    timestamp_name="Date"
+    sampling_period="1 d"
+    n_changepoints=3
 
     # Set up the model
     m = Gloria(
-    metric_name = metric_name,
-    timestamp_name = timestamp_name,
-    sampling_period = sampling_period,
-    n_changepoints = n_changepoints
+    metric_name=metric_name,
+    timestamp_name=timestamp_name,
+    sampling_period=sampling_period,
+    n_changepoints=n_changepoints
     )
 
     # Add seasonalities
     protocol = CalendricData(
-        yearly_seasonality = False,
-        weekly_seasonality = True
+        yearly_seasonality=False,
+        weekly_seasonality=True
     )
     m.add_protocol(protocol)
 
@@ -114,7 +114,7 @@ This configuration allows us to explore the fit of the default model under reali
     prediction = m.predict(periods=30)
 
     # Plot
-    m.plot(prediction, include_legend = True)
+    m.plot(prediction, include_legend=True)
 
 
 .. image:: pics/model_selection_figure01.png
@@ -150,17 +150,17 @@ Since data is often read from CSV files as floating-point numbers, we first need
 
     # Set up the model
     m = Gloria(
-        model = "negative binomial",
-        metric_name = metric_name,
-        timestamp_name = timestamp_name,
-        sampling_period = sampling_period,
-        n_changepoints = n_changepoints
+        model="negative binomial",
+        metric_name=metric_name,
+        timestamp_name=timestamp_name,
+        sampling_period=sampling_period,
+        n_changepoints=n_changepoints
     )
 
     # Add seasonalities
     protocol = CalendricData(
-        yearly_seasonality = True,
-        weekly_seasonality = True
+        yearly_seasonality=True,
+        weekly_seasonality=True
     )
 
     m.add_protocol(protocol)
@@ -172,7 +172,7 @@ Since data is often read from CSV files as floating-point numbers, we first need
     forecast = m.predict(periods=30)
 
     # Plot
-    m.plot(forecast, include_legend = True)
+    m.plot(forecast, include_legend=True)
 
 
 The revised model leads to:

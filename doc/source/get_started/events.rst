@@ -103,7 +103,7 @@ The following script is a full example modelling the drop in the power consumpti
     prediction = m.predict(periods=1)
 
     # Plot
-    m.plot(prediction)
+    m.plot(prediction, include_legend=True)
 
 In the figure below the fit reproduces the observed drop convincingly. The only visible artefact is a small jump at the event's onset. This stems from the boxcar profile's infinitely sharp leading edge; replacing it with a flat-top :class:`Gaussian` profile with ``order > 1`` smooths the edge and removes the discontinuity.
 
@@ -177,7 +177,7 @@ The next example shows how to capture the regular weekend drop in power consumpt
     prediction = m.predict(periods=100)
 
     # Plot
-    m.plot(prediction, dpi = 200)
+    m.plot(prediction, include_legend=True, plot_kwargs= { "dpi" : 200 } )
 
 The fit confirms that a periodic event regressor can mimic seasonal structure in both training data and forecast. This approach is especially useful when the seasonality is too intricate to approximate with a small number of Fourier components.
 

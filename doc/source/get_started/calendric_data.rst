@@ -42,7 +42,7 @@ To demonstrate them, we once more employ the power consumption data set, but agg
     prediction = m.predict(periods=1)
     
     # Plot the results
-    m.plot(prediction)
+    m.plot(prediction, include_legend=True)
    
 .. image:: pics/06_calendric_data_fig01.png
   :align: center

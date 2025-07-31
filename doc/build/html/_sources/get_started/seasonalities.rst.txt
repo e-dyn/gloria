@@ -55,7 +55,7 @@ The resulting series spans more than 14 years, and we model it with just a yearl
     prediction = m.predict(periods=1)
     
     # Plot the results
-    m.plot(prediction)
+    m.plot(prediction, include_legend=True)
     
 We deliberatly choose ``fourier_order=2`` because the weekly data show two clear demand peaks each year: one in mid-winter and another in mid-summer. As the plot below confirms, an order 2 Fourier series captures this dominant annual pattern faithfully.
 
