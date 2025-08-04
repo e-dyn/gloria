@@ -477,17 +477,17 @@ class SingleEvent(EventRegressor):
         allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
     profile : Profile
-        The profile that occurs at ``t_start``. Allowed profile types are
+        The profile that occurs at ``t_anchor``. Allowed profile types are
         described in the :ref:`ref-profiles` section.
-    t_start : :class:`pandas.Timestamp` | str
+    t_anchor : :class:`pandas.Timestamp` | str
         The timestamp at which ``profile`` occurs. The exact meaning of
-        ``t_start`` depends on the implementation details of the underlying
+        ``t_anchor`` depends on the implementation details of the underlying
         ``profile``, but typically refers to its mode.
 
     """
 
     # Single timestamp at which the profile occurs
-    t_start: Timestamp
+    t_anchor: Timestamp
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -502,7 +502,7 @@ class SingleEvent(EventRegressor):
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
         # Convert additional fields
-        regressor_dict["t_start"] = str(self.t_start)
+        regressor_dict["t_anchor"] = str(self.t_anchor)
         return regressor_dict
 
     @classmethod
@@ -525,7 +525,7 @@ class SingleEvent(EventRegressor):
         """
 
         # Convert non-built-in types
-        regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
+        regressor_dict["t_anchor"] = pd.Timestamp(regressor_dict["t_anchor"])
         regressor_dict["profile"] = Profile.from_dict(
             regressor_dict["profile"]
         )
@@ -547,7 +547,7 @@ class SingleEvent(EventRegressor):
             date of ``t``.
 
         """
-        impact = float(t.min() <= self.t_start <= t.max())
+        impact = float(t.min() <= self.t_anchor <= t.max())
         return impact
 
     def make_feature(
@@ -581,7 +581,7 @@ class SingleEvent(EventRegressor):
             f"{_DELIM}{self.name}"
         )
         # Create the feature matrix
-        X = pd.DataFrame({column: self.profile.generate(t, self.t_start)})
+        X = pd.DataFrame({column: self.profile.generate(t, self.t_anchor)})
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
         return X, prior_scales
@@ -604,7 +604,7 @@ class IntermittentEvent(EventRegressor):
         allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
     profile : Profile
-        The profile that occurs at ``t_start``. Allowed profile types are
+        The profile that occurs at ``t_anchor``. Allowed profile types are
         described in the :ref:`ref-profiles` section.
     t_list : list[:class:`pandas.Timestamp`] | list[str]
         A list of timestamps at which ``profile`` occurs. The exact meaning of
@@ -732,8 +732,8 @@ class IntermittentEvent(EventRegressor):
         # Loop through all start times in t_list, and accumulate the profiles
         all_profiles = pd.Series(0, index=range(t.shape[0]))
 
-        for t_start in self.t_list:
-            all_profiles += self.profile.generate(t, t_start)
+        for t_anchor in self.t_list:
+            all_profiles += self.profile.generate(t, t_anchor)
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_profiles})
@@ -762,10 +762,10 @@ class PeriodicEvent(SingleEvent):
     profile : Profile
         The profile that periodically occurs. Allowed profile types are
         described in the :ref:`ref-profiles` section.
-    t_start : :class:`pandas.Timestamp`
+    t_anchor : :class:`pandas.Timestamp`
         An arbitrary timestamp at which ``profile`` occurs. The profile will be
         repeated forwards and backwards in time every ``period``. The exact
-        meaning of ``t_start`` depends on the implementation details of the
+        meaning of ``t_anchor`` depends on the implementation details of the
         underlying ``profile``, but typically refers to its mode.
     period : :class:`pandas.Timedelta`
         Periodicity of the periodic event regressor.
@@ -812,7 +812,7 @@ class PeriodicEvent(SingleEvent):
             ``regressor_dict``.
         """
         # Convert non-built-in fields
-        regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
+        regressor_dict["t_anchor"] = pd.Timestamp(regressor_dict["t_anchor"])
         regressor_dict["period"] = pd.Timedelta(regressor_dict["period"])
         regressor_dict["profile"] = Profile.from_dict(
             regressor_dict["profile"]
@@ -835,15 +835,15 @@ class PeriodicEvent(SingleEvent):
             A list of timestamps of period starts.
 
         """
-        # Calculate number of periods with respect to t_start necessary to
+        # Calculate number of periods with respect to t_anchor necessary to
         # cover the entire given timestamp range.
         n_margin = 2
-        n_min = (t.min() - self.t_start) // self.period - n_margin
-        n_max = (t.max() - self.t_start) // self.period + n_margin
+        n_min = (t.min() - self.t_anchor) // self.period - n_margin
+        n_max = (t.max() - self.t_anchor) // self.period + n_margin
 
         # Generate list of profile start times
         t_list = [
-            self.t_start + n * self.period for n in range(n_min, n_max + 1)
+            self.t_anchor + n * self.period for n in range(n_min, n_max + 1)
         ]
         return t_list
 
@@ -916,8 +916,8 @@ class PeriodicEvent(SingleEvent):
 
         # Loop through all start times in t_list, and accumulate the profiles
         all_profiles = pd.Series(0, index=range(t.shape[0]))
-        for t_start in t_list:
-            all_profiles += self.profile.generate(t, t_start)
+        for t_anchor in t_list:
+            all_profiles += self.profile.generate(t, t_anchor)
 
         # Create the feature matrix
         X = pd.DataFrame({column: all_profiles})

@@ -49,7 +49,7 @@ class Profile(BaseModel, ABC):
 
     @abstractmethod
     def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+        self: Self, timestamps: pd.Series, t_anchor: pd.Timestamp
     ) -> pd.Series:
         """
         Generate a time series with a single instance of the profile.
@@ -58,7 +58,7 @@ class Profile(BaseModel, ABC):
         ----------
         timestamps : :class:`pandas.Series`
             The input timestamps as independent variable
-        t_start : :class:`pandas.Timestamp`
+        t_anchor : :class:`pandas.Timestamp`
             Location of the profile
 
         Raises
@@ -149,7 +149,7 @@ class BoxCar(Profile):
             \\end{array}
         \\right.
 
-    with ``width=w`` being a constructor parameter and ``t_start=t_0`` the
+    with ``width=w`` being a constructor parameter and ``t_anchor=t_0`` the
     input of :meth:`~gloria.BoxCar.generate`. The following plot illustrates
     the boxcar function.
 
@@ -174,7 +174,7 @@ class BoxCar(Profile):
     width: Timedelta
 
     def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+        self: Self, timestamps: pd.Series, t_anchor: pd.Timestamp
     ) -> pd.Series:
         """
         Generate a time series with a single boxcar profile.
@@ -184,7 +184,7 @@ class BoxCar(Profile):
         timestamps : :class:`pandas.Series`
             The input timestamps at which the boxcar profile is to be
             evaluated.
-        t_start : :class:`pandas.Timestamp`
+        t_anchor : :class:`pandas.Timestamp`
             Location of the boxcar's rising edge
 
         Returns
@@ -193,7 +193,7 @@ class BoxCar(Profile):
             The output time series including the boxcar profile with amplitude
             1.
         """
-        mask = (timestamps >= t_start) & (timestamps < t_start + self.width)
+        mask = (timestamps >= t_anchor) & (timestamps < t_anchor + self.width)
         return mask * 1
 
     def to_dict(self: Self) -> dict[str, Any]:
@@ -249,7 +249,7 @@ class Gaussian(Profile):
 
 
     with ``width=sigma`` and ``order=n`` being constructor parameters as well
-    as ``t_start=t_0`` the input of :meth:`~gloria.Gaussian.generate`. For
+    as ``t_anchor=t_0`` the input of :meth:`~gloria.Gaussian.generate`. For
     :math:`n=1` the function is a simple Gaussian and for increasing :math:`n`
     its maximum region increasingly flattens. The following plot illustrates
     the Gaussian function for different :math:`n`.
@@ -275,7 +275,7 @@ class Gaussian(Profile):
     order: float = Field(gt=0, default=1.0)
 
     def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+        self: Self, timestamps: pd.Series, t_anchor: pd.Timestamp
     ) -> pd.Series:
         """
         Generate a time series with a single Gaussian profile.
@@ -285,7 +285,7 @@ class Gaussian(Profile):
         timestamps : :class:`pandas.Series`
             The input timestamps at which the Gaussian profile is to be
             evaluated.
-        t_start : :class:`pandas.Timestamp`
+        t_anchor : :class:`pandas.Timestamp`
             Location of the Gaussian profile's mode.
 
         Returns
@@ -296,7 +296,7 @@ class Gaussian(Profile):
         """
 
         # normalize the input timestamps
-        t = (timestamps - t_start) / self.width
+        t = (timestamps - t_anchor) / self.width
         # Evaluate the Gaussian
         return np.exp(-((0.5 * t**2) ** self.order))
 
@@ -351,7 +351,7 @@ class Cauchy(Profile):
         f(t) = \\frac{1}{4\\cdot \\left(t-t_0 \\right)^2 / w^2 + 1}
 
 
-    with ``width=w`` being a constructor parameter as well as ``t_start=t_0``
+    with ``width=w`` being a constructor parameter as well as ``t_anchor=t_0``
     the input of :meth:`~gloria.Cauchy.generate`. The following plot
     illustrates the Cauchy function.
 
@@ -371,7 +371,7 @@ class Cauchy(Profile):
     width: Timedelta
 
     def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+        self: Self, timestamps: pd.Series, t_anchor: pd.Timestamp
     ) -> pd.Series:
         """
         Generate a time series with a single Cauchy profile.
@@ -381,7 +381,7 @@ class Cauchy(Profile):
         timestamps : :class:`pandas.Series`
             The input timestamps at which the Cauchy profile is to be
             evaluated.
-        t_start : :class:`pandas.Timestamp`
+        t_anchor : :class:`pandas.Timestamp`
             Location of the Cauchy profile's mode.
 
         Returns
@@ -392,7 +392,7 @@ class Cauchy(Profile):
         """
 
         # normalize the input timestamps
-        t = (timestamps - t_start) / self.width
+        t = (timestamps - t_anchor) / self.width
         # Evaluate the Cauchy
         return 1 / (4 * t**2 + 1)
 
@@ -450,7 +450,7 @@ class Exponential(Profile):
     lead-width for :math:`t<t_0` and :math:`w\\left(t\\right) = w_\\text{lag}`
     is the right-sided lag-width for :math:`t\\ge t_0`, set by ``lead_width``
     and ``lag_width`` in the constructor, respectively. The parameter
-    ``t_start=t_0`` is an input of :meth:`~gloria.Exponential.generate`. The
+    ``t_anchor=t_0`` is an input of :meth:`~gloria.Exponential.generate`. The
     following plot illustrates the two-sided exponential decay function.
 
     .. image:: ../pics/example_exponential.png
@@ -528,7 +528,7 @@ class Exponential(Profile):
         return lag_width
 
     def generate(
-        self: Self, timestamps: pd.Series, t_start: pd.Timestamp
+        self: Self, timestamps: pd.Series, t_anchor: pd.Timestamp
     ) -> pd.Series:
         """
         Generate a time series with a single Exponential profile.
@@ -538,7 +538,7 @@ class Exponential(Profile):
         timestamps : :class:`pandas.Series`
             The input timestamps at which the Exponential profile is to be
             evaluated.
-        t_start : :class:`pandas.Timestamp`
+        t_anchor : :class:`pandas.Timestamp`
             Location of the Exponential profile's mode.
 
         Returns
@@ -548,10 +548,10 @@ class Exponential(Profile):
             amplitude 1.
         """
         # Shift the input timestamps
-        t = timestamps - t_start
+        t = timestamps - t_anchor
 
-        mask_lead = timestamps < t_start
-        mask_lag = timestamps >= t_start
+        mask_lead = timestamps < t_anchor
+        mask_lag = timestamps >= t_anchor
 
         # Create profile and fill with zeros
         y = np.zeros_like(timestamps, dtype=float)
