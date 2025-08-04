@@ -1,12 +1,12 @@
 [model]
-model = "binomial"
+model = "poisson"
 sampling_period = "1d"
 timestamp_name = "ds"
 metric_name = "y"
 n_changepoints = 2
 changepoint_range = 0.8
 seasonality_prior_scale = 3
-event_prior_scale = 3
+event_prior_scale = 100
 changepoint_prior_scale = 3
 interval_width = 0.8
 uncertainty_samples = 100
@@ -31,6 +31,6 @@ subdiv = ""
 monthly_seasonality = "auto"
 yearly_seasonality = false
 
-  [protocols.holiday_event]
-  event_type = "Gaussian"
+  [protocols.holiday_profile]
+  profile_type = "Gaussian"
   width = "5d"

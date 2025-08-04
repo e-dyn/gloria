@@ -8,11 +8,11 @@ Define public API by import all functions and classes exposed to the end-user
 """
 
 # Gloria
-# Events
-from gloria.events import BoxCar, Cauchy, Exponential, Gaussian
-
 # Gloria forecaster
 from gloria.interface import Gloria
+
+# Events
+from gloria.profiles import BoxCar, Cauchy, Exponential, Gaussian
 
 # Protocols: Calendric Data
 from gloria.protocols.calendric import (

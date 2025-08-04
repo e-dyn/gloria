@@ -30,7 +30,6 @@ from typing_extensions import Self
 
 # Gloria
 import gloria.utilities.serialize as gs
-from gloria.events import Event
 from gloria.models import (
     MODEL_MAP,
     ModelInputData,
@@ -43,6 +42,7 @@ from gloria.plot import (
     plot_seasonality_component,
     plot_trend_component,
 )
+from gloria.profiles import Profile
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import (
     EventRegressor,
@@ -444,7 +444,7 @@ class Gloria(BaseModel):
         self: Self,
         name: str,
         regressor_type: str,
-        event: Union[Event, dict[str, Any]],
+        profile: Union[Profile, dict[str, Any]],
         prior_scale: Optional[float] = None,
         include: Union[bool, Literal["auto"]] = "auto",
         **regressor_kwargs: Any,
@@ -462,10 +462,10 @@ class Gloria(BaseModel):
             Type of the underlying event regressor. Must be any of
             ``"SingleEvent"``, ``"IntermittentEvent"``, ``"PeriodicEvent"``,
             ``"Holiday"``
-        event : Union[Event, dict[str, Any]]
-            The base event used by the event regressor. Must be either of type
-            :class:`Event` or a dictionary an event can be constructed from
-            using :meth:`Event.from_dict`
+        profile : Union[Profile, dict[str, Any]]
+            The base profile used by the event regressor. Must be either of
+            type :class:`Profile` or a dictionary an event can be constructed
+            from using :meth:`Profile.from_dict`
         prior_scale : float
             The regression coefficient is given a prior with the specified
             scale parameter. Decreasing the prior scale will add additional
@@ -518,17 +518,17 @@ class Gloria(BaseModel):
         if not (isinstance(include, bool) or include == "auto"):
             raise ValueError("include must be True, False, or 'auto'.")
 
-        # As the event regressor is built from a dictionary, convert the event
-        # to a dictionary in case it was an Event instance.
-        if isinstance(event, Event):
-            event = event.to_dict()
+        # As the event regressor is built from a dictionary, convert the
+        # profile to a dictionary in case it was an Profile instance.
+        if isinstance(profile, Profile):
+            profile = profile.to_dict()
 
         # Build the regressor dictionary
         regressor_dict = {
             "name": name,
             "prior_scale": prior_scale,
             "regressor_type": regressor_type,
-            "event": event,
+            "profile": profile,
             **regressor_kwargs,
         }
 
@@ -996,7 +996,7 @@ class Gloria(BaseModel):
                 # Exclude the if include=False
                 if include is False:
                     continue
-                # Otherwise calculate impact which quantifies how many events
+                # Otherwise calculate impact which quantifies how many profiles
                 # of the regressor lie within the date range of the data.
                 impact = regressor.get_impact(data[self.timestamp_name])
                 # If the impact is below a threshold, fitting it may be unsafe.

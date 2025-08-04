@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-Definition of Event base class and its implementations
+Definition of Profile base class and its implementations
 """
 
 ### --- Module Imports --- ###
@@ -30,20 +30,20 @@ from gloria.utilities.types import Timedelta
 
 
 ### --- Class and Function Definitions --- ###
-class Event(BaseModel, ABC):
+class Profile(BaseModel, ABC):
     """
-    Abstract base class for all events
+    Abstract base class for all profiles
     """
 
     model_config = ConfigDict(
-        # All events will use some sort of pd.Timestamp or pd.Timedelta
+        # All profiles will use some sort of pd.Timestamp or pd.Timedelta
         arbitrary_types_allowed=True,
     )
 
     @property
-    def _event_type(self: Self):
+    def _profile_type(self: Self):
         """
-        Returns name of the event class.
+        Returns name of the profile class.
         """
         return type(self).__name__
 
@@ -52,62 +52,62 @@ class Event(BaseModel, ABC):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a single instance of the event.
+        Generate a time series with a single instance of the profile.
 
         Parameters
         ----------
         timestamps : :class:`pandas.Series`
             The input timestamps as independent variable
         t_start : :class:`pandas.Timestamp`
-            Location of the event
+            Location of the profile
 
         Raises
         ------
         NotImplementedError
-            In case the inheriting Event class did not implement the generate
+            In case the inheriting Profile class did not implement the generate
             method
 
         Returns
         -------
         :class:`pandas.Series`
-            The output time series including the event.
+            The output time series including the profile.
         """
         pass
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the event to a serializable dictionary.
+        Converts the profile to a serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing the event type. All other event fields will
-            be added by event child classes.
+            Dictionary containing the profile type. All other profile fields
+            will be added by profile child classes.
         """
-        event_dict = {"event_type": self._event_type}
-        return event_dict
+        profile_dict = {"profile_type": self._profile_type}
+        return profile_dict
 
     @classmethod
     @abstractmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+    def from_dict(cls: Type[Self], profile_dict: dict[str, Any]) -> Self:
         """
         Forward declaration of class method for static type checking.
-        See details in event_from_dict().
+        See details in profile_from_dict().
         """
         pass
 
     @classmethod
     def check_for_missing_keys(
-        cls: Type[Self], event_dict: dict[str, Any]
+        cls: Type[Self], profile_dict: dict[str, Any]
     ) -> None:
         """
-        Confirms that all required fields for the requested event type are
-        found in the event dictionary.
+        Confirms that all required fields for the requested profile type are
+        found in the profile dictionary.
 
         Parameters
         ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
+        profile_dict : dict[str, Any]
+            Dictionary containing all profile fields
 
         Raises
         ------
@@ -118,28 +118,28 @@ class Event(BaseModel, ABC):
         -------
         None
         """
-        # Use sets to find the difference between event model fields and passed
-        # dictionary keys
+        # Use sets to find the difference between profile model fields and
+        # passed dictionary keys
         required_fields = {
             name
             for name, info in cls.model_fields.items()
             if info.is_required()
         }
-        missing_keys = required_fields - set(event_dict.keys())
+        missing_keys = required_fields - set(profile_dict.keys())
         # If any is missing, raise an error.
         if missing_keys:
             missing_keys_str = ", ".join([f"'{key}'" for key in missing_keys])
             raise KeyError(
-                f"Key(s) {missing_keys_str} required for event of type "
-                f"'{cls.__name__}' but not found in event dictionary."
+                f"Key(s) {missing_keys_str} required for profile of type "
+                f"'{cls.__name__}' but not found in profile dictionary."
             )
 
 
-class BoxCar(Event):
+class BoxCar(Profile):
     """
-    A BoxCar shaped event.
+    A BoxCar shaped profile.
 
-    For a given time :math:`t` the event can be described by
+    For a given time :math:`t` the profile can be described by
 
     .. math::
         f(t) = \\left\\{
@@ -159,9 +159,9 @@ class BoxCar(Event):
       :alt: Example plot of a boxcar function.
 
     .. note::
-      Setting the boxcar event's ``width`` equal to the :class:`Gloria` model's
-      ``sampling_period`` yields a :math:`\\delta`-shaped regressor - identical
-      to the holiday regressors used by
+      Setting the boxcar profile's ``width`` equal to the :class:`Gloria`
+      model's``sampling_period`` yields a :math:`\\delta`-shaped regressor -
+      identical to the holiday regressors used by
       `Prophet <https://facebook.github.io/prophet/>`_.
 
     Parameters
@@ -177,68 +177,70 @@ class BoxCar(Event):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a single boxcar event.
+        Generate a time series with a single boxcar profile.
 
         Parameters
         ----------
         timestamps : :class:`pandas.Series`
-            The input timestamps at which the boxcar event is to be evaluated.
+            The input timestamps at which the boxcar profile is to be
+            evaluated.
         t_start : :class:`pandas.Timestamp`
             Location of the boxcar's rising edge
 
         Returns
         -------
         :class:`pandas.Series`
-            The output time series including the boxcar event with amplitude 1.
+            The output time series including the boxcar profile with amplitude
+            1.
         """
         mask = (timestamps >= t_start) & (timestamps < t_start + self.width)
         return mask * 1
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the BoxCar event to a JSON-serializable dictionary.
+        Converts the BoxCar profile to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including an extra
-            ``event_type = "BoxCar"`` item.
+            Dictionary containing all profile fields including an extra
+            ``profile_type = "BoxCar"`` item.
         """
-        # Start with event type
-        event_dict = super().to_dict()
+        # Start with profile type
+        profile_dict = super().to_dict()
         # Add additional fields
-        event_dict["width"] = str(self.width)
-        return event_dict
+        profile_dict["width"] = str(self.width)
+        return profile_dict
 
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+    def from_dict(cls: Type[Self], profile_dict: dict[str, Any]) -> Self:
         """
         Creates a BoxCar object from a dictionary.
 
         The key-value pairs of the dictionary must correspond to the
-        constructor arguments of the event.
+        constructor arguments of the profile.
 
         Parameters
         ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
+        profile_dict : dict[str, Any]
+            Dictionary containing all profile fields
 
         Returns
         -------
         BoxCar
-            BoxCar object with fields from ``event_dict``
+            BoxCar object with fields from ``profile_dict``
         """
         # Convert width string to pd.Timedelta
-        event_dict["width"] = pd.Timedelta(event_dict["width"])
-        return cls(**event_dict)
+        profile_dict["width"] = pd.Timedelta(profile_dict["width"])
+        return cls(**profile_dict)
 
 
-class Gaussian(Event):
+class Gaussian(Profile):
     """
-    A Gaussian shaped event with ``order`` parameter for generating flat-top
+    A Gaussian shaped profile with ``order`` parameter for generating flat-top
     Gaussians.
 
-    For a given time :math:`t` the event can be described by
+    For a given time :math:`t` the profile can be described by
 
     .. math::
         f(t) = \\exp\\left(-\\left(
@@ -276,21 +278,21 @@ class Gaussian(Event):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a single Gaussian event.
+        Generate a time series with a single Gaussian profile.
 
         Parameters
         ----------
         timestamps : :class:`pandas.Series`
-            The input timestamps at which the Gaussian event is to be
+            The input timestamps at which the Gaussian profile is to be
             evaluated.
         t_start : :class:`pandas.Timestamp`
-            Location of the Gaussian event's mode.
+            Location of the Gaussian profile's mode.
 
         Returns
         -------
         :class:`pandas.Series`
-            The output time series including the Gaussian event with amplitude
-            1.
+            The output time series including the Gaussian profile with
+            amplitude 1.
         """
 
         # normalize the input timestamps
@@ -300,50 +302,50 @@ class Gaussian(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Gaussian event to a JSON-serializable dictionary.
+        Converts the Gaussian profile to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including an extra
-            ``event_type = "Gaussian"`` item.
+            Dictionary containing all profile fields including an extra
+            ``profile_type = "Gaussian"`` item.
         """
-        # Start with event type
-        event_dict = super().to_dict()
+        # Start with profile type
+        profile_dict = super().to_dict()
         # Add additional fields
-        event_dict["width"] = str(self.width)
-        event_dict["order"] = self.order
-        return event_dict
+        profile_dict["width"] = str(self.width)
+        profile_dict["order"] = self.order
+        return profile_dict
 
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+    def from_dict(cls: Type[Self], profile_dict: dict[str, Any]) -> Self:
         """
         Creates a Gaussian object from a dictionary.
 
         The key-value pairs of the dictionary must correspond to the
-        constructor arguments of the event.
+        constructor arguments of the profile.
 
         Parameters
         ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
+        profile_dict : dict[str, Any]
+            Dictionary containing all profile fields
 
         Returns
         -------
         Gaussian
-            Gaussian object with fields from ``event_dict``
+            Gaussian object with fields from ``profile_dict``
         """
 
         # Convert width string to pd.Timedelta
-        event_dict["width"] = pd.Timedelta(event_dict["width"])
-        return cls(**event_dict)
+        profile_dict["width"] = pd.Timedelta(profile_dict["width"])
+        return cls(**profile_dict)
 
 
-class Cauchy(Event):
+class Cauchy(Profile):
     """
-    A Cauchy shaped event.
+    A Cauchy shaped profile.
 
-    For a given time :math:`t` the event can be described by
+    For a given time :math:`t` the profile can be described by
 
     .. math::
         f(t) = \\frac{1}{4\\cdot \\left(t-t_0 \\right)^2 / w^2 + 1}
@@ -372,19 +374,21 @@ class Cauchy(Event):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a single Cauchy event.
+        Generate a time series with a single Cauchy profile.
 
         Parameters
         ----------
         timestamps : :class:`pandas.Series`
-            The input timestamps at which the Cauchy event is to be evaluated.
+            The input timestamps at which the Cauchy profile is to be
+            evaluated.
         t_start : :class:`pandas.Timestamp`
-            Location of the Cauchy event's mode.
+            Location of the Cauchy profile's mode.
 
         Returns
         -------
         :class:`pandas.Series`
-            The output time series including the Cauchy event with amplitude 1.
+            The output time series including the Cauchy profile with amplitude
+            1.
         """
 
         # normalize the input timestamps
@@ -394,48 +398,48 @@ class Cauchy(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Cauchy event to a JSON-serializable dictionary.
+        Converts the Cauchy profile to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including an extra
-            ``event_type = "Cauchy"`` item.
+            Dictionary containing all profile fields including an extra
+            ``profile_type = "Cauchy"`` item.
         """
-        # Start with event type
-        event_dict = super().to_dict()
+        # Start with profile type
+        profile_dict = super().to_dict()
         # Add additional fields
-        event_dict["width"] = str(self.width)
-        return event_dict
+        profile_dict["width"] = str(self.width)
+        return profile_dict
 
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+    def from_dict(cls: Type[Self], profile_dict: dict[str, Any]) -> Self:
         """
         Creates a Cauchy object from a dictionary.
 
         The key-value pairs of the dictionary must correspond to the
-        constructor arguments of the event.
+        constructor arguments of the profile.
 
         Parameters
         ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
+        profile_dict : dict[str, Any]
+            Dictionary containing all profile fields
 
         Returns
         -------
         Cauchy
-            Cauchy object with fields from ``event_dict``
+            Cauchy object with fields from ``profile_dict``
         """
         # Convert width string to pd.Timedelta
-        event_dict["width"] = pd.Timedelta(event_dict["width"])
-        return cls(**event_dict)
+        profile_dict["width"] = pd.Timedelta(profile_dict["width"])
+        return cls(**profile_dict)
 
 
-class Exponential(Event):
+class Exponential(Profile):
     """
-    A two-sided exponential decay shaped event.
+    A two-sided exponential decay shaped profile.
 
-    For a given time :math:`t` the event can be described by
+    For a given time :math:`t` the profile can be described by
 
     .. math::
         f(t) = \\exp\\left(
@@ -505,8 +509,8 @@ class Exponential(Event):
             from gloria.utilities.logging import get_logger
 
             get_logger().warning(
-                "Lag width of exponential decay event < 0 interpreted as lead"
-                " decay. Setting lag_width = 0."
+                "Lag width of exponential decay profile < 0 interpreted as "
+                "lead decay. Setting lag_width = 0."
             )
             lag_width = Timedelta(0)
 
@@ -517,7 +521,7 @@ class Exponential(Event):
             from gloria.utilities.logging import get_logger
 
             get_logger().warning(
-                "Lead and lag width of exponential decay event = 0 - likely"
+                "Lead and lag width of exponential decay profile = 0 - likely"
                 " numerical issues during fitting."
             )
 
@@ -527,20 +531,20 @@ class Exponential(Event):
         self: Self, timestamps: pd.Series, t_start: pd.Timestamp
     ) -> pd.Series:
         """
-        Generate a time series with a single Exponential event.
+        Generate a time series with a single Exponential profile.
 
         Parameters
         ----------
         timestamps : :class:`pandas.Series`
-            The input timestamps at which the Exponential event is to be
+            The input timestamps at which the Exponential profile is to be
             evaluated.
         t_start : :class:`pandas.Timestamp`
-            Location of the Exponential event's mode.
+            Location of the Exponential profile's mode.
 
         Returns
         -------
         :class:`pandas.Series`
-            The output time series including the Exponential event with
+            The output time series including the Exponential profile with
             amplitude 1.
         """
         # Shift the input timestamps
@@ -549,7 +553,7 @@ class Exponential(Event):
         mask_lead = timestamps < t_start
         mask_lag = timestamps >= t_start
 
-        # Create event and fill with zeros
+        # Create profile and fill with zeros
         y = np.zeros_like(timestamps, dtype=float)
 
         # Add the one-sided lead exponential
@@ -565,48 +569,48 @@ class Exponential(Event):
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
-        Converts the Exponential event to a JSON-serializable dictionary.
+        Converts the Exponential profile to a JSON-serializable dictionary.
 
         Returns
         -------
         dict[str, Any]
-            Dictionary containing all event fields including an extra
-            ``event_type = "Exponential"`` item.
+            Dictionary containing all profile fields including an extra
+            ``profile_type = "Exponential"`` item.
         """
-        # Start with event type
-        event_dict = super().to_dict()
+        # Start with profile type
+        profile_dict = super().to_dict()
         # Add additional fields
-        event_dict["lead_width"] = str(self.lead_width)
-        event_dict["lag_width"] = str(self.lag_width)
-        return event_dict
+        profile_dict["lead_width"] = str(self.lead_width)
+        profile_dict["lag_width"] = str(self.lag_width)
+        return profile_dict
 
     @classmethod
-    def from_dict(cls: Type[Self], event_dict: dict[str, Any]) -> Self:
+    def from_dict(cls: Type[Self], profile_dict: dict[str, Any]) -> Self:
         """
         Creates a Exponential object from a dictionary.
 
         The key-value pairs of the dictionary must correspond to the
-        constructor arguments of the event.
+        constructor arguments of the profile.
 
         Parameters
         ----------
-        event_dict : dict[str, Any]
-            Dictionary containing all event fields
+        profile_dict : dict[str, Any]
+            Dictionary containing all profile fields
 
         Returns
         -------
         Exponential
-            Exponential object with fields from ``event_dict``
+            Exponential object with fields from ``profile_dict``
         """
         # Convert lead_width string to pd.Timedelta
-        event_dict["lead_width"] = pd.Timedelta(event_dict["lead_width"])
+        profile_dict["lead_width"] = pd.Timedelta(profile_dict["lead_width"])
         # Convert lag_width string to pd.Timedelta
-        event_dict["lag_width"] = pd.Timedelta(event_dict["lag_width"])
-        return cls(**event_dict)
+        profile_dict["lag_width"] = pd.Timedelta(profile_dict["lag_width"])
+        return cls(**profile_dict)
 
 
-# A map of Event class names to actual classes
-EVENT_MAP: dict[str, Type[Event]] = {
+# A map of Profile class names to actual classes
+PROFILE_MAP: dict[str, Type[Profile]] = {
     "BoxCar": BoxCar,
     "Gaussian": Gaussian,
     "Exponential": Exponential,
@@ -614,45 +618,49 @@ EVENT_MAP: dict[str, Type[Event]] = {
 }
 
 
-def event_from_dict(cls: Type[Event], event_dict: dict[str, Any]) -> Event:
+def profile_from_dict(
+    cls: Type[Profile], profile_dict: dict[str, Any]
+) -> Profile:
     """
-    Identifies the appropriate event type calls its from_dict() method.
+    Identifies the appropriate profile type calls its from_dict() method.
 
     Parameters
     ----------
-    event_dict : dict[str, Any]
-        Dictionary containing all event fields including event type.
+    profile_dict : dict[str, Any]
+        Dictionary containing all profile fields including profile type.
 
     Raises
     ------
     NotImplementedError
-        Is raised in case the event type stored in event_dict does not
-        correspond to any event class.
+        Is raised in case the profile type stored in profile_dict does not
+        correspond to any profile class.
 
     Returns
     -------
-    Event
-        The appropriate event constructed from the event_dict fields.
+    Profile
+        The appropriate profile constructed from the profile_dict fields.
     """
-    event_dict = event_dict.copy()
-    # Get the event type
-    if "event_type" not in event_dict:
-        raise KeyError("The input dictionary must have the key 'event_type'.")
-    event_type = event_dict.pop("event_type")
-    # Check that the event type exists
+    profile_dict = profile_dict.copy()
+    # Get the profile type
+    if "profile_type" not in profile_dict:
+        raise KeyError(
+            "The input dictionary must have the key 'profile_type'."
+        )
+    profile_type = profile_dict.pop("profile_type")
+    # Check that the profile type exists
     try:
-        event_class = EVENT_MAP[event_type]
+        profile_class = PROFILE_MAP[profile_type]
     except KeyError as e:
         raise NotImplementedError(
-            f"Event Type '{event_type}' does not exist."
+            f"Profile Type '{profile_type}' does not exist."
         ) from e
-    # Ensure that event dictionary contains all required fields.
-    event_class.check_for_missing_keys(event_dict)
-    # Call the from_dict() method of the correct event
-    return event_class.from_dict(event_dict)
+    # Ensure that profile dictionary contains all required fields.
+    profile_class.check_for_missing_keys(profile_dict)
+    # Call the from_dict() method of the correct profile
+    return profile_class.from_dict(profile_dict)
 
 
-# Add event_from_dict() as class method to the Event base class, so it can
-# always called as Event.from_dict(event_dict) with any dictionary as long as
-# it contains the event_type field.
-Event.from_dict = classmethod(event_from_dict)  # type: ignore
+# Add profile_from_dict() as class method to the Profile base class, so it can
+# always called as Profile.from_dict(profile_dict) with any dictionary as long
+# as it contains the profile_type field.
+Profile.from_dict = classmethod(profile_from_dict)  # type: ignore
