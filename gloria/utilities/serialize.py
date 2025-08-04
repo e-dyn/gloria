@@ -640,7 +640,7 @@ SIMPLE_ATTRIBUTES = [
     "model",
     "timestamp_name",
     "metric_name",
-    "population_name",
+    "capacity_name",
     "n_changepoints",
     "changepoint_range",
     "seasonality_prior_scale",

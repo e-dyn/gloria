@@ -100,7 +100,7 @@ class Gloria(BaseModel):
     metric_name : str, optional
         The name of the expected metric column of the input data frame for
         :meth:`~Gloria.fit`.
-    population_name : str, optional
+    capacity_name : str, optional
         The name of the column containing capacity data for the models
         ``"binomial"`` and ``"beta-binomial"``.
     changepoints : pd.Series, optional
@@ -158,7 +158,7 @@ class Gloria(BaseModel):
     sampling_period: Timedelta = _GLORIA_DEFAULTS["sampling_period"]
     timestamp_name: str = _GLORIA_DEFAULTS["timestamp_name"]
     metric_name: str = _GLORIA_DEFAULTS["metric_name"]
-    population_name: str = _GLORIA_DEFAULTS["population_name"]
+    capacity_name: str = _GLORIA_DEFAULTS["capacity_name"]
     changepoints: Optional[pd.Series] = _GLORIA_DEFAULTS["changepoints"]
     n_changepoints: int = Field(
         ge=0, default=_GLORIA_DEFAULTS["n_changepoints"]
@@ -252,7 +252,7 @@ class Gloria(BaseModel):
         # If a capacity name was given, the capacity will be expected to be
         # part of the input data during fit() and predict(). The vectorized
         # attribute will indicate that.
-        self.vectorized = (self.population_name != "") and self.model in (
+        self.vectorized = (self.capacity_name != "") and self.model in (
             "binomial",
             "beta-binomial",
         )
@@ -346,7 +346,7 @@ class Gloria(BaseModel):
             [self.timestamp_name, self.metric_name, _T_INT, _DTYPE_KIND]
         )
         if self.vectorized:
-            reserved_names.append(self.population_name)
+            reserved_names.append(self.capacity_name)
 
         if name in reserved_names:
             raise ValueError(f"Name {name} is reserved.")
@@ -675,7 +675,7 @@ class Gloria(BaseModel):
         name : str
             The metric column name
         col_type : Literal["Metric", "Capacity"], optional
-            Specifies whether the metric column or population column is to be
+            Specifies whether the metric column or capacity column is to be
             validated. The default is "Metric".
 
         Raises
@@ -717,7 +717,7 @@ class Gloria(BaseModel):
             name self.timestamp_name and a numeric column with name
             self.metric_name. If the Gloria models is 'binomial' and
             'beta-binomial' in vectorized capacity form are to be used, a
-            column with name self.population.name must exists. If external
+            column with name self.capacity_name must exists. If external
             regressors were added to the model, the respective columns must be
             present as well.
 
@@ -785,10 +785,10 @@ class Gloria(BaseModel):
         # Capcacity validation
         if self.vectorized:
             self.validate_metric_column(
-                df=df, name=self.population_name, col_type="Capacity"
+                df=df, name=self.capacity_name, col_type="Capacity"
             )
             # Check values in the capacity column
-            if (df[self.population_name] < df[self.metric_name]).any():
+            if (df[self.capacity_name] < df[self.metric_name]).any():
                 raise ValueError(
                     "There are values in the metric column that exceed the "
                     "corresponding values in the capacity column, which is "
@@ -816,7 +816,7 @@ class Gloria(BaseModel):
         ].copy()
 
         if self.vectorized:
-            history[self.population_name] = df[self.population_name].copy()
+            history[self.capacity_name] = df[self.capacity_name].copy()
 
         return history
 
@@ -1099,9 +1099,7 @@ class Gloria(BaseModel):
         )
         # Add capacity is vectorized, add it now
         if self.vectorized:
-            input_data.capacity = np.asarray(
-                self.history[self.population_name]
-            )
+            input_data.capacity = np.asarray(self.history[self.capacity_name])
         return input_data
 
     def fit(
@@ -1306,9 +1304,9 @@ class Gloria(BaseModel):
         capacity_vec = None
         if self.vectorized:
             self.validate_metric_column(
-                df=data, name=self.population_name, col_type="Capacity"
+                df=data, name=self.capacity_name, col_type="Capacity"
             )
-            capacity_vec = data[self.population_name].copy()
+            capacity_vec = data[self.capacity_name].copy()
 
         # Validate external regressors
         # 1. Collect missing columns
@@ -2046,17 +2044,17 @@ class Gloria(BaseModel):
                     capacity_value = fit_kwargs.get("capacity_value")
 
                     if capacity_mode == "vectorized":
-                        # Plot population directly if capacity is vectorized
+                        # Plot capacity directly if capacity is vectorized
                         capacity_defaults = {
                             "color": "grey",
                             "linestyle": "--",
-                            "label": self.population_name,
+                            "label": self.capacity_name,
                         }
                         capacity_defaults.update(capacity_kwargs)
 
                         ax.plot(
                             self.history[self.timestamp_name],
-                            self.history[self.population_name],
+                            self.history[self.capacity_name],
                             **capacity_defaults,
                         )
 

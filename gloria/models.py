@@ -142,10 +142,10 @@ LINK_FUNC_MAP = {
 }
 
 
-class BinomialPopulation(BaseModel):
+class BinomialCapacity(BaseModel):
     """
     Configuration parameters used by the augment_data method of the model
-    BinomialConstantN and BetaBinomialConstantN to determine the population
+    BinomialConstantN and BetaBinomialConstantN to determine the capacity
     size.
     """
 
@@ -158,7 +158,7 @@ class BinomialPopulation(BaseModel):
         cls, value: Union[int, float], info
     ) -> Union[int, float]:
         """
-        Validates the value pass along with the population size estimation
+        Validates the value pass along with the capacity size estimation
         method.
         """
         # Safeguard if validation of mode already failed
@@ -169,19 +169,19 @@ class BinomialPopulation(BaseModel):
         if info.data["mode"] == "constant":
             if not isinstance(value, int):
                 raise ValueError(
-                    "In population mode 'constant' the population"
+                    "In capacity mode 'constant' the capacity"
                     f" value (={value}) must be an integer."
                 )
         elif info.data["mode"] == "factor":
             if value < 1:
                 raise ValueError(
-                    "In population mode 'factor' the population "
+                    "In capacity mode 'factor' the capacity "
                     f"value (={value}) must be >= 1."
                 )
         elif info.data["mode"] == "scale":
             if (value >= 1) or (value <= 0):
                 raise ValueError(
-                    "In population mode 'scale' the population "
+                    "In capacity mode 'scale' the capacity "
                     f"value (={value}) must be 0 < value < 1."
                 )
         return value
@@ -510,7 +510,7 @@ class ModelBackendBase(ABC):
             Raw response variable.  Shape can be any, provided it broadcasts
             with ``N`` if ``N`` is an array.
         capacity : Optional[Union[int, np.ndarray]]
-            Population size(s) for normalisation.  If ``None`` (default) no
+            Capacity size(s) for normalisation.  If ``None`` (default) no
             division is performed.  If an array is given it must have the same
             shape as ``y``.
         lower_bound : bool, optional
@@ -1344,13 +1344,13 @@ class Binomial(ModelBackendBase):
 
         if not vectorized:
             # Validate capacity parameters
-            capacity_settings = BinomialPopulation.from_parameters(
+            capacity_settings = BinomialCapacity.from_parameters(
                 capacity=capacity,
                 capacity_mode=capacity_mode,
                 capacity_value=capacity_value,
             )
 
-            # Get population size depending on selected mode
+            # Get capacity size depending on selected mode
             stan_data.capacity = get_capacity(
                 y=stan_data.y,
                 mode=capacity_settings.mode,
@@ -1924,13 +1924,13 @@ class BetaBinomial(ModelBackendBase):
 
         if not vectorized:
             # Validate capacity parameters
-            capacity_settings = BinomialPopulation.from_parameters(
+            capacity_settings = BinomialCapacity.from_parameters(
                 capacity=capacity,
                 capacity_mode=capacity_mode,
                 capacity_value=capacity_value,
             )
 
-            # Get population size depending on selected mode
+            # Get capacity size depending on selected mode
             stan_data.capacity = get_capacity(
                 y=stan_data.y,
                 mode=capacity_settings.mode,
