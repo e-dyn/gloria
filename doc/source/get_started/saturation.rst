@@ -19,57 +19,125 @@ Our goal is to model the number of occupied seats. It scales with the number of 
 Constant Capacity
 -----------------
 
-We first restrict the data set to the initial nine days. In this range, the total number of seats is fixed at 60. As we are handling count data with an upper bound, we use the ``binomial constant n`` model.
+We first restrict the data set to the initial nine days. In this range, the total number of seats is fixed at 60. As we are handling count data with an upper bound, we use the ``binomial`` model.
 
 .. code-block:: python
-    :emphasize-lines: 31,32,33,34
+    :emphasize-lines: 33
 
+   import pandas as pd
+   from gloria import Gloria, cast_series_to_kind
+
+   # Load the data
+   data = pd.read_csv("data/real/seat_occupancy.csv").head(220)
+
+   # Save the column names for later usage
+   timestamp_name = "date"
+   metric_name = "occupied"
+
+   # Convert to datetime
+   data[timestamp_name] = pd.to_datetime(data[timestamp_name])
+
+   # Convert data type to unsigned int
+   data[metric_name] = cast_series_to_kind(data[metric_name], "u")
+
+   # Set up the Gloria model
+   m = Gloria(
+       model="binomial",
+       metric_name=metric_name,
+       timestamp_name=timestamp_name,
+       sampling_period="1 h",
+       n_changepoints = 5
+   )
+
+   # Add observed seasonalities
+   m.add_seasonality("daily", "1d", 5)
+
+   # Configure capacity values
+   n_seats = 60
+
+   # Fit the model to the data
+   m.fit(data, capacity=n_seats)
+
+   # Predict
+   data_predict = data.loc[:,[timestamp_name]]
+   prediction = m.predict(data_predict)
+
+   # Plot
+   m.plot(prediction, include_legend=True, show_capacity=True)
+
+In the highlighted fit step, the capacity is defined as 60. The capacity is only taken into account by the ``binomial`` and ``beta-binomial`` models and is absolutely necessary. It is also possible to pass the constant capacity via the pair of variables ``capacity_mode`` and ``capacity_value``. 
+
+Because the capacity is known exactly, we choose ``capacity_mode="constant"`` and ``capacity_value=60``, i.e. the number of seats recorded in the data set. The result of the binomial fit can be seen below. During pedestrian rush hours, virtually all seats are taken, meaning the data reach their capacity, which is shown as a dashed gray line in the plot. The fitted model saturates in this range, as can be seen by the oscillations being capped at 60. Note that even the confidence interval does not exceed the capacity.
+
+.. image:: pics/saturation_fig01.png
+  :align: center
+  :width: 700
+  :alt: Seat occupation fitted with a binomial model of constant capacity
+  
+  
+Varying Capacity
+----------------
+
+Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The ``binomial`` model with ``capacity_mode=vectorized`` is the perfect fit for this situation. While we previously had to specify a *constant* capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter ``population_name``. Note that both data frames passed to :meth:`~Gloria.fit` *and* :meth:`~Gloria.predict` must include this column:
+
+.. code-block:: python
+    :emphasize-lines: 10, 17, 24, 33
+    
     import pandas as pd
     from gloria import Gloria, cast_series_to_kind
-    
+
     # Load the data
-    data = pd.read_csv("data/seat_occupancy.csv").head(220)
+    data = pd.read_csv("data/real/seat_occupancy.csv")
 
     # Save the column names for later usage
     timestamp_name = "date"
     metric_name = "occupied"
+    population_name = "seats"
 
     # Convert to datetime
     data[timestamp_name] = pd.to_datetime(data[timestamp_name])
-    
+
     # Convert data type to unsigned int
     data[metric_name] = cast_series_to_kind(data[metric_name], "u")
-    
+    data[population_name] = cast_series_to_kind(data[population_name], "u")
+
     # Set up the Gloria model
     m = Gloria(
-        model="binomial constant n",
+        model="binomial",
         metric_name=metric_name,
         timestamp_name=timestamp_name,
+        population_name="seats",
         sampling_period="1 h",
         n_changepoints = 5
     )
-    
+
     # Add observed seasonalities
     m.add_seasonality("daily", "1d", 5)
-    
-    # Configure Binomial model
-    n_seats = int(data.loc[0,"seats"])
-    augmentation_config = dict(
-        mode="constant",
-        value=n_seats
-    )
-    
+
     # Fit the model to the data
-    m.fit(data, augmentation_config=augmentation_config)
-    
+    m.fit(data, capacity_mode="vectorized")
+
     # Predict
-    data_predict = data.loc[:,[timestamp_name]]
+    data_predict = data.loc[:,[timestamp_name, population_name]]
     prediction = m.predict(data_predict)
 
     # Plot
-    m.plot(prediction)
+    m.plot(prediction, show_capacity=True, include_legend=True)
+    
+The grey dashed line in the plot shows that the number of seats increased from 60 to 160 within just a few days. At around 100 seats, saturation occurs less frequently and above 150 seats, the number of seated people remains well below capacity. The fitted model successfully captures both the dampened oscillations in the saturated regime and the unrestrained fluctuations when capacity is not reached.
 
-Note the highlighted ``augmentation_config`` dictionary passed to the fit method. It contains the keys ``mode`` and ``value`` keys and is required only for the ``binomial constant n`` and ``beta-binomial constant n`` models, because we must supply an explicit constant capacity. There are three available modes
+.. image:: pics/saturation_fig02.png
+  :align: center
+  :width: 700
+  :alt: Seat occupation fitted with a binomial model of varying capacity
+ 
+  
+Summary
+-------
+
+In this tutorial, we saw how Gloria’s bounded-count models behave when a time series approaches its capacity. In such cases, the models automatically dampen further growth: seasonal components are clipped to the ceiling, trend changepoints flatten, and predictive intervals are truncated so they never exceed the specified upper limit. Whether the capacity is fixed  or time-varying, Gloria incorporates the bound directly into the likelihood, allowing it to represent the transition from linear growth to a plateau without manual tuning. As a result, forecasts remain realistic even in heavily saturated regimes, while still tracking ordinary fluctuations when the system operates below capacity.
+
+The capacities are configured via the parameters ``capacity_mode`` and ``capacity_value``. There are four available modes:
 
 .. list-table:: 
    :header-rows: 1
@@ -85,90 +153,11 @@ Note the highlighted ``augmentation_config`` dictionary passed to the fit method
      - The capacity is the maximum of the response variable times ``value``
      - ``value`` must be :math:`\ge` 1
    * - ``"scale"``
-     - The capacity is optimized such that the response variable is distributed around the expectation value :math:`N \times p` with :math:`N=` capacity and :math:`p=` ``value``. This mode is the default using ``value=0.5``.
+     - The capacity is optimized such that the response variable is distributed around the expectation value :math:`N \times p` with :math:`N=` capacity and :math:`p=` ``value``. This mode is the default using ``value=0.5``
      - ``value`` must be in :math:`[0,1]`
-
-Because the capacity is known exactly, we choose ``mode="constant"`` and ``value=60``, ie. the number of seats recorded in the data set. The result of the binomial fit can be seen below. During pedestrian rush hours, virtually all seats are taken, meaning the data reach their capacity. The fitted model saturates in this range as well, as can be seen by the oscillations being capped at 60. Note that even the confidence interval does not exceed the capacity.
-
-.. image:: pics/saturation_fig01.png
-  :align: center
-  :width: 700
-  :alt: Seat occupation fitted with a binomial model of constant capacity
-  
-  
-Varying Capacity
-----------------
-
-Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The ``binomial vectorized n`` model is the perfect fit for this situation. While we previously had to specify a *constant* capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter ``population_name``. Note that both data frames passed to :meth:`~Gloria.fit` *and* :meth:`~Gloria.predict` must include this column:
-
-.. code-block:: python
-    :emphasize-lines: 10, 17, 24, 36
-    
-    import pandas as pd
-    from gloria import Gloria, cast_series_to_kind
-    
-    # Load the data
-    data = pd.read_csv("data/seat_occupancy.csv")
-
-    # Save the column names for later usage
-    timestamp_name = "date"
-    metric_name = "occupied"
-    population_name = "seats"
-
-    # Convert to datetime
-    data[timestamp_name] = pd.to_datetime(data[timestamp_name])
-    
-    # Convert data type to unsigned int
-    data[metric_name] = cast_series_to_kind(data[metric_name], "u")
-    data[population_name] = cast_series_to_kind(data[population_name], "u")
-    
-    # Set up the Gloria model
-    m = Gloria(
-        model="binomial vectorized n",
-        metric_name=metric_name,
-        timestamp_name=timestamp_name,
-        population_name="seats",
-        sampling_period="1 h",
-        n_changepoints = 5
-    )
-    
-    # Add observed seasonalities
-    m.add_seasonality("daily", "1d", 5)
-        
-    # Fit the model to the data
-    m.fit(data)
-    
-    # Predict
-    data_predict = data.loc[:,[timestamp_name, population_name]]
-    prediction = m.predict(data_predict)
-
-    # Plot
-    fig = m.plot(prediction)
-    ax = fig.gca()
-    
-    # Add `seats` as capacity to the plot
-    ax.plot(
-        data[timestamp_name],
-        data[population_name],
-        "grey",
-        linestyle="--",
-        label="Seats"
-    )
-    
-    ax.legend()
-    
-The grey dashed line in the plot below shows that the number of seats increased from 60 to 160 within just a few days. At around 100 seats, saturation occurs less frequently and above 150 seats, the number of seated people remains well below capacity. The fitted model successfully captures both the dampened oscillations in the saturated regime and the unrestrained fluctuations when capacity is not reached.
-
-.. image:: pics/saturation_fig02.png
-  :align: center
-  :width: 700
-  :alt: Seat occupation fitted with a binomial model of varying capacity
-  
-  
-Summary
--------
-
-In this tutorial, we saw how Gloria’s bounded-count models behave when a time series approaches its capacity. In such cases, the models automatically dampen further growth: seasonal components are clipped to the ceiling, trend changepoints flatten, and predictive intervals are truncated so they never exceed the specified upper limit. Whether the capacity is fixed  or time-varying, Gloria incorporates the bound directly into the likelihood, allowing it to represent the transition from linear growth to a plateau without manual tuning. As a result, forecasts remain realistic even in heavily saturated regimes, while still tracking ordinary fluctuations when the system operates below capacity.
+   * - ``"vectorized"``
+     - ``value`` varies with each data point in the time series. The corresponding column ``population_name`` must be provided by the input data.
+     - ``value`` in the ``population_name`` column must not exceed the corresponding values in the metric column.
 
 .. rubric:: Footnotes
 

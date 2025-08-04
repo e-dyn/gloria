@@ -96,7 +96,7 @@ Setting up the model was the major part of work. The remainder is fairly simple.
     prediction = m.predict(periods=96)
     
     # Plot
-    m.plot(prediction)
+    m.plot(prediction, include_legend=True)
     
 In the figure we see that our model nicely fits the data with most of them covered by the confidence interval. Also the drop of power consumption during the weekend is well reproduced in both training data and forecast.
 

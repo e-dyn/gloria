@@ -387,40 +387,77 @@
 <h1>gloria.Gloria.plot<a class="headerlink" href="#gloria-gloria-plot" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Gloria.plot">
-<span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">6)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_changepoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gloria.plot" title="Link to this definition">#</a></dt>
-<dd><p>Plot the forecast of a Gloria model, including trend line, predictions,
-and confidence intervals.</p>
+<span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_changepoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mark_anomalies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_capacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rcparams_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forecast_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_y_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">despine_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticklabel_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anomaly_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capacity_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_locator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_formatter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gloria.plot" title="Link to this definition">#</a></dt>
+<dd><p>Plot the forecast, trend, and observed data with extensive
+customization options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fcst</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – DataFrame with forecast results. Must be the output of
-<a class="reference internal" href="gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.predict()</span></code></a></p></li>
-<li><p><strong>ax</strong> (<em>Optional</em><em>[</em><em>Artist</em><em>]</em>) – An existing matplotlib axis to draw on. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), a
-new figure and axis will be created.</p></li>
-<li><p><strong>uncertainty</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to plot the uncertainty/confidence intervals. The default
-is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
-<li><p><strong>xlabel</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Label for the x-axis. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the <code class="docutils literal notranslate"><span class="pre">timestamp_name</span></code>
-of the corresponding Gloria model will be used.</p></li>
-<li><p><strong>ylabel</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Label for the y-axis. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the <code class="docutils literal notranslate"><span class="pre">metric_name</span></code> of
-the corresponding Gloria model will be used.</p></li>
-<li><p><strong>figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – Figure size as (<em>width</em>, <em>height</em>) in inches. Used only when
-creating a new figure. The default is (10, 6).</p></li>
-<li><p><strong>dpi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Resolution of the figure in dots-per-inches. Used only when
-creating a new figure. The default is 150.</p></li>
-<li><p><strong>show_changepoints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to display significant changepoints on the plot. The
-default is False.</p></li>
-<li><p><strong>include_legend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to display a legend on the plot. The default is False.</p></li>
-<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>fcst</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.1)"><em>pandas.DataFrame</em></a>) – <dl class="simple">
+<dt>Forecast DataFrame containing:</dt><dd><ul>
+<li><p>Timestamp column (matching <cite>self.timestamp_name</cite>)</p></li>
+<li><p>’yhat’ (predicted values)</p></li>
+<li><p>’trend’ (trend component)</p></li>
+<li><p>’observed_lower’ and ‘observed_upper’ (confidence intervals)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>NotFittedError</strong> – The model has not been fitted yet.</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The figure object containing the forecast plot.</p>
+</dl>
+</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – Existing matplotlib axis to draw on.
+If None, a new figure and axis will be created.</p></li>
+<li><p><strong>uncertainty</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=True</em>) – Whether to plot the confidence interval bands.</p></li>
+<li><p><strong>show_changepoints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to annotate changepoints in the forecast.</p></li>
+<li><p><strong>include_legend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to include a legend in the plot.</p></li>
+<li><p><strong>plot_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Arguments for <cite>plt.subplots()</cite> if creating a new figure.</p></li>
+<li><p><strong>rcparams_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Overrides for matplotlib rcParams to control global styling.</p></li>
+<li><p><strong>style_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Keyword arguments passed to <cite>sns.set()</cite> for Seaborn style
+configuration.</p></li>
+<li><p><strong>scatter_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the historical data scatter plot (<cite>sns.scatterplot</cite>).</p></li>
+<li><p><strong>trend_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the trend line (<cite>ax.plot</cite>).</p></li>
+<li><p><strong>forecast_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the forecast line (<cite>ax.plot</cite>).</p></li>
+<li><p><strong>interval_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the confidence interval area (<cite>ax.fill_between</cite>).</p></li>
+<li><p><strong>xlabel_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Settings for the x-axis label (<cite>ax.set_xlabel</cite>).</p></li>
+<li><p><strong>ylabel_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Settings for the y-axis label (<cite>ax.set_ylabel</cite>).</p></li>
+<li><p><strong>grid_y_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Settings for the y-axis gridlines (<cite>ax.grid</cite>).</p></li>
+<li><p><strong>despine_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Arguments to <cite>sns.despine()</cite> for removing spines.</p></li>
+<li><p><strong>ticklabel_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Settings for customizing tick labels (rotation, alignment,
+fontsize).</p></li>
+<li><p><strong>anomaly_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the anomaly data scatter plot (<cite>sns.scatterplot</cite>).</p></li>
+<li><p><strong>capacity_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Styling for the capcity line (<cite>ax.plot</cite>).</p></li>
+<li><p><strong>date_locator</strong> (<em>matplotlib.ticker.Locator</em><em>, </em><em>optional</em>) – Locator for x-axis ticks. Defaults to <cite>AutoDateLocator</cite>.</p></li>
+<li><p><strong>date_formatter</strong> (<em>matplotlib.ticker.Formatter</em><em>, </em><em>optional</em>) – Formatter for x-axis tick labels. Defaults to <cite>AutoDateFormatter</cite>.</p></li>
+<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
+<li><p><strong>mark_anomalies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>show_capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.figure.Figure</span></code></p>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotFittedError</strong> – If the model has not been fitted before calling this method.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method is designed for flexible, reproducible, and highly
+customizable visualization of forecasts and their uncertainty
+intervals. You can control nearly every aspect of the figure appearance
+via the provided keyword argument dictionaries.</p>
+<p class="rubric">Examples</p>
+<dl>
+<dt>Basic usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fcst</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Custom scatter point styling:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fcst</span><span class="p">,</span> <span class="n">scatter_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span>
+<span class="go">                                           &quot;color&quot;: &quot;purple&quot;})</span>
+</pre></div>
+</div>
+</dd>
+<dt>Specifying figure size and dpi:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fcst</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+<span class="go">                                        &quot;dpi&quot;: 200})</span>
+</pre></div>
+</div>
 </dd>
 </dl>
 </dd></dl>

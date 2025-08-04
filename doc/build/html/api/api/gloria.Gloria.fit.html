@@ -46,6 +46,7 @@
     <script src="../../_static/tabs.js?v=3ee01567"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gloria.fit';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -407,12 +408,35 @@ skipped. TOML configuration precedes model settings saved in
 Posteriori estimation, if <code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code> a Maximum Likehood estimation.</p></li>
 <li><p><strong>sample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the optimization is followed by a sampling
 over the Laplace approximation around the posterior mode.</p></li>
-<li><p><strong>augmentation_config</strong> (<em>Optional</em><em>[</em><em>BinomialPopulation</em><em>]</em><em>, </em><em>optional</em>) – Configuration parameters for augmenting the input data. Currently,
-it is only required for the <code class="docutils literal notranslate"><span class="pre">&quot;binomial</span> <span class="pre">constant</span> <span class="pre">n&quot;</span></code> and
-<code class="docutils literal notranslate"><span class="pre">&quot;beta-binomial</span> <span class="pre">constant</span> <span class="pre">n&quot;</span></code> models. For  all other models it
-defaults to None. The default setting is <code class="docutils literal notranslate"><span class="pre">mode=&quot;scale&quot;</span></code> with an
-associated <code class="docutils literal notranslate"><span class="pre">value=0.5</span></code>.</p></li>
-<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – An upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models.
+Note that <code class="docutils literal notranslate"><span class="pre">capacity</span></code> must be &gt;= all values in the metric column
+of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Specifying <code class="docutils literal notranslate"><span class="pre">capacity</span></code> is
+mutually exclusive with providing a  <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and
+<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pair.</p></li>
+<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Two modes are available:
+- <code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: The capacity is the maximum of the response</p>
+<blockquote>
+<div><p>variable times <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p>
+</div></blockquote>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: The capacity is optimized such that the response
+variable is distributed around the expectation value
+<span class="math notranslate nohighlight">\(N \times p\)</span> with <span class="math notranslate nohighlight">\(N=\)</span> capacity and <span class="math notranslate nohighlight">\(p=\)</span>
+<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>. This mode is the default using
+<code class="docutils literal notranslate"><span class="pre">capacity_value=0.5</span></code>.</p></li>
+</ul>
+</p></li>
+<li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:
+- If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\ge\)</span> 1</p>
+</div></blockquote>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be in
+<span class="math notranslate nohighlight">\([0,1]\)</span>.</p></li>
+</ul>
+</p></li>
+<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
 <li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
@@ -427,9 +451,8 @@ associated <code class="docutils literal notranslate"><span class="pre">value=0.
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The configuration of the fit method via <code class="docutils literal notranslate"><span class="pre">optimize_mode</span></code>, <code class="docutils literal notranslate"><span class="pre">sample</span></code>
-and <code class="docutils literal notranslate"><span class="pre">augmentation_config</span></code> is composed in four layers, each
-one overriding the previous:</p>
+<p>The configuration of the fit method via its parameters is composed in
+four layers, each one overriding the previous:</p>
 <ol class="arabic simple">
 <li><p><strong>Model defaults</strong> - the baseline configuration with defaults given
 above.</p></li>

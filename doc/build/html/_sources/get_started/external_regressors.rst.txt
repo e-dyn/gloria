@@ -40,17 +40,15 @@ Let’s begin by preparing the data and fitting this baseline model.
      # For loading and processing
     import pandas as pd            
     # For forecasting and setting up Gloria
-    from gloria import CalendricData, Gloria, cast_series_to_kind  
+    from gloria import Gloria, cast_series_to_kind, CalendricData  
 
     # Load the data
-    df = pd.read_csv(file)
+    df = pd.read_csv("data/real/Lake_Bilancino.csv")
     
     # Save the column names and data configurations for later usage
     n_changepoints = 0
     model = "gamma"
     metric_name = "Flow_Rate"
-    regressor_name = ["Rainfall_S_Piero", "Rainfall_Mangona", "Rainfall_S_Agata",
-                      "Rainfall_Cavallina", "Rainfall_Le_Croci"]
     timestamp_name = "Date"
     sampling_period = "1 d"
 
@@ -70,7 +68,7 @@ Let’s begin by preparing the data and fitting this baseline model.
     df_gloria = df_gloria.sort_values(by="Date")
 
     # Set up the model
-    my_model = Gloria(
+    m = Gloria(
         model=model,
         metric_name=metric_name,
         timestamp_name=timestamp_name,
@@ -80,17 +78,17 @@ Let’s begin by preparing the data and fitting this baseline model.
 
     # Add seasonalities
     protocol = CalendricData(yearly_seasonality=True, weekly_seasonality=False)
-    my_model.add_protocol(protocol)
+    m.add_protocol(protocol)
 
     # Fit the model to the data
-    my_model.fit(df_gloria)
+    m.fit(df_gloria)
 
     # Predict
-    future_dates = my_model.make_future_dataframe(periods=1)
-    forecast = my_model.predict(future_dates)
+    future_dates = m.make_future_dataframe(periods=1)
+    prediction = m.predict(future_dates)
 
     # Plot
-    my_model.plot(prediction, include_legend = True)
+    m.plot(prediction, include_legend = True)
 
 
 .. image:: pics/external_regressors_figure01.png
@@ -122,8 +120,13 @@ We continue to use the **Gamma distribution**, which remains well-suited for mod
 
 .. code-block:: python
 
+    # Define regressor columns
+    regressor_name = ["Rainfall_S_Piero", "Rainfall_Mangona", 
+                      "Rainfall_S_Agata", "Rainfall_Cavallina", 
+                      "Rainfall_Le_Croci"]
+
     # Set up the model
-    my_model = Gloria(
+    m = Gloria(
         model=model,
         metric_name=metric_name,
         timestamp_name=timestamp_name,
@@ -133,17 +136,17 @@ We continue to use the **Gamma distribution**, which remains well-suited for mod
 
     # Add seasonalities
     protocol = CalendricData(yearly_seasonality=True, weekly_seasonality=False)
-    my_model.add_protocol(protocol)
+    m.add_protocol(protocol)
 
     # Add regressors
     for name in regressor_name:
-        my_model.add_external_regressor(name=name, prior_scale = 5.0)
+        m.add_external_regressor(name=name, prior_scale = 5.0)
         
     # Fit the model to the data
-    my_model.fit(df_gloria)
+    m.fit(df_gloria)
 
     # Predict
-    future_dates = my_model.make_future_dataframe(periods=1)
+    future_dates = m.make_future_dataframe(periods=1)
     
     #  All external regressors must be available for both the entire historical
     # and future dataframes
@@ -154,10 +157,10 @@ We continue to use the **Gamma distribution**, which remains well-suited for mod
         df[["Date"] + regressor_name], on="Date", how="left"
     )
     
-    forecast = my_model.predict(future_dates)
+    prediction = m.predict(future_dates)
 
     # Plot
-    my_model.plot(prediction, include_legend = True)
+    m.plot(prediction, include_legend = True)
 
 
 The revised model leads to:

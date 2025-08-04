@@ -46,6 +46,7 @@
     <script src="../_static/tabs.js?v=3ee01567"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/gloria';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -438,11 +439,11 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api/gloria.Gloria.make_future_dataframe.html#gloria.Gloria.make_future_dataframe" title="gloria.Gloria.make_future_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gloria.make_future_dataframe</span></code></a>([periods, ...])</p></td>
 <td><p>Build a timestamp skeleton that extends the training horizon.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.Gloria.plot.html#gloria.Gloria.plot" title="gloria.Gloria.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gloria.plot</span></code></a>(fcst[, ax, uncertainty, xlabel, ...])</p></td>
-<td><p>Plot the forecast of a Gloria model, including trend line, predictions, and confidence intervals.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.Gloria.plot.html#gloria.Gloria.plot" title="gloria.Gloria.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gloria.plot</span></code></a>(fcst[, ax, uncertainty, ...])</p></td>
+<td><p>Plot the forecast, trend, and observed data with extensive customization options.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api/gloria.Gloria.plot_components.html#gloria.Gloria.plot_components" title="gloria.Gloria.plot_components"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gloria.plot_components</span></code></a>(fcst[, uncertainty, ...])</p></td>
-<td><p>Plot forecast components of a Gloria model using a modern Seaborn style.</p></td>
+<td><p>Plot forecast components of a Gloria model using a modern Seaborn style, with global kwargs applied to all subplots.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api/gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gloria.predict</span></code></a>([data, toml_path])</p></td>
 <td><p>Generate forecasts from a <em>fitted</em> <a class="reference internal" href="api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> model.</p></td>

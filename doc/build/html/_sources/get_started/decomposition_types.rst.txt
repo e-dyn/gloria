@@ -100,7 +100,7 @@ To illustrate additive vs. multiplicative behaviour, we take a look at a well-kn
   m.fit(data)
 
   # Plot
-  m.plot(m.predict())
+  m.plot(m.predict(), include_legend=True)
   
 The result is shown in the plot below. We can see an exponentially growing trend, nicely tracing the data average. Also, the oscillations scale with the trend as one expects from a multiplicative model.
 

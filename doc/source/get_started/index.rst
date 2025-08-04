@@ -15,5 +15,5 @@ On this page you find a series of basic tutorials that should get you up and run
    model_selection
    decomposition_types
    saturation
-   external_regressors
    calendric_data
+   external_regressors

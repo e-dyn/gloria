@@ -25,6 +25,7 @@ from pydantic import (
     Field,
     field_validator,
 )
+from scipy.optimize import minimize
 from typing_extensions import Self
 
 # Gloria
@@ -33,6 +34,7 @@ from gloria.events import Event
 from gloria.models import (
     MODEL_MAP,
     ModelInputData,
+    distance_to_scale,
     get_model_backend,
 )
 from gloria.plot import (
@@ -1704,6 +1706,8 @@ class Gloria(BaseModel):
         uncertainty: Optional[bool] = True,
         show_changepoints: Optional[bool] = False,
         include_legend: Optional[bool] = False,
+        mark_anomalies: Optional[bool] = False,
+        show_capacity: Optional[bool] = False,
         plot_kwargs: Optional[dict[str, Any]] = None,
         rcparams_kwargs: Optional[dict[str, Any]] = None,
         style_kwargs: Optional[dict[str, Any]] = None,
@@ -1716,6 +1720,8 @@ class Gloria(BaseModel):
         grid_y_kwargs: Optional[dict[str, Any]] = None,
         despine_kwargs: Optional[dict[str, Any]] = None,
         ticklabel_kwargs: Optional[dict[str, Any]] = None,
+        anomaly_kwargs: Optional[dict[str, Any]] = None,
+        capacity_kwargs: Optional[dict[str, Any]] = None,
         date_locator: Optional[Locator] = None,
         date_formatter: Optional[Formatter] = None,
     ) -> plt.Figure:
@@ -1783,6 +1789,12 @@ class Gloria(BaseModel):
             Settings for customizing tick labels (rotation, alignment,
             fontsize).
 
+        anomaly_kwargs: dict, optional
+            Styling for the anomaly data scatter plot (`sns.scatterplot`).
+
+        capacity_kwargs: dict, optional
+            Styling for the capcity line (`ax.plot`).
+
         date_locator : matplotlib.ticker.Locator, optional
             Locator for x-axis ticks. Defaults to `AutoDateLocator`.
 
@@ -1791,8 +1803,7 @@ class Gloria(BaseModel):
 
         Returns
         -------
-        :class:`matplotlib.figure.Figure`
-            The matplotlib Figure object containing the visualization.
+        None
 
         Raises
         ------
@@ -1809,14 +1820,14 @@ class Gloria(BaseModel):
         Examples
         --------
         Basic usage:
-            >>> fig = model.plot(fcst)
+            >>> model.plot(fcst)
 
         Custom scatter point styling:
-            >>> fig = model.plot(fcst, scatter_kwargs={"s": 40,
+            >>> model.plot(fcst, scatter_kwargs={"s": 40,
                                                        "color": "purple"})
 
         Specifying figure size and dpi:
-            >>> fig = model.plot(fcst, plot_kwargs={"figsize": (12, 8),
+            >>> model.plot(fcst, plot_kwargs={"figsize": (12, 8),
                                                     "dpi": 200})
         """
 
@@ -1836,6 +1847,8 @@ class Gloria(BaseModel):
         grid_y_kwargs = grid_y_kwargs or {}
         despine_kwargs = despine_kwargs or {}
         ticklabel_kwargs = ticklabel_kwargs or {}
+        anomaly_kwargs = anomaly_kwargs or {}
+        capacity_kwargs = capacity_kwargs or {}
 
         # Set default Seaborn style
         style_defaults = dict(style="whitegrid")
@@ -1985,6 +1998,128 @@ class Gloria(BaseModel):
                     if "color" in ticklabel_defaults:
                         label.set_color(ticklabel_defaults["color"])
 
+                # Apply tight layout if figure was created here
+                if not user_provided_ax:
+                    fig.tight_layout()
+
+                # Add a red scatter plot showing the anomalies if requested
+                if mark_anomalies:
+                    # Default styles for each plot element
+                    anomaly_defaults = dict(
+                        color="#ff0000",
+                        edgecolor="w",
+                        s=20,
+                        alpha=0.7,
+                        label="Anomalies",
+                        ax=ax,
+                    )
+                    anomaly_defaults.update(anomaly_kwargs)
+
+                    # Extra boolean column that is true if a data point is
+                    # outside the confidence interval
+                    fcst["is_anomaly"] = (
+                        fcst["observed_upper"] < self.history[self.metric_name]
+                    ) | (  # upper anomalies
+                        fcst["observed_lower"] > self.history[self.metric_name]
+                    )  # lower anomalies
+
+                    sns.scatterplot(
+                        x=self.history.loc[
+                            fcst["is_anomaly"], self.timestamp_name
+                        ],
+                        y=self.history.loc[
+                            fcst["is_anomaly"], self.metric_name
+                        ],
+                        **anomaly_defaults,
+                    )
+
+                # Add a line showing the capacity if requested
+                if show_capacity and self.model in {
+                    "binomial",
+                    "beta-binomial",
+                }:
+
+                    # Extract capacity-related settings
+                    fit_kwargs = self.model_extra.get("fit_kwargs", {})
+                    capacity = fit_kwargs.get("capacity")
+                    capacity_mode = fit_kwargs.get("capacity_mode")
+                    capacity_value = fit_kwargs.get("capacity_value")
+
+                    if capacity_mode == "vectorized":
+                        # Plot population directly if capacity is vectorized
+                        capacity_defaults = {
+                            "color": "grey",
+                            "linestyle": "--",
+                            "label": self.population_name,
+                        }
+                        capacity_defaults.update(capacity_kwargs)
+
+                        ax.plot(
+                            self.history[self.timestamp_name],
+                            self.history[self.population_name],
+                            **capacity_defaults,
+                        )
+
+                    elif (
+                        capacity_mode in {"constant", "factor", "scale"}
+                        or capacity is not None
+                    ):
+                        # Plot a constant or derived capacity line
+                        capacity_defaults = {
+                            "color": "grey",
+                            "linestyle": "--",
+                            "label": "capacity",
+                        }
+                        capacity_defaults.update(capacity_kwargs)
+
+                        # Determine the capacity value based on mode
+                        if capacity_mode == "scale":
+                            # Scale capacity_value to match metric scale
+                            res = minimize(
+                                lambda f: distance_to_scale(
+                                    f,
+                                    self.history[self.metric_name],
+                                    capacity_value,
+                                ),
+                                x0=1 / capacity_value,
+                                bounds=[(1, None)],
+                            )
+                            plot_value = int(
+                                np.ceil(
+                                    res.x[0]
+                                    * max(self.history[self.metric_name])
+                                )
+                            )
+
+                        elif capacity_mode == "factor":
+                            # Multiply capacity_value by max metric
+                            plot_value = capacity_value * np.ceil(
+                                max(self.history[self.metric_name])
+                            )
+
+                        else:
+                            # Use constant capacity or fallback value
+                            plot_value = capacity_value or capacity
+                            print(plot_value)
+                        # Plot the capacity line
+                        ax.plot(
+                            self.history[self.timestamp_name],
+                            [plot_value] * len(self.history),
+                            **capacity_defaults,
+                        )
+
+                elif show_capacity and self.model not in {
+                    "binomial",
+                    "beta-binomial",
+                }:
+                    # Warn user if capacity is requested for incompatible
+                    # model
+                    print(
+                        "Capacities are only considered with the binomial "
+                        "or beta-binomial model. It is therefore not an "
+                        "option to display the capacities."
+                    )
+
                 # Remove Seaborn's default legend
                 try:
                     ax.get_legend().remove()
@@ -1997,11 +2132,8 @@ class Gloria(BaseModel):
                         frameon=True, shadow=True, loc="best", fontsize=10
                     )
 
-                # Apply tight layout if figure was created here
-                if not user_provided_ax:
-                    fig.tight_layout()
-
-        return fig
+                plt.show()
+        return
 
     def plot_components(
         self: Self,
@@ -2058,8 +2190,7 @@ class Gloria(BaseModel):
 
         Returns
         -------
-        :class:`matplotlib.figure.Figure`
-            The figure object containing all component subplots.
+        None
         """
         # Third Party
         import matplotlib.pyplot as plt
@@ -2194,6 +2325,8 @@ class Gloria(BaseModel):
                     ax.set_visible(False)
 
                 fig.tight_layout()
-        return fig
+
+                plt.show()
+        return
 
     ...

@@ -42,7 +42,7 @@ To demonstrate them, we once more employ the power consumption data set, but agg
     prediction = m.predict(periods=1)
     
     # Plot the results
-    m.plot(prediction)
+    m.plot(prediction, include_legend=True)
    
 .. image:: pics/06_calendric_data_fig01.png
   :align: center
@@ -58,7 +58,7 @@ Next, we add a single holiday, namely Christmas Eve, using :meth:`~Gloria.add_ev
 
 .. code-block:: python
 
-    from gloria import Holiday
+    from gloria import Holiday, Gaussian
     
     # Add Christmas
     m.add_event(

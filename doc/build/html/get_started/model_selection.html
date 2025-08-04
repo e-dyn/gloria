@@ -264,8 +264,8 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Model Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 </ul>
 </div>
 </nav></div>
@@ -399,8 +399,8 @@
 <span class="c1"># For forecasting and setting up Gloria</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalendricData</span><span class="p">,</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
 
-<span class="c1"># Load the data</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+ <span class="c1"># Load the data</span>
+ <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/real/Open_Data_Website_Traffic.csv&quot;</span><span class="p">)</span>
 
 <span class="c1"># Convert to datetime</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">])</span>
@@ -412,34 +412,34 @@
 <span class="n">df_gloria</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
 
 <span class="c1"># Save the column names and data configurations for later usage</span>
-<span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;Socrata Sessions&quot;</span>
-<span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;Date&quot;</span>
-<span class="n">sampling_period</span> <span class="o">=</span> <span class="s2">&quot;1 d&quot;</span>
-<span class="n">n_changepoints</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;Socrata Sessions&quot;</span>
+<span class="n">timestamp_name</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span>
+<span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 d&quot;</span>
+<span class="n">n_changepoints</span><span class="o">=</span><span class="mi">3</span>
 
 <span class="c1"># Set up the model</span>
-<span class="n">my_model</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
-<span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span><span class="p">,</span>
-<span class="n">timestamp_name</span> <span class="o">=</span> <span class="n">timestamp_name</span><span class="p">,</span>
-<span class="n">sampling_period</span> <span class="o">=</span> <span class="n">sampling_period</span><span class="p">,</span>
-<span class="n">n_changepoints</span> <span class="o">=</span> <span class="n">n_changepoints</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
+<span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
+<span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+<span class="n">sampling_period</span><span class="o">=</span><span class="n">sampling_period</span><span class="p">,</span>
+<span class="n">n_changepoints</span><span class="o">=</span><span class="n">n_changepoints</span>
 <span class="p">)</span>
 
 <span class="c1"># Add seasonalities</span>
 <span class="n">protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
-    <span class="n">yearly_seasonality</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">weekly_seasonality</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">weekly_seasonality</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
-<span class="n">my_model</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
-<span class="n">my_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
 
 <span class="c1"># Predict</span>
-<span class="n">prediction</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 
 <span class="c1"># Plot</span>
-<span class="n">my_model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/model_selection_figure01.png"><img alt="model selection figure 1 - normal distribution fit" src="../_images/model_selection_figure01.png" style="width: 700px;" />
@@ -467,29 +467,29 @@
 
 <span class="c1"># Set up the model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;negative binomial&quot;</span><span class="p">,</span>
-    <span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span><span class="p">,</span>
-    <span class="n">timestamp_name</span> <span class="o">=</span> <span class="n">timestamp_name</span><span class="p">,</span>
-    <span class="n">sampling_period</span> <span class="o">=</span> <span class="n">sampling_period</span><span class="p">,</span>
-    <span class="n">n_changepoints</span> <span class="o">=</span> <span class="n">n_changepoints</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;negative binomial&quot;</span><span class="p">,</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
+    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+    <span class="n">sampling_period</span><span class="o">=</span><span class="n">sampling_period</span><span class="p">,</span>
+    <span class="n">n_changepoints</span><span class="o">=</span><span class="n">n_changepoints</span>
 <span class="p">)</span>
 
 <span class="c1"># Add seasonalities</span>
 <span class="n">protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
-    <span class="n">yearly_seasonality</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">weekly_seasonality</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">weekly_seasonality</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 
-<span class="n">my_model</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
-<span class="n">my_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
 
 <span class="c1"># Predict</span>
-<span class="n">forecast</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 
 <span class="c1"># Plot</span>
-<span class="n">my_model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">,</span> <span class="n">include_legend</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The revised model leads to:</p>
@@ -519,7 +519,7 @@
 <li><p>Is there <strong>overdispersion</strong> (variance &gt; mean)?</p></li>
 </ol>
 <p>The following decision tree helps guide model choice <a class="footnote-reference brackets" href="#f3" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>:</p>
-<a class="reference internal image-reference" href="../_images/model_selection_tree.png"><img alt="Model selection decision tree" src="../_images/model_selection_tree.png" style="width: 700px;" />
+<a class="reference internal image-reference" href="../_images/DecisionTreeData.png"><img alt="Model selection decision tree" src="../_images/DecisionTreeData.png" style="width: 700px;" />
 </a>
 <p class="rubric">Footnotes</p>
 <aside class="footnote-list brackets">
@@ -533,7 +533,7 @@
 </aside>
 <aside class="footnote brackets" id="f3" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
-<p>Figure was taken from <a class="reference external" href="https://schmettow.github.io/New_Stats/glm.html">here</a></p>
+<p>Figure inspired from <a class="reference external" href="https://schmettow.github.io/New_Stats/glm.html">here</a></p>
 </aside>
 </aside>
 </section>

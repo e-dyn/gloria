@@ -264,8 +264,8 @@
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
 </ul>
 </div>
 </nav></div>
@@ -414,7 +414,7 @@
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Plot</span>
-<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the figure below the fit reproduces the observed drop convincingly. The only visible artefact is a small jump at the event’s onset. This stems from the boxcar profile’s infinitely sharp leading edge; replacing it with a flat-top <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a> profile with <code class="docutils literal notranslate"><span class="pre">order</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> smooths the edge and removes the discontinuity.</p>
@@ -482,7 +482,7 @@
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 
 <span class="c1"># Plot</span>
-<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">dpi</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;dpi&quot;</span> <span class="p">:</span> <span class="mi">200</span> <span class="p">}</span> <span class="p">)</span>
 </pre></div>
 </div>
 <p>The fit confirms that a periodic event regressor can mimic seasonal structure in both training data and forecast. This approach is especially useful when the seasonality is too intricate to approximate with a small number of Fourier components.</p>
