@@ -1830,6 +1830,9 @@ class Gloria(BaseModel):
         if not self.is_fitted:
             raise NotFittedError()
 
+        # Copy input Data Frame
+        fcst = fcst.copy()
+
         # Initialize all kwargs to empty dicts if None
         plot_kwargs = plot_kwargs or {}
         rcparams_kwargs = rcparams_kwargs or {}
@@ -2013,19 +2016,21 @@ class Gloria(BaseModel):
 
                     # Extra boolean column that is true if a data point is
                     # outside the confidence interval
-                    fcst["is_anomaly"] = (
-                        fcst["observed_upper"] < self.history[self.metric_name]
+                    mask_history = fcst[self.timestamp_name].isin(
+                        self.history[self.timestamp_name]
+                    )
+
+                    anomaly_mask = (
+                        fcst.loc[mask_history, "observed_upper"]
+                        < self.history[self.metric_name]
                     ) | (  # upper anomalies
-                        fcst["observed_lower"] > self.history[self.metric_name]
+                        fcst.loc[mask_history, "observed_lower"]
+                        > self.history[self.metric_name]
                     )  # lower anomalies
 
                     sns.scatterplot(
-                        x=self.history.loc[
-                            fcst["is_anomaly"], self.timestamp_name
-                        ],
-                        y=self.history.loc[
-                            fcst["is_anomaly"], self.metric_name
-                        ],
+                        x=self.history.loc[anomaly_mask, self.timestamp_name],
+                        y=self.history.loc[anomaly_mask, self.metric_name],
                         **anomaly_defaults,
                     )
 

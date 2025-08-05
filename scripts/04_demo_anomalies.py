@@ -40,7 +40,6 @@ m = Gloria(
     sampling_period="1d",
     n_changepoints=0,
     interval_width=0.95,
-    trend_samples=1000,
 )
 
 # Create the protocol
@@ -53,7 +52,7 @@ m.add_protocol(calendric_protocol)
 m.fit(data_prophet)
 
 # Predict and remove actual future prediction data point
-prediction = m.predict(periods=200)
+prediction = m.predict().iloc[:-1]
 
 # Plot
 fig = m.plot(prediction, mark_anomalies=True, include_legend=True)
