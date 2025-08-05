@@ -38,6 +38,10 @@ classifiers = [
 Homepage = "https://www.e-dynamics.de/"
 
 [tool.poetry]
+include = [
+  { path = "gloria/stan_models/*.stan", format = ["sdist", "wheel"] },
+  { path = "gloria/stan_models/*.exe", format = ["sdist", "wheel"] }
+]
 
 [tool.poetry.group.dev]
 optional = true
