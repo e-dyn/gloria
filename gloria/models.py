@@ -840,7 +840,7 @@ class ModelBackendBase(ABC):
         t: np.ndarray,
         X: np.ndarray,
         interval_width: float,
-        n_samples: int,
+        trend_samples: int,
         capacity_vec: Optional[np.ndarray] = None,
     ) -> pd.DataFrame:
         """
@@ -855,7 +855,7 @@ class ModelBackendBase(ABC):
             Overall feature matrix
         interval_width : float
             Confidence interval width: Must fall in [0, 1]
-        n_samples : int
+        trend_samples : int
             Number of samples to draw from
         capacity_vec : Optional[np.ndarray], optional
             Vectorized capacity - only relevant for models 'binomial' and
@@ -894,7 +894,7 @@ class ModelBackendBase(ABC):
         # sampled parameters, it is sufficient to call this function only once
         # outside the loop
         trend_uncertainty = self.trend_uncertainty(
-            t, interval_width, n_samples
+            t, interval_width, trend_samples
         )
 
         # If we drew samples using the Laplace algorithm, self.use_laplace is
@@ -1138,7 +1138,7 @@ class ModelBackendBase(ABC):
         return k_t * t + m_t
 
     def trend_uncertainty(
-        self: Self, t: np.ndarray, interval_width: float, n_samples: int
+        self: Self, t: np.ndarray, interval_width: float, trend_samples: int
     ) -> Uncertainty:
         """
         Generates upper and lower bound estimations for the trend prediction.
@@ -1150,7 +1150,7 @@ class ModelBackendBase(ABC):
             Timestamps as integers
         interval_width : float
             Confidence interval width: Must fall in [0, 1]
-        n_samples : int
+        trend_samples : int
             Number of samples to draw from
 
         Returns
@@ -1163,7 +1163,7 @@ class ModelBackendBase(ABC):
         """
 
         # If no samples were requested, return simply zero
-        if n_samples == 0:
+        if trend_samples == 0:
             upper = np.zeros(t.shape)
             lower = np.zeros(t.shape)
             return Uncertainty(upper=upper, lower=lower)
@@ -1182,7 +1182,7 @@ class ModelBackendBase(ABC):
 
         # Randomly choose timestamps with rate changes over all samples
         bool_slope_change = (
-            np.random.uniform(size=(n_samples, T_future)) < likelihood
+            np.random.uniform(size=(trend_samples, T_future)) < likelihood
         )
         # A matrix full of rate changes drawn from the Laplace distribution
         shift_values = np.random.laplace(

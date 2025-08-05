@@ -192,7 +192,7 @@ def simple_poisson_model(stan_data: "ModelInputData") -> pd.Series:
         t=stan_data.t,
         X=stan_data.X,
         interval_width=0.8,
-        n_samples=0,
+        trend_samples=0,
     )
     return result.yhat
 

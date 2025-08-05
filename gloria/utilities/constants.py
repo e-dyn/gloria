@@ -39,7 +39,7 @@ _GLORIA_DEFAULTS = dict(
     changepoint_prior_scale=3,
     dispersion_prior_scale=3,
     interval_width=0.8,
-    uncertainty_samples=1000,
+    trend_samples=1000,
 )
 
 

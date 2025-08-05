@@ -138,7 +138,7 @@ class Gloria(BaseModel):
         Width of the uncertainty intervals provided for the prediction. It is
         used for both uncertainty intervals of the expected value (fit) as
         well as the observed values (observed). Must be in range [0,1].
-    uncertainty_samples : int, optional
+    trend_samples : int, optional
         Number of simulated draws used to estimate uncertainty intervals of the
         *trend* in prediction periods that were not included in the historical
         data. Settings this value to 0 will disable uncertainty estimation.
@@ -181,9 +181,7 @@ class Gloria(BaseModel):
     interval_width: float = Field(
         gt=0, lt=1, default=_GLORIA_DEFAULTS["interval_width"]
     )
-    uncertainty_samples: int = Field(
-        ge=0, default=_GLORIA_DEFAULTS["uncertainty_samples"]
-    )
+    trend_samples: int = Field(ge=0, default=_GLORIA_DEFAULTS["trend_samples"])
 
     @field_validator("sampling_period")
     @classmethod
@@ -1346,7 +1344,7 @@ class Gloria(BaseModel):
             t=np.asarray(data[_T_INT]),
             X=np.asarray(X),
             interval_width=self.interval_width,
-            n_samples=self.uncertainty_samples,
+            trend_samples=self.trend_samples,
             capacity_vec=capacity_vec,
         )
 

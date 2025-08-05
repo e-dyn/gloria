@@ -648,7 +648,7 @@ SIMPLE_ATTRIBUTES = [
     "changepoint_prior_scale",
     "dispersion_prior_scale",
     "interval_width",
-    "uncertainty_samples",
+    "trend_samples",
     "prior_scales",
 ]
 
