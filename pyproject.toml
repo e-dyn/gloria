@@ -1,7 +1,7 @@
 [project]
 name = "gloria"
-version = "0.1.0.dev1"
-description = "Gloria fosters a new vision of Prophet's time series forecasting."
+version = "0.1.0"
+description = "Gloria is a modern open-source framework for time series analysis and forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
     {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"}
