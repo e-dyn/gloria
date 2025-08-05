@@ -45,7 +45,7 @@ _GLORIA_DEFAULTS = dict(
 
 class FitDefaults(TypedDict):
     optimize_mode: Literal["MAP", "MLE"]
-    sample: bool
+    use_laplace: bool
     capacity: Optional[int]
     capacity_mode: Optional[str]
     capacity_value: Optional[float]
@@ -53,7 +53,7 @@ class FitDefaults(TypedDict):
 
 _FIT_DEFAULTS: FitDefaults = {
     "optimize_mode": "MAP",
-    "sample": False,
+    "use_laplace": False,
     "capacity": None,
     "capacity_mode": None,
     "capacity_value": None,

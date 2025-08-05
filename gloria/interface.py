@@ -1130,7 +1130,7 @@ class Gloria(BaseModel):
         optimize_mode : str, optional
             If ``"MAP"`` (default), the optimization step yiels the Maximum A
             Posteriori estimation, if ``"MLE"`` a Maximum Likehood estimation.
-        sample : bool, optional
+        use_laplace : bool, optional
             If ``True`` (default), the optimization is followed by a sampling
             over the Laplace approximation around the posterior mode.
         capacity : int, optional
@@ -1193,7 +1193,7 @@ class Gloria(BaseModel):
 
         self.fit_kwargs = dict(
             optimize_mode=config["optimize_mode"],
-            sample=config["sample"],
+            use_laplace=config["use_laplace"],
             capacity=config["capacity"],
             capacity_mode=config["capacity_mode"],
             capacity_value=config["capacity_value"],
@@ -1208,7 +1208,7 @@ class Gloria(BaseModel):
         self.model_backend.fit(
             input_data,
             optimize_mode=config["optimize_mode"],
-            sample=config["sample"],
+            use_laplace=config["use_laplace"],
             capacity=config["capacity"],
             capacity_mode=config["capacity_mode"],
             capacity_value=config["capacity_value"],

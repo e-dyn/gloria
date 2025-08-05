@@ -452,7 +452,7 @@ class ModelBackendBase(ABC):
         # the stan_variables() method. the '#type:ignore' let's us initialize
         # it with None
         self.stan_fit: Union[CmdStanMLE, CmdStanLaplace] = None  # type: ignore
-        self.sample = False
+        self.use_laplace = False
         self.fit_params: dict[str, Any] = dict()
 
     @abstractmethod
@@ -678,7 +678,7 @@ class ModelBackendBase(ABC):
         self: Self,
         stan_data: ModelInputData,
         optimize_mode: Literal["MAP", "MLE"],
-        sample: bool,
+        use_laplace: bool,
         capacity: Optional[int] = None,
         capacity_mode: Optional[str] = None,
         capacity_value: Optional[float] = None,
@@ -695,7 +695,7 @@ class ModelBackendBase(ABC):
         optimize_mode : Literal['MAP', 'MLE'], optional
             If 'MAP' (default), the optimization step yiels the Maximum A
             Posteriori, if 'MLE' the Maximum Likehood Estimate
-        sample : bool, optional
+        use_laplace : bool, optional
             If True (default), the optimization is followed by a sampling over
             the Laplace approximation around the posterior mode.
         capacity : int, optional
@@ -810,16 +810,16 @@ class ModelBackendBase(ABC):
                 **cast(Mapping[str, Any], optimize_args)
             )
 
-        if sample:
+        if use_laplace:
             get_logger().info("Starting Laplace sampling.")
             self.stan_fit = self.model.laplace_sample(
                 data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )
-            self.sample = True
+            self.use_laplace = True
 
         else:
             self.stan_fit = optimized_model
-            self.sample = False
+            self.use_laplace = False
 
         # Save relevant fit parameters in dictionary
         self.fit_params = {
@@ -897,9 +897,9 @@ class ModelBackendBase(ABC):
             t, interval_width, n_samples
         )
 
-        # If we drew samples using the Laplace algorithm, self.sample is True
-        # In this case we are able to get yhat uppers and lowers.
-        if self.sample:
+        # If we drew samples using the Laplace algorithm, self.use_laplace is
+        # True. In this case we are able to get yhat uppers and lowers.
+        if self.use_laplace:
             get_logger().info(
                 "Evaluate model at all samples for yhat upper "
                 "and lower bounds."

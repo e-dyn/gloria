@@ -17,7 +17,7 @@ dtype_kind = "u"
 
 [fit]
 optimize_mode = "MAP"
-sample = false
+use_laplace = true
 capacity_mode = "scale"
 capacity_value = 0.5
 
