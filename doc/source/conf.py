@@ -24,6 +24,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx_copybutton",
+    "sphinx.ext.viewcode",
+    "sphinx_design",
 ]
 
 
@@ -54,9 +56,9 @@ napoleon_use_admonition_for_examples = False
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-# html_theme_options = {
-#     "logo": {
-#         "image_light": "_static/glorialogo.png",
-#         "image_dark": "_static/glorialogo_dark.png",
-#     }
-# }
+html_theme_options = {
+    "logo": {
+        "image_light": "_static/glorialogo.png",
+        "image_dark": "_static/glorialogo.png",
+    }
+}

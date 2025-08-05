@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -46,6 +47,7 @@
     <script src="../../_static/tabs.js?v=3ee01567"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.CalendricData';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -114,8 +116,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
+    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
   
-    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -387,7 +395,7 @@
 <h1>gloria.CalendricData<a class="headerlink" href="#gloria-calendricdata" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gloria.CalendricData">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">CalendricData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdiv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holiday_prior_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holiday_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">BoxCar(width=Timedelta('1</span> <span class="pre">days</span> <span class="pre">00:00:00'))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seasonality_prior_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yearly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quarterly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monthly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weekly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daily_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.CalendricData" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">CalendricData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdiv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holiday_prior_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holiday_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">BoxCar(width=Timedelta('1</span> <span class="pre">days</span> <span class="pre">00:00:00'))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seasonality_prior_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yearly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quarterly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monthly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weekly_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daily_seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/protocols/calendric.html#CalendricData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.CalendricData" title="Link to this definition">#</a></dt>
 <dd><p>Manage calendar-driven seasonal cycles and public-holiday effects for a
 <a class="reference internal" href="gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> forecaster.</p>
 <p>The protocol contributes:</p>
@@ -487,7 +495,7 @@ enabled, overriding the setting of <code class="docutils literal notranslate"><s
 <p class="rubric">Methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.CalendricData.from_dict">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.CalendricData.from_dict" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/protocols/calendric.html#CalendricData.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.CalendricData.from_dict" title="Link to this definition">#</a></dt>
 <dd><p>Creates CalendricData protocol from a dictionary.</p>
 <p>The key-value pairs of the dictionary must correspond to the
 constructor arguments of the protocol.</p>
@@ -506,7 +514,7 @@ constructor arguments of the protocol.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.CalendricData.set_events">
-<span class="sig-name descname"><span class="pre">set_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.CalendricData.set_events" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/protocols/calendric.html#CalendricData.set_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.CalendricData.set_events" title="Link to this definition">#</a></dt>
 <dd><p>Adds all holidays for specified country and subdivision to the Gloria
 object.</p>
 <p>Only holidays whose dates fall within the span covered by
@@ -538,7 +546,7 @@ range set by <code class="docutils literal notranslate"><span class="pre">timest
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.CalendricData.set_seasonalities">
-<span class="sig-name descname"><span class="pre">set_seasonalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.CalendricData.set_seasonalities" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_seasonalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/protocols/calendric.html#CalendricData.set_seasonalities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.CalendricData.set_seasonalities" title="Link to this definition">#</a></dt>
 <dd><p>Adds yearly, quarterly, monthly, weekly, daily seasonalities to the
 Gloria object.</p>
 <p>The ruleset whether and how to add each seasonality is described in the
@@ -569,7 +577,7 @@ however, it is invoked automatically during
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.CalendricData.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gloria.CalendricData.to_dict" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/protocols/calendric.html#CalendricData.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.CalendricData.to_dict" title="Link to this definition">#</a></dt>
 <dd><p>Converts the calendric data protocol to a JSON-serializable dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

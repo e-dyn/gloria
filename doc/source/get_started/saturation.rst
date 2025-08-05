@@ -22,7 +22,7 @@ Constant Capacity
 We first restrict the data set to the initial nine days. In this range, the total number of seats is fixed at 60. As we are handling count data with an upper bound, we use the ``binomial`` model.
 
 .. code-block:: python
-    :emphasize-lines: 33
+   :emphasize-lines: 33
 
    import pandas as pd
    from gloria import Gloria, cast_series_to_kind

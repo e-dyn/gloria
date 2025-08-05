@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -46,6 +47,7 @@
     <script src="../../_static/tabs.js?v=3ee01567"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gloria.fit';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -115,8 +117,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
+    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
   
-    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -388,56 +396,55 @@
 <h1>gloria.Gloria.fit<a class="headerlink" href="#gloria-gloria-fit" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Gloria.fit">
-<span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toml_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gloria.Gloria.fit" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Gloria.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toml_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/interface.html#Gloria.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Gloria.fit" title="Link to this definition">#</a></dt>
 <dd><p>Fits the Gloria object.</p>
 <p>The fitting routine validates input data, sets up the model based on
-all input parameters, added regressors or protocols and eventually
+all input parameters, added regressors or protocols, and eventually
 calls the model backend for the actual fitting.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>pd.DataFrame</em>) – A pandas DataFrame containing timestamp and metric columns named
 according to <code class="docutils literal notranslate"><span class="pre">self.timestamp_name</span></code> and <code class="docutils literal notranslate"><span class="pre">self.metric_name</span></code>,
-respectively. If <em>external regressors</em> were added to the  model,
-the respective columns must be present as well.</p></li>
+respectively. If <em>external regressors</em> were added to the model, the
+respective columns must be present as well.</p></li>
 <li><p><strong>toml_path</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Path</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Path to an optional configuration TOML file that contains a section
-keyed by <code class="docutils literal notranslate"><span class="pre">[fit]</span></code>. If <em>None</em> (default), TOML-configuration is
+keyed by <code class="docutils literal notranslate"><span class="pre">[fit]</span></code>. If <em>None</em> (default), TOML configuration is
 skipped. TOML configuration precedes model settings saved in
 <code class="docutils literal notranslate"><span class="pre">self._config</span></code> as well as default settings.</p></li>
-<li><p><strong>optimize_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code> (default), the optimization step yiels the Maximum A
-Posteriori estimation, if <code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code> a Maximum Likehood estimation.</p></li>
-<li><p><strong>sample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the optimization is followed by a sampling
-over the Laplace approximation around the posterior mode.</p></li>
-<li><p><strong>capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – An upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models.
-Note that <code class="docutils literal notranslate"><span class="pre">capacity</span></code> must be &gt;= all values in the metric column
-of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Specifying <code class="docutils literal notranslate"><span class="pre">capacity</span></code> is
-mutually exclusive with providing a  <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and
-<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pair.</p></li>
-<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Two modes are available:
-- <code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: The capacity is the maximum of the response</p>
-<blockquote>
-<div><p>variable times <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p>
-</div></blockquote>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Additional keyword arguments to configure the model fitting:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: The capacity is optimized such that the response
-variable is distributed around the expectation value
-<span class="math notranslate nohighlight">\(N \times p\)</span> with <span class="math notranslate nohighlight">\(N=\)</span> capacity and <span class="math notranslate nohighlight">\(p=\)</span>
-<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>. This mode is the default using
-<code class="docutils literal notranslate"><span class="pre">capacity_value=0.5</span></code>.</p></li>
+<li><p><strong>optimize_mode</strong> (<cite>str</cite>, default: <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code>): If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code>, the
+optimization yields the Maximum A Posteriori estimation; if
+<code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code>, it yields a Maximum Likelihood estimation.</p></li>
+<li><p><strong>sample</strong> (<cite>bool</cite>, default: <code class="docutils literal notranslate"><span class="pre">True</span></code>): If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the
+optimization is followed by sampling over the Laplace
+approximation around the posterior mode.</p></li>
+<li><p><strong>capacity</strong> (<cite>int</cite>, optional): Upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code>
+and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models. Must be ≥ max value in the metric
+column of <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>capacity_mode</strong> (<cite>str</cite>, optional): Method used to estimate
+capacity.
+Options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: max(response) × <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: optimize capacity so response
+≈ <span class="math notranslate nohighlight">\(N \times p\)</span></p></li>
 </ul>
-</p></li>
-<li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:
-- If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be</p>
-<blockquote>
-<div><p><span class="math notranslate nohighlight">\(\ge\)</span> 1</p>
 </div></blockquote>
-<ul>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be in
-<span class="math notranslate nohighlight">\([0,1]\)</span>.</p></li>
+</li>
+<li><dl class="simple">
+<dt><strong>capacity_value</strong> (<cite>float</cite>, optional): Must be:</dt><dd><ul class="simple">
+<li><p>≥ 1 if <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code></p></li>
+<li><p>in <span class="math notranslate nohighlight">\([0, 1]\)</span> if <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;scale&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </p></li>
 <li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
-<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -451,18 +458,16 @@ variable is distributed around the expectation value
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The configuration of the fit method via its parameters is composed in
-four layers, each one overriding the previous:</p>
+<p>The configuration of the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method is composed of four layers, each one
+overriding the previous:</p>
 <ol class="arabic simple">
-<li><p><strong>Model defaults</strong> - the baseline configuration with defaults given
-above.</p></li>
-<li><p><strong>Global TOML file</strong> - key-value pairs in the <code class="docutils literal notranslate"><span class="pre">[fit]</span></code> table of the
-TOML file passed to <a class="reference internal" href="gloria.Gloria.from_toml.html#gloria.Gloria.from_toml" title="gloria.Gloria.from_toml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_toml()</span></code></a> if the current Gloria
-instance was created this way.</p></li>
-<li><p><strong>Local TOML file</strong> - key-value pairs in the <code class="docutils literal notranslate"><span class="pre">[fit]</span></code> table of the
-TOML file provided for <code class="docutils literal notranslate"><span class="pre">toml_path</span></code>.</p></li>
-<li><p><strong>Keyword overrides</strong> - additional arguments supplied directly to
-the method take highest precedence.</p></li>
+<li><p><strong>Model defaults</strong> – baseline configuration with default values.</p></li>
+<li><p><strong>Global TOML file</strong> – key-value pairs in the <code class="docutils literal notranslate"><span class="pre">[fit]</span></code> section of the TOML file
+passed to <a class="reference internal" href="gloria.Gloria.from_toml.html#gloria.Gloria.from_toml" title="gloria.Gloria.from_toml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_toml()</span></code></a>, if the instance was created that way.</p></li>
+<li><p><strong>Local TOML file</strong> – key-value pairs in the <code class="docutils literal notranslate"><span class="pre">[fit]</span></code> section of the TOML file
+provided via <code class="docutils literal notranslate"><span class="pre">toml_path</span></code>.</p></li>
+<li><p><strong>Keyword overrides</strong> – additional arguments provided via <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> take
+highest precedence.</p></li>
 </ol>
 </dd></dl>
 

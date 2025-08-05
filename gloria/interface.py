@@ -1114,7 +1114,7 @@ class Gloria(BaseModel):
         Fits the Gloria object.
 
         The fitting routine validates input data, sets up the model based on
-        all input parameters, added regressors or protocols and eventually
+        all input parameters, added regressors or protocols, and eventually
         calls the model backend for the actual fitting.
 
         Parameters
@@ -1122,40 +1122,36 @@ class Gloria(BaseModel):
         data : pd.DataFrame
             A pandas DataFrame containing timestamp and metric columns named
             according to ``self.timestamp_name`` and ``self.metric_name``,
-            respectively. If *external regressors* were added to the  model,
-            the respective columns must be present as well.
+            respectively. If *external regressors* were added to the model, the
+            respective columns must be present as well.
+
         toml_path : Optional[Union[str, Path]], optional
             Path to an optional configuration TOML file that contains a section
-            keyed by ``[fit]``. If *None* (default), TOML-configuration is
+            keyed by ``[fit]``. If *None* (default), TOML configuration is
             skipped. TOML configuration precedes model settings saved in
             ``self._config`` as well as default settings.
-        optimize_mode : str, optional
-            If ``"MAP"`` (default), the optimization step yiels the Maximum A
-            Posteriori estimation, if ``"MLE"`` a Maximum Likehood estimation.
-        sample : bool, optional
-            If ``True`` (default), the optimization is followed by a sampling
-            over the Laplace approximation around the posterior mode.
-        capacity : int, optional
-            An upper bound used for ``binomial`` and ``beta-binomial`` models.
-            Note that ``capacity`` must be >= all values in the metric column
-            of ``data``. Default is ``None``. Specifying ``capacity`` is
-            mutually exclusive with providing a  ``capacity_mode`` and
-            ``capacity_value`` pair.
-        capacity_mode : str, optional
-            A method used to estimate the capacity. Two modes are available:
-            - ``"factor"``: The capacity is the maximum of the response
-              variable times ``capacity_value``
-            - ``"scale"``: The capacity is optimized such that the response
-              variable is distributed around the expectation value
-              :math:`N \\times p` with :math:`N=` capacity and :math:`p=`
-              ``capacity_value``. This mode is the default using
-              ``capacity_value=0.5``.
-        capacity_value : float, optional
-            A value associated with the selected ``capacity_mode``:
-            - If ``capacity_mode = "factor"``, ``capacity_value`` must be
-              :math:`\\ge` 1
-            - If ``capacity_mode = "factor"``, ``capacity_value`` must be in
-              :math:`[0,1]`.
+
+        **kwargs : dict, optional
+            Additional keyword arguments to configure the model fitting:
+
+            - **optimize_mode** (`str`, default: ``"MAP"``): If ``"MAP"``, the
+              optimization yields the Maximum A Posteriori estimation; if
+              ``"MLE"``, it yields a Maximum Likelihood estimation.
+            - **sample** (`bool`, default: ``True``): If ``True``, the
+              optimization is followed by sampling over the Laplace
+              approximation around the posterior mode.
+            - **capacity** (`int`, optional): Upper bound used for ``binomial``
+              and ``beta-binomial`` models. Must be ≥ max value in the metric
+              column of ``data``.
+            - **capacity_mode** (`str`, optional): Method used to estimate
+              capacity.
+              Options:
+                - ``"factor"``: max(response) x ``capacity_value``
+                - ``"scale"``: optimize capacity so response
+                  ≈ :math:`N \\times p`
+            - **capacity_value** (`float`, optional): Must be:
+                - ≥ 1 if ``capacity_mode = "factor"``
+                - in :math:`[0, 1]` if ``capacity_mode = "scale"``
 
         Raises
         ------
@@ -1169,20 +1165,19 @@ class Gloria(BaseModel):
 
         Notes
         -----
-        The configuration of the fit method via its parameters is composed in
-        four layers, each one overriding the previous:
+        The configuration of the ``fit`` method is composed of four layers,
+        each one overriding the previous:
 
-        1. **Model defaults** - the baseline configuration with defaults given
-           above.
-        2. **Global TOML file** - key-value pairs in the ``[fit]`` table of the
-           TOML file passed to :meth:`Gloria.from_toml` if the current Gloria
-           instance was created this way.
-        3. **Local TOML file** - key-value pairs in the ``[fit]`` table of the
-           TOML file provided for ``toml_path``.
-        4. **Keyword overrides** - additional arguments supplied directly to
-           the method take highest precedence.
-
+        1. **Model defaults** - baseline configuration with default values.
+        2. **Global TOML file** - key-value pairs in the ``[fit]`` section of
+           the TOML file passed to :meth:`Gloria.from_toml`, if the instance
+           was created that way.
+        3. **Local TOML file** - key-value pairs in the ``[fit]`` section of
+           the TOML file provided via ``toml_path``.
+        4. **Keyword overrides** - additional arguments provided via
+           ``**kwargs`` take highest precedence.
         """
+
         if self.is_fitted:
             raise FittedError(
                 "Gloria object can only be fit once. Instantiate a new object."
