@@ -623,17 +623,27 @@ class ModelBackendBase(ABC):
         # Optimize initial parameters
         res = minimize(trend_optimizer, x0=[m, k, *np.zeros(stan_data.S)])
 
+        # Extract parameters
+        m, k, delta = res.x[0], res.x[1], res.x[2:]
+
         # Restrict parameters to allowed range
-        m = min(max(res.x[0], 0), 1)
         k = min(max(res.x[1], -0.5), 0.5)
+        if m < 0:
+            k_old = k
+            k = k + m / stan_data.t_change[0]
+            m = 0
+            delta[0] = delta[0] + (k_old - k)
+        elif m > 0:
+            k_old = k
+            k = k + (m - 1) / stan_data.t_change[0]
+            m = 1
+            delta[0] = delta[0] + (k_old - k)
 
         # Return initial parameters. Beta is left as zero. It can be
         # additionally pre-fitted using the pre-optimize flag in the interface
         # fit method. In that case the model backend fit method will use a
         # MAP estimate.
-        return ModelParams(
-            m=m, k=k, delta=np.array(res.x[2:]), beta=np.zeros(stan_data.K)
-        )
+        return ModelParams(m=m, k=k, delta=delta, beta=np.zeros(stan_data.K))
 
     def estimate_variance(
         self: Self, stan_data: ModelInputData, trend_params: ModelParams
@@ -663,8 +673,10 @@ class ModelBackendBase(ABC):
         trend_arg, _ = self.predict_regression(
             stan_data.t, stan_data.X, trend_params.dict()
         )
+
         # 2. Apply the inverse link
         trend_linked = self.link_pair.inverse(trend_arg)
+
         # 3. Get the expectation value
         trend = self.yhat_func(trend_linked)
 

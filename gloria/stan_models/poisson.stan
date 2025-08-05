@@ -103,9 +103,3 @@ model {
     linked_scale * beta                      // Denormalized regression coefficients
   );
 }
-
-generated quantities {
-  real print_offset = linked_offset;
-  real print_scale = linked_scale;
-  vector[K] print_f = f_beta;
-}

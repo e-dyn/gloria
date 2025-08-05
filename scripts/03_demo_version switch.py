@@ -65,22 +65,22 @@ m = Gloria(
 m.add_seasonality("weekly", "7 d", 3)
 
 # Create the event profile to model step function
-event = BoxCar(width="300d")
+profile = BoxCar(width="300d")
 
 # Add event at release of 2.10
 m.add_event(
     name="210 release",
     regressor_type="SingleEvent",
-    event=event,
-    t_start="2024-11-20",
+    profile=profile,
+    t_anchor="2024-11-20",
 )
 
 # Add event at release of 2.11
 m.add_event(
     name="211 release",
     regressor_type="SingleEvent",
-    event=event,
-    t_start="2025-03-27",
+    profile=profile,
+    t_anchor="2025-03-27",
 )
 
 # Fit the model to the data
