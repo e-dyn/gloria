@@ -178,7 +178,7 @@ def model_from_toml(
 ACCEPTED_PARS = {
     "fit": (
         "optimize_mode",
-        "sample",
+        "use_laplace",
         "capacity",
         "capacity_mode",
         "capacity_value",

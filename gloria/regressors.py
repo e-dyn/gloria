@@ -20,7 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Self
 
 # Gloria
-from gloria.events import Event
+from gloria.profiles import Profile
 
 # Inhouse Packages
 from gloria.utilities.constants import _DELIM
@@ -434,8 +434,8 @@ class EventRegressor(Regressor):
     A base class used to create a regressor based on an event
     """
 
-    # Each EventRegressor must be associated with exactly one event
-    event: Event
+    # Each EventRegressor must be associated with exactly one profile
+    profile: Profile
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -448,14 +448,14 @@ class EventRegressor(Regressor):
         """
         # Parent class converts basic fields
         regressor_dict = super().to_dict()
-        # Additionally convert the event
-        regressor_dict["event"] = self.event.to_dict()
+        # Additionally convert the profile
+        regressor_dict["profile"] = self.profile.to_dict()
         return regressor_dict
 
     @abstractmethod
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculates the fraction of overall events within the timestamp range
+        Calculates the fraction of overall profiles within the timestamp range
         """
         pass
 
@@ -474,20 +474,20 @@ class SingleEvent(EventRegressor):
         A descriptive, unique name to identify the regressor.
     prior_scale : float
         Parameter modulating the strength of the regressors. Larger values
-        allow the model to fit larger a larger impact of the event, smaller
+        allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
-    event : Event
-        The event that occurs at ``t_start``. Allowed event types are described
-        in the :ref:`ref-events` section.
-    t_start : :class:`pandas.Timestamp` | str
-        The timestamp at which ``event`` occurs. The exact meaning of
-        ``t_start`` depends on the implementation details of the underlying
-        ``event``, but typically refers to its mode.
+    profile : Profile
+        The profile that occurs at ``t_anchor``. Allowed profile types are
+        described in the :ref:`ref-profiles` section.
+    t_anchor : :class:`pandas.Timestamp` | str
+        The timestamp at which ``profile`` occurs. The exact meaning of
+        ``t_anchor`` depends on the implementation details of the underlying
+        ``profile``, but typically refers to its mode.
 
     """
 
-    # Single timestamp at which the event occurs
-    t_start: Timestamp
+    # Single timestamp at which the profile occurs
+    t_anchor: Timestamp
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
@@ -502,7 +502,7 @@ class SingleEvent(EventRegressor):
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
         # Convert additional fields
-        regressor_dict["t_start"] = str(self.t_start)
+        regressor_dict["t_anchor"] = str(self.t_anchor)
         return regressor_dict
 
     @classmethod
@@ -525,13 +525,15 @@ class SingleEvent(EventRegressor):
         """
 
         # Convert non-built-in types
-        regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
-        regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
+        regressor_dict["t_anchor"] = pd.Timestamp(regressor_dict["t_anchor"])
+        regressor_dict["profile"] = Profile.from_dict(
+            regressor_dict["profile"]
+        )
         return cls(**regressor_dict)
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculate fraction of overall events occurring within a timerange.
+        Calculate fraction of overall profiles occurring within a timerange.
 
         Parameters
         ----------
@@ -541,11 +543,11 @@ class SingleEvent(EventRegressor):
         Returns
         -------
         impact : float
-            Fraction of overall events occurring between minimum and maximum
+            Fraction of overall profiles occurring between minimum and maximum
             date of ``t``.
 
         """
-        impact = float(t.min() <= self.t_start <= t.max())
+        impact = float(t.min() <= self.t_anchor <= t.max())
         return impact
 
     def make_feature(
@@ -575,11 +577,11 @@ class SingleEvent(EventRegressor):
 
         # First construct column name
         column = (
-            f"{self._regressor_type}{_DELIM}{self.event._event_type}"
+            f"{self._regressor_type}{_DELIM}{self.profile._profile_type}"
             f"{_DELIM}{self.name}"
         )
         # Create the feature matrix
-        X = pd.DataFrame({column: self.event.generate(t, self.t_start)})
+        X = pd.DataFrame({column: self.profile.generate(t, self.t_anchor)})
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
         return X, prior_scales
@@ -599,19 +601,19 @@ class IntermittentEvent(EventRegressor):
         A descriptive, unique name to identify the regressor.
     prior_scale : float
         Parameter modulating the strength of the regressors. Larger values
-        allow the model to fit larger a larger impact of the event, smaller
+        allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
-    event : Event
-        The event that occurs at ``t_start``. Allowed event types are described
-        in the :ref:`ref-events` section.
+    profile : Profile
+        The profile that occurs at ``t_anchor``. Allowed profile types are
+        described in the :ref:`ref-profiles` section.
     t_list : list[:class:`pandas.Timestamp`] | list[str]
-        A list of timestamps at which ``event`` occurs. The exact meaning of
+        A list of timestamps at which ``profile`` occurs. The exact meaning of
         each timestamp in the list depends on implementation details of the
-        underlying ``event``, but typically refers to its mode.
+        underlying ``profile``, but typically refers to its mode.
 
     """
 
-    # A list of timestamps at which the base events occur.
+    # A list of timestamps at which the base profiles occur.
     t_list: list[Timestamp] = []
 
     def to_dict(self: Self) -> dict[str, Any]:
@@ -652,7 +654,9 @@ class IntermittentEvent(EventRegressor):
         """
 
         # Convert non-built-in
-        regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
+        regressor_dict["profile"] = Profile.from_dict(
+            regressor_dict["profile"]
+        )
         # As t_list is optional, check if it is present
         if "t_list" in regressor_dict:
             try:
@@ -668,7 +672,7 @@ class IntermittentEvent(EventRegressor):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculate fraction of overall events occurring within a timerange.
+        Calculate fraction of overall profiles occurring within a timerange.
 
         Parameters
         ----------
@@ -678,12 +682,12 @@ class IntermittentEvent(EventRegressor):
         Returns
         -------
         impact : float
-            Fraction of overall events occurring between minimum and maximum
+            Fraction of overall profiles occurring between minimum and maximum
             date of ``t``.
 
         """
-        # In case no event is in the list, return zero to signal that no event
-        # will be fitted
+        # In case no profile is in the list, return zero to signal that no
+        # profile will be fitted
         if len(self.t_list) == 0:
             return 0.0
         # Count instances in t_list that are within the timestamp range
@@ -716,23 +720,23 @@ class IntermittentEvent(EventRegressor):
             A map for ``feature matrix column name`` → ``prior_scale``.
         """
 
-        # Drop index to ensure t aligns with all_events
+        # Drop index to ensure t aligns with all_profiles
         t = t.reset_index(drop=True)
 
         # First construct column name
         column = (
-            f"{self._regressor_type}{_DELIM}{self.event._event_type}"
+            f"{self._regressor_type}{_DELIM}{self.profile._profile_type}"
             f"{_DELIM}{self.name}"
         )
 
-        # Loop through all start times in t_list, and accumulate the events
-        all_events = pd.Series(0, index=range(t.shape[0]))
+        # Loop through all start times in t_list, and accumulate the profiles
+        all_profiles = pd.Series(0, index=range(t.shape[0]))
 
-        for t_start in self.t_list:
-            all_events += self.event.generate(t, t_start)
+        for t_anchor in self.t_list:
+            all_profiles += self.profile.generate(t, t_anchor)
 
         # Create the feature matrix
-        X = pd.DataFrame({column: all_events})
+        X = pd.DataFrame({column: all_profiles})
 
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
@@ -753,22 +757,22 @@ class PeriodicEvent(SingleEvent):
         A descriptive, unique name to identify the regressor.
     prior_scale : float
         Parameter modulating the strength of the regressors. Larger values
-        allow the model to fit larger a larger impact of the event, smaller
+        allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
-    event : Event
-        The event that periodically occurs. Allowed event types are described
-        in the :ref:`ref-events` section.
-    t_start : :class:`pandas.Timestamp`
-        An arbitrary timestamp at which ``event`` occurs. The event will be
+    profile : Profile
+        The profile that periodically occurs. Allowed profile types are
+        described in the :ref:`ref-profiles` section.
+    t_anchor : :class:`pandas.Timestamp`
+        An arbitrary timestamp at which ``profile`` occurs. The profile will be
         repeated forwards and backwards in time every ``period``. The exact
-        meaning of ``t_start`` depends on the implementation details of the
-        underlying ``event``, but typically refers to its mode.
+        meaning of ``t_anchor`` depends on the implementation details of the
+        underlying ``profile``, but typically refers to its mode.
     period : :class:`pandas.Timedelta`
         Periodicity of the periodic event regressor.
 
     """
 
-    # The periodicity of the base event
+    # The periodicity of the base profile
     period: pd.Timedelta
 
     def to_dict(self: Self) -> dict[str, Any]:
@@ -808,9 +812,11 @@ class PeriodicEvent(SingleEvent):
             ``regressor_dict``.
         """
         # Convert non-built-in fields
-        regressor_dict["t_start"] = pd.Timestamp(regressor_dict["t_start"])
+        regressor_dict["t_anchor"] = pd.Timestamp(regressor_dict["t_anchor"])
         regressor_dict["period"] = pd.Timedelta(regressor_dict["period"])
-        regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
+        regressor_dict["profile"] = Profile.from_dict(
+            regressor_dict["profile"]
+        )
         return cls(**regressor_dict)
 
     def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
@@ -829,21 +835,21 @@ class PeriodicEvent(SingleEvent):
             A list of timestamps of period starts.
 
         """
-        # Calculate number of periods with respect to t_start necessary to
+        # Calculate number of periods with respect to t_anchor necessary to
         # cover the entire given timestamp range.
         n_margin = 2
-        n_min = (t.min() - self.t_start) // self.period - n_margin
-        n_max = (t.max() - self.t_start) // self.period + n_margin
+        n_min = (t.min() - self.t_anchor) // self.period - n_margin
+        n_max = (t.max() - self.t_anchor) // self.period + n_margin
 
-        # Generate list of event start times
+        # Generate list of profile start times
         t_list = [
-            self.t_start + n * self.period for n in range(n_min, n_max + 1)
+            self.t_anchor + n * self.period for n in range(n_min, n_max + 1)
         ]
         return t_list
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculate fraction of overall events occurring within a timerange.
+        Calculate fraction of overall profiles occurring within a timerange.
 
         Parameters
         ----------
@@ -853,16 +859,16 @@ class PeriodicEvent(SingleEvent):
         Returns
         -------
         impact : float
-            Fraction of overall events occurring between minimum and maximum
+            Fraction of overall profiles occurring between minimum and maximum
             date of ``t``.
 
         """
 
-        # Generate list of event start times
+        # Generate list of profile start times
         t_list = self.get_t_list(t)
 
-        # In case no event is in the list, return zero to signal that no event
-        # will be fitted
+        # In case no profile is in the list, return zero to signal that no
+        # profile will be fitted
         if len(t_list) == 0:
             return 0.0
 
@@ -896,25 +902,25 @@ class PeriodicEvent(SingleEvent):
             A map for ``feature matrix column name`` → ``prior_scale``.
         """
 
-        # Drop index to ensure t aligns with all_events
+        # Drop index to ensure t aligns with all_profiles
         t = t.reset_index(drop=True)
 
         # First construct column name
         column = (
-            f"{self._regressor_type}{_DELIM}{self.event._event_type}"
+            f"{self._regressor_type}{_DELIM}{self.profile._profile_type}"
             f"{_DELIM}{self.name}"
         )
 
-        # Generate list of event start times
+        # Generate list of profile start times
         t_list = self.get_t_list(t)
 
-        # Loop through all start times in t_list, and accumulate the events
-        all_events = pd.Series(0, index=range(t.shape[0]))
-        for t_start in t_list:
-            all_events += self.event.generate(t, t_start)
+        # Loop through all start times in t_list, and accumulate the profiles
+        all_profiles = pd.Series(0, index=range(t.shape[0]))
+        for t_anchor in t_list:
+            all_profiles += self.profile.generate(t, t_anchor)
 
         # Create the feature matrix
-        X = pd.DataFrame({column: all_events})
+        X = pd.DataFrame({column: all_profiles})
         # Prepare prior_scales
         prior_scales = {column: self.prior_scale}
         return X, prior_scales
