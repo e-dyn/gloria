@@ -1,0 +1,660 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Model Selection &#8212; Gloria 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=63867087"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/model_selection';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Decomposition Types" href="decomposition_types.html" />
+    <link rel="prev" title="Events" href="events.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Getting Started</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Model Selection</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+</tbody>
+</table>
+</div>
+<section id="model-selection">
+<h1>Model Selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h1>
+<p>Choosing the right statistical model is a key step in time series analysis. Different datasets come with different distributional characteristics - some are continuous, others are discrete; some are symmetric, others skewed or bounded. Gloria supports a range of probabilistic models to allow flexible, context-aware fitting and forecasting.</p>
+<p>By default, Gloria uses the <strong>Normal distribution</strong>. This is suitable for many common use cases involving continuous data with symmetric noise. However, depending on the <strong>data type</strong> (e.g., counts, proportions, durations) and the <strong>behavior</strong> of the series (e.g., skewness, overdispersion, boundedness), more specialized models may yield significantly better results.</p>
+<p>This section shows how model selection can improve both the <strong>numerical performance</strong> and the <strong>interpretability</strong> of your forecasts. We illustrate this using count data and the <strong>Negative Binomial</strong> model, but the same principle applies across a variety of models available in Gloria.</p>
+<p>Here’s a <strong>quick reference</strong>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>Mathematical Characteristics</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">...</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Gaussian</p></td>
+<td><p>Continuous, symmetric, unbounded; mean = location, variance = spread</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Gamma</p></td>
+<td><p>Continuous, positive-only; right-skewed; controlled by shape and rate</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;gamma&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>ExGaussian</p></td>
+<td><p>Convolution of Normal and Exponential; skewed with heavy tail</p></td>
+<td><p>not available</p></td>
+</tr>
+<tr class="row-odd"><td><p>Beta</p></td>
+<td><p>Continuous on (0, 1); flexible shape; bounded and normalized</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;beta&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Poisson</p></td>
+<td><p>Discrete, positive integers; mean = variance (equidispersion)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;poisson&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Neg. Binomial</p></td>
+<td><p>Discrete, positive integers; variance &gt; mean (overdispersion)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;negative</span> <span class="pre">binomial&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Binomial</p></td>
+<td><p>Discrete; bounded between 0 and n; fixed number of trials</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;binomial&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Beta-Binomial</p></td>
+<td><p>Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;beta-binomial&quot;</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The last column in this table refers to the value you have to set for the <code class="docutils literal notranslate"><span class="pre">model</span></code> argument in the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> constructor.</p>
+<p>The goal is always the same: choose the distribution that best reflects your data’s constraints and variability.</p>
+<section id="baseline-fit-with-default-model">
+<h2>Baseline Fit with Default Model<a class="headerlink" href="#baseline-fit-with-default-model" title="Link to this heading">#</a></h2>
+<p>We are going to use daily data showing the website traffic of data.lacity.org and geohub.lacity.org <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The underlying CSV file contains several columns, including a timestamp column called <code class="docutils literal notranslate"><span class="pre">Date</span></code>, metric columns such as <code class="docutils literal notranslate"><span class="pre">Users</span></code>, <code class="docutils literal notranslate"><span class="pre">Sessions</span></code>, and <code class="docutils literal notranslate"><span class="pre">Bounce</span> <span class="pre">Rate</span></code> for both websites, as well as an aggregated column representing the combined user count across both platforms.</p>
+<p>In the first bit of code, we load the data and convert the <code class="docutils literal notranslate"><span class="pre">Date</span></code> to proper datetime objects. Due to some irregularities and missing entries at the beginning of the time series, we restrict the dataset to observations starting from 2017.</p>
+<p>We first model the data using Gloria’s default settings. By default, Gloria assumes a Normal distribution, which models symmetric noise around the mean and does not impose constraints on predicted values.</p>
+<p>Based on prior analysis of the series, we assume the following:</p>
+<ul class="simple">
+<li><p>There are three changepoints in the trend component, reflecting structural shifts in user behavior.</p></li>
+<li><p>The data exhibits weekly and yearly seasonality, likely driven by usage habits and calendar effects.</p></li>
+<li><p>We aim to forecast 30 days into the future.</p></li>
+</ul>
+<p>This configuration allows us to explore the fit of the default model under realistic assumptions about periodicity and long-term trend changes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="c1"># For loading and processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="c1"># For forecasting and setting up Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalendricData</span><span class="p">,</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
+
+<span class="c1"># Load the data</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Open_Data_Website_Traffic.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="c1"># Convert to datetime</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">])</span>
+
+<span class="c1"># Restrict data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;2017-01-01&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Sort data by Date</span>
+<span class="n">data_gloria</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+
+<span class="c1"># Save the column names and data configurations for later usage</span>
+<span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;Socrata Sessions&quot;</span>
+<span class="n">timestamp_name</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span>
+<span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 d&quot;</span>
+<span class="n">n_changepoints</span><span class="o">=</span><span class="mi">3</span>
+
+<span class="c1"># Set up the model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
+<span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
+<span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+<span class="n">sampling_period</span><span class="o">=</span><span class="n">sampling_period</span><span class="p">,</span>
+<span class="n">n_changepoints</span><span class="o">=</span><span class="n">n_changepoints</span>
+<span class="p">)</span>
+
+<span class="c1"># Add seasonalities</span>
+<span class="n">protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">weekly_seasonality</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+
+<span class="c1"># Fit the model to the data</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_gloria</span><span class="p">)</span>
+
+<span class="c1"># Predict</span>
+<span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="c1"># Plot</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/model_selection_figure01.png"><img alt="model selection figure 1 - normal distribution fit" src="../_images/model_selection_figure01.png" style="width: 700px;" />
+</a>
+<p>Although a fit and forecast are produced that formally meet the chosen model’s requirements, the result is not well-suited for this type of data and leads to several shortcomings:</p>
+<ul class="simple">
+<li><p>Predicted values may be non-integer or even negative, which is not meaningful for count data. Since the observed values are discrete and strictly non-negative, this leads to interpretational problems.</p></li>
+<li><p>The Normal model assumes symmetric noise around the mean, but count data are naturally asymmetric due to the lower bound at zero. As a result, the model fails to reflect the skewness present in the data.</p></li>
+<li><p>This symmetry assumption often results in unrealistically narrow confidence intervals, particularly on the lower end where the model would allow for values below zero—something impossible in reality.</p></li>
+</ul>
+<p>In short, although a Normal model may yield a mathematically valid fit, its structural assumptions are misaligned with the data’s properties, which leads to both quantitative inaccuracies and qualitative misinterpretation.</p>
+</section>
+<section id="improved-fit-with-suitable-model-negative-binomial">
+<h2>Improved Fit with Suitable Model: Negative Binomial<a class="headerlink" href="#improved-fit-with-suitable-model-negative-binomial" title="Link to this heading">#</a></h2>
+<p>To better model count data with high variability, we switch to the <em>Negative Binomial</em> distribution by setting <code class="docutils literal notranslate"><span class="pre">model=&quot;negative</span> <span class="pre">binomial&quot;</span></code> in the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> constructor. This model is particularly well suited for count data with overdispersion, as it includes a flexible dispersion parameter that allows the variance to deviate from the mean.</p>
+<p>More importantly, it meets two essential requirements often seen in real-world count data:</p>
+<ul class="simple">
+<li><p>It enforces a natural lower bound at zero, ensuring that predicted values are non-negative <a class="footnote-reference brackets" href="#f2" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p></li>
+<li><p>It operates on discrete (integer) values, rather than continuous ones.</p></li>
+</ul>
+<p>This makes the Negative Binomial model an appropriate choice for modeling data that consist of positive integer values.</p>
+<p>Since data is often read from CSV files as floating-point numbers, we first need to convert the relevant column to an unsigned integer type. Gloria provides the utility function <a class="reference internal" href="../api/api/gloria.cast_series_to_kind.html#gloria.cast_series_to_kind" title="gloria.cast_series_to_kind"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cast_series_to_kind()</span></code></a> for this purpose:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cast data to uint64</span>
+<span class="n">data_gloria</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data_gloria</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set up the model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;negative binomial&quot;</span><span class="p">,</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
+    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+    <span class="n">sampling_period</span><span class="o">=</span><span class="n">sampling_period</span><span class="p">,</span>
+    <span class="n">n_changepoints</span><span class="o">=</span><span class="n">n_changepoints</span>
+<span class="p">)</span>
+
+<span class="c1"># Add seasonalities</span>
+<span class="n">protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">weekly_seasonality</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+
+<span class="c1"># Fit the model to the data</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_gloria</span><span class="p">)</span>
+
+<span class="c1"># Predict</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="c1"># Plot</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The revised model leads to:</p>
+<ul class="simple">
+<li><p>Realistic predictions (non-negative integers)</p></li>
+<li><p>More accurate reflection of data spread</p></li>
+<li><p>Asymmetric confidence intervals, capturing extreme days</p></li>
+<li><p>Better overall interpretability</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/model_selection_figure02.png"><img alt="model selection figure 2 - negative binomial distribution fit" src="../_images/model_selection_figure02.png" style="width: 700px;" />
+</a>
+<p class="rubric">Summary</p>
+<p>Different data types require different assumptions. Gloria provides a range of built-in probabilistic models to support modeling:</p>
+<ul class="simple">
+<li><p>Continuous, positive, bounded, and skewed values</p></li>
+<li><p>Discrete counts or proportions</p></li>
+<li><p>Overdispersed or irregular patterns</p></li>
+</ul>
+<p>When the default Normal model does not align with your data characteristics, consider switching to a more suitable distribution. This small change can lead to more meaningful forecasts and reduce interpretational pitfalls.</p>
+</section>
+<section id="detailed-model-selection-logic">
+<h2>Detailed Model Selection Logic<a class="headerlink" href="#detailed-model-selection-logic" title="Link to this heading">#</a></h2>
+<p>Choosing the correct distribution depends on:</p>
+<ol class="arabic simple">
+<li><p>Is the outcome <strong>continuous</strong> or <strong>discrete</strong>?</p></li>
+<li><p>Are there <strong>natural bounds</strong> (e.g. zero, one, or upper limits)?</p></li>
+<li><p>Is there <strong>overdispersion</strong> (variance &gt; mean)?</p></li>
+</ol>
+<p>The following decision tree helps guide model choice <a class="footnote-reference brackets" href="#f3" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>:</p>
+<a class="reference internal image-reference" href="../_images/DecisionTreeData.png"><img alt="Model selection decision tree" src="../_images/DecisionTreeData.png" style="width: 700px;" />
+</a>
+<p class="rubric">Footnotes</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>The data are available through <a class="reference external" href="https://data.lacity.org/api/views/d4kt-8j3n/rows.csv?accessType=DOWNLOAD">Data.gov</a>.</p>
+</aside>
+<aside class="footnote brackets" id="f2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>See also the <a class="reference external" href="https://github.com/benkambs/gloria-betatest/blob/main/scripts/03_demo_version%20switch.py">/scripts/03_demo_version switch.py</a> example.</p>
+</aside>
+<aside class="footnote brackets" id="f3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Figure inspired from <a class="reference external" href="https://schmettow.github.io/New_Stats/glm.html">here</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="events.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Events</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="decomposition_types.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Decomposition Types</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#baseline-fit-with-default-model">Baseline Fit with Default Model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#improved-fit-with-suitable-model-negative-binomial">Improved Fit with Suitable Model: Negative Binomial</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detailed-model-selection-logic">Detailed Model Selection Logic</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

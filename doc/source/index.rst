@@ -90,7 +90,7 @@ Built for Professionals
 Get involved
 .............
 
-GLORIA is Open Source and thrives through your ideas, usage, and feedback.  
+Gloria is Open Source and thrives through your ideas, usage, and feedback.  
 Try it, contribute, or just explore:
 
 - 🛠️ `GitHub Repository <https://github.com/e-dyn/gloria>`__

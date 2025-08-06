@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gloria.utilities.configuration &#8212; Gloria 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=63867087"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/gloria/utilities/configuration';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../get_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../get_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">gloria.utilities.configuration</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for gloria.utilities.configuration</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2025 e-dynamics GmbH and affiliates</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the MIT license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains classes to manage Gloria configurations as well as their</span>
+<span class="sd">serialization and deserialization</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">### --- Module Imports --- ###</span>
+<span class="c1"># Standard Library</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Collection</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Third Party</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tomli</span>
+
+<span class="c1"># Conditional import of Gloria for static type checking. Otherwise Gloria is</span>
+<span class="c1"># forward-declared as &#39;Gloria&#39; to avoid circular imports</span>
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
+
+<span class="c1"># Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria.protocols.protocol_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_protocol_map</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria.utilities.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+
+<span class="c1">### --- Class and Function Definitions --- ###</span>
+<div class="viewcode-block" id="model_from_toml">
+<a class="viewcode-back" href="../../../api/api/gloria.model_from_toml.html#gloria.model_from_toml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">model_from_toml</span><span class="p">(</span>
+    <span class="n">toml_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">ignore</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Gloria&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Instantiate and configure a Gloria object from a TOML configuration file.</span>
+
+<span class="sd">    The TOML file is expected to have the following top-level tables /</span>
+<span class="sd">    arrays-of-tables (all are optional except ``[model]``):</span>
+
+<span class="sd">    * ``[model]`` - keyword arguments passed directly to the :class:`Gloria`</span>
+<span class="sd">      constructor.</span>
+<span class="sd">    * ``[[external_regressors]]`` - one table per regressor; each is forwarded</span>
+<span class="sd">      to :meth:`~Gloria.add_external_regressor`.</span>
+<span class="sd">    * ``[[seasonalities]]`` - one table per seasonality; each is</span>
+<span class="sd">      forwarded to :meth:`~Gloria.add_seasonality`.</span>
+<span class="sd">    * ``[[events]]`` - one table per event; each is forwarded to</span>
+<span class="sd">      :meth:`~Gloria.add_event`.</span>
+<span class="sd">    * ``[[protocols]]`` - one table per protocol. Each table **must** contain a</span>
+<span class="sd">      ``type`` key that maps to a protocol class name; the remaining keys are</span>
+<span class="sd">      passed to that class before calling :meth:`~Gloria.add_protocol`.</span>
+
+<span class="sd">    Defaults as defined in :class:`Gloria` constructor or respective methods</span>
+<span class="sd">    are used for all keys not provided in the TOML file. ``kwargs`` can be used</span>
+<span class="sd">    to overwrite keys found in the ``[model]`` table.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    toml_path : Union[str, Path]</span>
+<span class="sd">        Path to the TOML file containing the model specification.</span>
+<span class="sd">    ignore : Union[Collection[str],str], optional</span>
+<span class="sd">        Which top-level sections of the file to skip. Valid values are</span>
+<span class="sd">        ``&quot;external_regressors&quot;``, ``&quot;seasonalities&quot;``, ``&quot;events&quot;``, and</span>
+<span class="sd">        ``&quot;protocols&quot;``. The special value ``&quot;all&quot;`` suppresses every optional</span>
+<span class="sd">        section. May be given as a single string or any iterable of strings.</span>
+<span class="sd">    **kwargs : dict[str, Any]</span>
+<span class="sd">        Keyword arguments that override or extend the ``[model]`` table. Only</span>
+<span class="sd">        keys that are valid fields of Gloria (i.e. that appear in</span>
+<span class="sd">        Gloria.model_fields) are retained; others are silently dropped.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Gloria</span>
+<span class="sd">        A fully initialized Gloria instance.</span>
+
+
+<span class="sd">    .. seealso::</span>
+
+<span class="sd">        :meth:`~Gloria.from_toml`</span>
+<span class="sd">            An alias</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Precedence order for :class:`Gloria` constructor arguments from highest to</span>
+<span class="sd">    lowest is:</span>
+
+<span class="sd">    1. Values supplied via ``kwargs``</span>
+<span class="sd">    2. Values found in the TOML ``[model]`` table</span>
+<span class="sd">    3. Gloria&#39;s own defaults</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Make sure ignore is a set</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="p">{</span><span class="n">ignore</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ignore</span><span class="p">)</span>
+
+    <span class="c1"># Extend set by all possible attributes if &#39;all&#39; in ignore</span>
+    <span class="k">if</span> <span class="s2">&quot;all&quot;</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ignore</span><span class="p">)</span> <span class="o">|</span> <span class="p">{</span>
+            <span class="s2">&quot;external_regressors&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;seasonalities&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;events&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;protocols&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Load configuration file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">toml_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tomli</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1"># Gloria</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
+
+    <span class="c1"># Remove keys from kwargs and config that are no valid Gloria fields</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">model_fields</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="s2">&quot;model&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Model table missing from TOML configuration file.&quot;</span><span class="p">)</span>
+
+    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">model_fields</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Give precedence to individial settings in kwargs</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">model_config</span> <span class="o">|</span> <span class="n">kwargs</span>
+
+    <span class="c1"># Create Gloria model</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span><span class="o">**</span><span class="n">model_config</span><span class="p">)</span>
+
+    <span class="c1"># Add external regressors</span>
+    <span class="k">if</span> <span class="s2">&quot;external_regressors&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">er</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;external_regressors&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">add_external_regressor</span><span class="p">(</span><span class="o">**</span><span class="n">er</span><span class="p">)</span>
+
+    <span class="c1"># Add seasonalities</span>
+    <span class="k">if</span> <span class="s2">&quot;seasonalities&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">season</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;seasonalities&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="o">**</span><span class="n">season</span><span class="p">)</span>
+
+    <span class="c1"># Add events</span>
+    <span class="k">if</span> <span class="s2">&quot;events&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="c1"># Create and add the protocol with the remaining configurations</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="o">**</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="c1"># Add protocols</span>
+    <span class="k">if</span> <span class="s2">&quot;protocols&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;protocols&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="c1"># Get protocol class using the &#39;type&#39; key in of the protocol config</span>
+            <span class="n">ProtocolClass</span> <span class="o">=</span> <span class="n">get_protocol_map</span><span class="p">()[</span><span class="n">protocol</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)]</span>
+            <span class="c1"># Create and add the protocol with the remaining configurations</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ProtocolClass</span><span class="p">(</span><span class="o">**</span><span class="n">protocol</span><span class="p">))</span>
+
+    <span class="c1"># Update model&#39;s config with fit, predict, and load_data tables</span>
+    <span class="n">fit_config</span> <span class="o">=</span> <span class="n">filter_config_parameter</span><span class="p">(</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">()))</span>
+    <span class="n">predict_config</span> <span class="o">=</span> <span class="n">filter_config_parameter</span><span class="p">(</span>
+        <span class="s2">&quot;predict&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="n">load_config</span> <span class="o">=</span> <span class="n">filter_config_parameter</span><span class="p">(</span>
+        <span class="s2">&quot;load_data&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;load_data&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+    <span class="p">)</span>
+
+    <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;fit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;fit&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">fit_config</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;predict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;predict&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">predict_config</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;load_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;load_data&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">load_config</span>
+
+    <span class="k">return</span> <span class="n">m</span></div>
+
+
+
+<span class="n">ACCEPTED_PARS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;fit&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;optimize_mode&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;use_laplace&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;capacity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;capacity_mode&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;capacity_value&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;predict&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;periods&quot;</span><span class="p">,</span> <span class="s2">&quot;include_history&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;load_data&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;dtype_kind&quot;</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_config_parameter</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the subset of configuration options that are valid for</span>
+<span class="sd">    ``Gloria.fit`` or ``Gloria.predict`` methods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method : str</span>
+<span class="sd">        Name of the ``Gloria`` method whose accepted parameters should be</span>
+<span class="sd">        included.</span>
+<span class="sd">    config : dict[str, Any]</span>
+<span class="sd">        Arbitrary keyword arguments intended for ``Gloria``. Keys that do not</span>
+<span class="sd">        appear in the target method`s signature are silently discarded.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If *method* is not exactly ``&#39;fit&#39;`` or ``&#39;predict&#39;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, Any]</span>
+<span class="sd">        A filtered copy of *config* containing only the parameters that the</span>
+<span class="sd">        specified ``Gloria`` method accepts.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; cfg = {</span>
+<span class="sd">    ...     &#39;sample&#39;: True,</span>
+<span class="sd">    ...     &#39;optimize_method&#39;: &#39;MLE&#39;,</span>
+<span class="sd">    ...     &#39;the_answer&#39;: 42,  # not an accepted parameter</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; filter_config_parameter(&#39;predict&#39;, cfg)</span>
+<span class="sd">    {&#39;sample&#39;: True, &#39;optimize_method&#39;: &#39;MLE&#39;}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Validate method input</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;fit&quot;</span><span class="p">,</span> <span class="s2">&quot;predict&quot;</span><span class="p">,</span> <span class="s2">&quot;load_data&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Parameter &#39;method&#39; must be either &#39;fit&#39;, &#39;predict&#39;, &#39;load_data&#39;.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Get available input parameters for the method</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ACCEPTED_PARS</span><span class="p">[</span><span class="n">method</span><span class="p">]}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">assemble_config</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;Gloria&quot;</span><span class="p">,</span>
+    <span class="n">toml_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build the effective configuration dictionary for ``Gloria.fit`` or</span>
+<span class="sd">    ``Gloria.predict`` or ``load_data``.</span>
+
+<span class="sd">    The final configuration is composed in three layers, each one overriding</span>
+<span class="sd">    the previous:</span>
+
+<span class="sd">    1. **Model defaults** - the baseline stored in ``model._config[method]``.</span>
+<span class="sd">    2. **TOML file** - if *toml_path* is given, key-value pairs from the file</span>
+<span class="sd">       are merged into the baseline.</span>
+<span class="sd">    3. **Keyword overrides** - additional arguments supplied directly to</span>
+<span class="sd">       ``assemble_config`` via *kwargs* take highest precedence.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method : str</span>
+<span class="sd">        Name of the ``Gloria`` method the configuration is intended for.</span>
+<span class="sd">    model : &quot;Gloria&quot;</span>
+<span class="sd">        Instance whose internal default configuration should be taken as</span>
+<span class="sd">        baseline.</span>
+<span class="sd">    toml_path : Optional[Union[str, Path]], optional</span>
+<span class="sd">        Path to a TOML file that contains configuration sections keyed by the</span>
+<span class="sd">        *method* name. If *None*, this layer is skipped. The default is None.</span>
+<span class="sd">    **kwargs : dict[str, Any]</span>
+<span class="sd">        Arbitrary keyword arguments that override earlier layers. Unsupported</span>
+<span class="sd">        keys are ignored silently.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, Any]</span>
+<span class="sd">        The fully assembled configuration dictionary that can be passed</span>
+<span class="sd">        directly to the desired ``Gloria`` method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Baseline with internal model configurations, if available.</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+
+    <span class="c1"># 1. Update with TOML config</span>
+    <span class="k">if</span> <span class="n">toml_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Load configuration file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">toml_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">toml_config</span> <span class="o">=</span> <span class="n">tomli</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="c1"># Get method table of config file</span>
+        <span class="n">toml_config</span> <span class="o">=</span> <span class="n">toml_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+
+        <span class="c1"># Overwrite config with keys in TOML config</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="o">|</span> <span class="n">toml_config</span>
+
+    <span class="c1"># 2. Update with kwarg config</span>
+
+    <span class="c1"># Overwrite config with keys in TOML config</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="o">|</span> <span class="n">kwargs</span>
+
+    <span class="c1"># Remove keys that have no corresponding arguments in the method</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">filter_config_parameter</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

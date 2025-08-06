@@ -1120,16 +1120,14 @@ class Gloria(BaseModel):
             according to ``self.timestamp_name`` and ``self.metric_name``,
             respectively. If *external regressors* were added to the model, the
             respective columns must be present as well.
-
         toml_path : Optional[Union[str, Path]], optional
             Path to an optional configuration TOML file that contains a section
             keyed by ``[fit]``. If *None* (default), TOML configuration is
             skipped. TOML configuration precedes model settings saved in
             ``self._config`` as well as default settings.
-
         optimize_mode : str, optional
-            If ``"MAP"`` (default), the optimization step yiels the Maximum A
-            Posteriori estimation, if ``"MLE"`` a Maximum Likehood estimation.
+            If ``"MAP"`` (default), the optimization step yields the Maximum A
+            Posteriori estimation, if ``"MLE"`` a Maximum likehood estimation.
         use_laplace : bool, optional
             If ``True`` (default), the optimization is followed by a sampling
             over the Laplace approximation around the posterior mode.
@@ -1141,6 +1139,7 @@ class Gloria(BaseModel):
             ``capacity_value`` pair.
         capacity_mode : str, optional
             A method used to estimate the capacity. Two modes are available:
+
             - ``"factor"``: The capacity is the maximum of the response
               variable times ``capacity_value``
             - ``"scale"``: The capacity is optimized such that the response
@@ -1150,6 +1149,7 @@ class Gloria(BaseModel):
               ``capacity_value=0.5``.
         capacity_value : float, optional
             A value associated with the selected ``capacity_mode``:
+
             - If ``capacity_mode = "factor"``, ``capacity_value`` must be
               :math:`\\ge` 1
             - If ``capacity_mode = "scale"``, ``capacity_value`` must be in

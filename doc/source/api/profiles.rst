@@ -1,7 +1,7 @@
 .. _ref-profiles:
 
-Events
-======
+Profiles
+========
 
 .. currentmodule:: gloria
 

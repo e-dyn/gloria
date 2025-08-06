@@ -59,7 +59,7 @@ html_static_path = ["_static"]
 html_theme_options = {
     "logo": {
         "image_light": "_static/glorialogo.png",
-        "image_dark": "_static/glorialogo.png",
+        "image_dark": "_static/glorialogo_white.png",
     },
     "navigation_with_keys": True,
     "icon_links": [
