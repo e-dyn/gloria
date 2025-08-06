@@ -380,12 +380,11 @@
 </div>
 <section id="installing-gloria">
 <h2>Installing Gloria<a class="headerlink" href="#installing-gloria" title="Link to this heading">#</a></h2>
-<p>Gloria resides in the public GitHub repository <code class="docutils literal notranslate"><span class="pre">https://github.com/e-dyn/gloria</span></code>.</p>
 <p>We recommend to install Gloria into a dedicated <a class="reference external" href="https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments">virtual environment</a>. Once the environment is created and activated use <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install gloria</span>
 </pre></div>
 </div>
-<p>to clone and install the package in one step. To verify it is correctly installed, run the following command:</p>
+<p>to install the package. To verify it is correctly installed, run the following command:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; pip show gloria</span>
 <span class="go">Name: gloria</span>
 <span class="go">Version: 0.1.0</span>
@@ -412,7 +411,22 @@
 <span class="go">&gt;&gt;&gt; Gloria()</span>
 </pre></div>
 </div>
-<p>Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. Once this is finished you are all set. You should now be able to use gloria inside your python applications.</p>
+<p>Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. You shoul see an output in your your console similar to the following</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; 12:45:37 - gloria - INFO - Cannot find CmdStan version 2.36.0. Installing now.</span>
+<span class="go">&gt;&gt;&gt; CmdStan install directory: path\to\site-packages\gloria\stan_models</span>
+<span class="go">&gt;&gt;&gt; 12:45:37 - cmdstanpy - INFO - Add C++ toolchain to $PATH: C:\Users\thatsyou\.cmdstan\RTools40</span>
+<span class="go">&gt;&gt;&gt; Installing CmdStan version: 2.36.0</span>
+<span class="go">&gt;&gt;&gt; Downloading CmdStan version 2.36.0</span>
+<span class="go">&gt;&gt;&gt; Download successful, file: C:\Users\thatsyou\AppData\Local\Temp\tmpzjwnmxh2</span>
+<span class="go">&gt;&gt;&gt; Extracting distribution</span>
+<span class="go">&gt;&gt;&gt; Unpacked download as cmdstan-2.36.0</span>
+<span class="go">&gt;&gt;&gt; Building version cmdstan-2.36.0, may take several minutes, depending on your system.</span>
+<span class="go">&gt;&gt;&gt; Installed cmdstan-2.36.0</span>
+<span class="go">&gt;&gt;&gt; Test model compilation</span>
+<span class="go">&gt;&gt;&gt; 12:50:31 - gloria - INFO - CmdStan successfully installed.</span>
+</pre></div>
+</div>
+<p>Once this is finished you are all set. You should now be able to use gloria inside your python applications.</p>
 <p class="rubric">Footnotes</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="f1" role="doc-footnote">
