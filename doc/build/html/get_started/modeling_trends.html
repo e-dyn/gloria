@@ -137,13 +137,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -246,13 +239,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -393,7 +379,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span> <span class="c1"># For plotting</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/AEP_hourly.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;Datetime&quot;</span>
@@ -478,7 +465,7 @@
 </section>
 <section id="adjust-the-prior-scale">
 <h2>Adjust the Prior Scale<a class="headerlink" href="#adjust-the-prior-scale" title="Link to this heading">#</a></h2>
-<p>Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten <code class="docutils literal notranslate"><span class="pre">changepoint_prior_scale</span></code>. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use <code class="docutils literal notranslate"><span class="pre">changepoint_prior_scale</span> <span class="pre">=</span> <span class="pre">0.0025</span></code>, which is much stricter than the default value of <code class="docutils literal notranslate"><span class="pre">0.05</span></code>. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.</p>
+<p>Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten <code class="docutils literal notranslate"><span class="pre">changepoint_prior_scale</span></code>. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use <code class="docutils literal notranslate"><span class="pre">changepoint_prior_scale</span> <span class="pre">=</span> <span class="pre">2.5e-3</span></code>, which is much stricter than the default value of <code class="docutils literal notranslate"><span class="pre">0.05</span></code>. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.</p>
 <a class="reference internal image-reference" href="../_images/02_changepoints_fig05.png"><img alt="Fit of power consumption data with strict ``changepoint_prior_scale``" class="align-center" src="../_images/02_changepoints_fig05.png" style="width: 700px;" />
 </a>
 <div class="admonition tip">

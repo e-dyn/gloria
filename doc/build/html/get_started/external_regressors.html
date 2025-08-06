@@ -137,13 +137,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -246,13 +239,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -412,13 +398,14 @@
 <li><p><strong>Yearly seasonality</strong> to account for periodic hydrological patterns</p></li>
 </ul>
 <p>Let’s begin by preparing the data and fitting this baseline model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="c1"># For loading and processing</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># For loading and processing</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="c1"># For forecasting and setting up Gloria</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span><span class="p">,</span> <span class="n">CalendricData</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/real/Lake_Bilancino.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Lake_Bilancino.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Save the column names and data configurations for later usage</span>
 <span class="n">n_changepoints</span> <span class="o">=</span> <span class="mi">0</span>
@@ -428,19 +415,18 @@
 <span class="n">sampling_period</span> <span class="o">=</span> <span class="s2">&quot;1 d&quot;</span>
 
 <span class="c1"># Convert to datetime</span>
-<span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y&quot;</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y&quot;</span><span class="p">)</span>
 
 <span class="c1"># Restrict data</span>
-<span class="n">df_gloria</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span>
-    <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;2013-01-01&quot;</span><span class="p">)</span>
-    <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
-    <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">regressor_name</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-    <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+<span class="n">data_gloria</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;2013-01-01&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
 <span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
 <span class="c1"># Sort data by Date</span>
-<span class="n">df_gloria</span> <span class="o">=</span> <span class="n">df_gloria</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
+<span class="n">data_gloria</span> <span class="o">=</span> <span class="n">data_gloria</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">)</span>
 
 <span class="c1"># Set up the model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
@@ -456,7 +442,7 @@
 <span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
-<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_gloria</span><span class="p">)</span>
 
 <span class="c1"># Predict</span>
 <span class="n">future_dates</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -482,10 +468,37 @@
 <p>Although the lake’s inflow and outflow (<cite>Flow_Rate</cite>) is a key driver of water level changes, this variable is itself influenced by upstream precipitation. By including rainfall data from multiple hydrological zones as regressors, we provide Gloria with <strong>causal context</strong> that improves its ability to <strong>explain and forecast</strong> future changes in lake level.</p>
 <p>It is crucial that the external regressor data are available and clean for every time point in the historical dataset to ensure a reliable fit. Furthermore, for forecasting, corresponding regressor values must be known or accurately forecasted for future periods. For weather-related regressors like rainfall, this dependency is often manageable over shorter forecast horizons, where meteorological predictions are typically more reliable.</p>
 <p>We continue to use the <strong>Gamma distribution</strong>, which remains well-suited for modeling positive, skewed, and continuous quantities like lake levels. However, the model now includes a structured regressor component that helps modulate the forecast based on real-world environmental inputs.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define regressor columns</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># For loading and processing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="c1"># For forecasting and setting up Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span><span class="p">,</span> <span class="n">CalendricData</span>
+
+<span class="c1"># Load the data</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Lake_Bilancino.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="c1"># Save the column names and data configurations for later usage</span>
+<span class="n">n_changepoints</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;gamma&quot;</span>
+<span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;Flow_Rate&quot;</span>
+<span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;Date&quot;</span>
+<span class="n">sampling_period</span> <span class="o">=</span> <span class="s2">&quot;1 d&quot;</span>
+
+<span class="c1"># Define regressor columns</span>
 <span class="n">regressor_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Rainfall_S_Piero&quot;</span><span class="p">,</span> <span class="s2">&quot;Rainfall_Mangona&quot;</span><span class="p">,</span>
                   <span class="s2">&quot;Rainfall_S_Agata&quot;</span><span class="p">,</span> <span class="s2">&quot;Rainfall_Cavallina&quot;</span><span class="p">,</span>
                   <span class="s2">&quot;Rainfall_Le_Croci&quot;</span><span class="p">]</span>
+
+<span class="c1"># Convert to datetime</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y&quot;</span><span class="p">)</span>
+
+<span class="c1"># Restrict data</span>
+<span class="n">data_gloria</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span>
+    <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="s2">&quot;2013-01-01&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="s2">&quot;2015-12-31&quot;</span><span class="p">)</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">regressor_name</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="o">&amp;</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+<span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Set up the model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
@@ -505,7 +518,7 @@
     <span class="n">m</span><span class="o">.</span><span class="n">add_external_regressor</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">prior_scale</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
-<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_gloria</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_gloria</span><span class="p">)</span>
 
 <span class="c1"># Predict</span>
 <span class="n">future_dates</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -516,7 +529,7 @@
     <span class="n">regressor_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">regressor_name</span><span class="p">]</span>
 
 <span class="n">future_dates</span> <span class="o">=</span> <span class="n">future_dates</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-    <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">regressor_name</span><span class="p">],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+    <span class="n">data</span><span class="p">[[</span><span class="s2">&quot;Date&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">regressor_name</span><span class="p">],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
 <span class="p">)</span>
 
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future_dates</span><span class="p">)</span>

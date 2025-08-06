@@ -429,7 +429,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
 
 <span class="c1"># Read the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/real/AirPassengers.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AirPassengers.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
 
 <span class="c1"># Rename columns for convenience</span>
 <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>

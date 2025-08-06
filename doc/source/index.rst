@@ -22,13 +22,6 @@ Get started
    :gutter: 4
    :margin: 0 0 2 0
 
-   .. grid-item-card:: 📝 Readme
-      :link: overview
-      :link-type: doc
-
-      **What is Gloria?**  
-      A detailed introduction.
-
    .. grid-item-card:: 🚀 Get Started
       :link: get_started/index
       :link-type: doc
@@ -111,6 +104,5 @@ Table of contents
 .. toctree::
    :maxdepth: 2
 
-   overview
    get_started/index
    api/index

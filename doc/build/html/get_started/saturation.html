@@ -405,7 +405,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/real/seat_occupancy.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">220</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">220</span><span class="p">)</span>
+
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
@@ -431,10 +433,10 @@
 
 <span class="c1"># Configure capacity values</span>
 <span class="n">n_seats</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="hll">
+</span><span class="c1"># Fit the model to the data</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="n">n_seats</span><span class="p">)</span>
 
-<span class="c1"># Fit the model to the data</span>
-<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="n">n_seats</span><span class="p">)</span>
-</span>
 <span class="c1"># Predict</span>
 <span class="n">data_predict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">timestamp_name</span><span class="p">]]</span>
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_predict</span><span class="p">)</span>
@@ -455,36 +457,37 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/real/seat_occupancy.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
-<span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;occupied&quot;</span>
-<span class="hll"><span class="n">capacity_name</span> <span class="o">=</span> <span class="s2">&quot;seats&quot;</span>
-</span>
+<span class="hll"><span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;occupied&quot;</span>
+</span><span class="n">capacity_name</span> <span class="o">=</span> <span class="s2">&quot;seats&quot;</span>
+
 <span class="c1"># Convert to datetime</span>
 <span class="n">data</span><span class="p">[</span><span class="n">timestamp_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">timestamp_name</span><span class="p">])</span>
 
 <span class="c1"># Convert data type to unsigned int</span>
-<span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
-<span class="hll"><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
-</span>
+<span class="hll"><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+
 <span class="c1"># Set up the Gloria model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;binomial&quot;</span><span class="p">,</span>
     <span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
-    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
-<span class="hll">    <span class="n">capacity_name</span><span class="o">=</span><span class="s2">&quot;seats&quot;</span><span class="p">,</span>
-</span>    <span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 h&quot;</span><span class="p">,</span>
+<span class="hll">    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+</span>    <span class="n">capacity_name</span><span class="o">=</span><span class="s2">&quot;seats&quot;</span><span class="p">,</span>
+    <span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 h&quot;</span><span class="p">,</span>
     <span class="n">n_changepoints</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="p">)</span>
 
 <span class="c1"># Add observed seasonalities</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="s2">&quot;1d&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
-<span class="c1"># Fit the model to the data</span>
-<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity_mode</span><span class="o">=</span><span class="s2">&quot;vectorized&quot;</span><span class="p">)</span>
-</span>
+<span class="hll"><span class="c1"># Fit the model to the data</span>
+</span><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity_mode</span><span class="o">=</span><span class="s2">&quot;vectorized&quot;</span><span class="p">)</span>
+
 <span class="c1"># Predict</span>
 <span class="n">data_predict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">timestamp_name</span><span class="p">,</span> <span class="n">capacity_name</span><span class="p">]]</span>
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_predict</span><span class="p">)</span>

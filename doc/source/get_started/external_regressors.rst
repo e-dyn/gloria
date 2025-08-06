@@ -41,14 +41,15 @@ Let’s begin by preparing the data and fitting this baseline model.
 
 .. code-block:: python
 
-     # For loading and processing
-    import pandas as pd            
+    # For loading and processing
+    import pandas as pd
     # For forecasting and setting up Gloria
-    from gloria import Gloria, cast_series_to_kind, CalendricData  
+    from gloria import Gloria, cast_series_to_kind, CalendricData
 
     # Load the data
-    df = pd.read_csv("data/real/Lake_Bilancino.csv")
-    
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Lake_Bilancino.csv"
+    data = pd.read_csv(url)
+
     # Save the column names and data configurations for later usage
     n_changepoints = 0
     model = "gamma"
@@ -57,19 +58,18 @@ Let’s begin by preparing the data and fitting this baseline model.
     sampling_period = "1 d"
 
     # Convert to datetime
-    df["Date"] = pd.to_datetime(df["Date"], format="%d/%m/%Y")
+    data["Date"] = pd.to_datetime(data["Date"], format="%d/%m/%Y")
 
-    # Restrict data 
-    df_gloria = df[
-        (df["Date"] >= "2013-01-01")
-        & (df["Date"] <= "2015-12-31")
-        & (df[regressor_name].notna().all(axis=1))
-        & (df[metric_name].notna())
+    # Restrict data
+    data_gloria = data[
+        (data["Date"] >= "2013-01-01")
+        & (data["Date"] <= "2015-12-31")
+        & (data[metric_name].notna())
     ].reset_index(drop=True)
 
 
     # Sort data by Date
-    df_gloria = df_gloria.sort_values(by="Date")
+    data_gloria = data_gloria.sort_values(by="Date")
 
     # Set up the model
     m = Gloria(
@@ -85,7 +85,7 @@ Let’s begin by preparing the data and fitting this baseline model.
     m.add_protocol(protocol)
 
     # Fit the model to the data
-    m.fit(df_gloria)
+    m.fit(data_gloria)
 
     # Predict
     future_dates = m.make_future_dataframe(periods=1)
@@ -124,10 +124,37 @@ We continue to use the **Gamma distribution**, which remains well-suited for mod
 
 .. code-block:: python
 
+    # For loading and processing
+    import pandas as pd
+    # For forecasting and setting up Gloria
+    from gloria import Gloria, cast_series_to_kind, CalendricData
+
+    # Load the data
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Lake_Bilancino.csv"
+    data = pd.read_csv(url)
+
+    # Save the column names and data configurations for later usage
+    n_changepoints = 0
+    model = "gamma"
+    metric_name = "Flow_Rate"
+    timestamp_name = "Date"
+    sampling_period = "1 d"
+
     # Define regressor columns
-    regressor_name = ["Rainfall_S_Piero", "Rainfall_Mangona", 
-                      "Rainfall_S_Agata", "Rainfall_Cavallina", 
+    regressor_name = ["Rainfall_S_Piero", "Rainfall_Mangona",
+                      "Rainfall_S_Agata", "Rainfall_Cavallina",
                       "Rainfall_Le_Croci"]
+
+    # Convert to datetime
+    data["Date"] = pd.to_datetime(data["Date"], format="%d/%m/%Y")
+
+    # Restrict data
+    data_gloria = data[
+        (data["Date"] >= "2013-01-01")
+        & (data["Date"] <= "2015-12-31")
+        & (data[regressor_name].notna().all(axis=1))
+        & (data[metric_name].notna())
+    ].reset_index(drop=True)
 
     # Set up the model
     m = Gloria(
@@ -145,27 +172,26 @@ We continue to use the **Gamma distribution**, which remains well-suited for mod
     # Add regressors
     for name in regressor_name:
         m.add_external_regressor(name=name, prior_scale = 5.0)
-        
+
     # Fit the model to the data
-    m.fit(df_gloria)
+    m.fit(data_gloria)
 
     # Predict
     future_dates = m.make_future_dataframe(periods=1)
-    
+
     #  All external regressors must be available for both the entire historical
     # and future dataframes
     if isinstance(regressor_name, str):
         regressor_name = [regressor_name]
 
     future_dates = future_dates.merge(
-        df[["Date"] + regressor_name], on="Date", how="left"
+        data[["Date"] + regressor_name], on="Date", how="left"
     )
-    
+
     prediction = m.predict(future_dates)
 
     # Plot
     m.plot(prediction, include_legend = True)
-
 
 The revised model leads to:
 

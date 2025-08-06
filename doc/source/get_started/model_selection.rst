@@ -77,17 +77,18 @@ This configuration allows us to explore the fit of the default model under reali
     # For forecasting and setting up Gloria
     from gloria import CalendricData, Gloria, cast_series_to_kind  
 
-     # Load the data
-     df = pd.read_csv("data/real/Open_Data_Website_Traffic.csv")
+    # Load the data
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/Open_Data_Website_Traffic.csv"
+    data = pd.read_csv(url)
 
     # Convert to datetime
-    df['Date'] = pd.DatetimeIndex(df['Date'])
+    data['Date'] = pd.DatetimeIndex(data['Date'])
 
     # Restrict data 
-    df = df[df["Date"] >= "2017-01-01"].reset_index(drop=True)
+    data = data[data["Date"] >= "2017-01-01"].reset_index(drop=True)
 
     # Sort data by Date
-    df_gloria = df.sort_values(by="Date")
+    data_gloria = data.sort_values(by="Date")
 
     # Save the column names and data configurations for later usage
     metric_name="Socrata Sessions"
@@ -111,7 +112,7 @@ This configuration allows us to explore the fit of the default model under reali
     m.add_protocol(protocol)
 
     # Fit the model to the data
-    m.fit(df_gloria)
+    m.fit(data_gloria)
 
     # Predict
     prediction = m.predict(periods=30)
@@ -149,7 +150,7 @@ Since data is often read from CSV files as floating-point numbers, we first need
 .. code-block:: python
 
     # Cast data to uint64
-    df_gloria[metric_name] = cast_series_to_kind(df_gloria[metric_name], "u")
+    data_gloria[metric_name] = cast_series_to_kind(data_gloria[metric_name], "u")
 
     # Set up the model
     m = Gloria(
@@ -169,7 +170,7 @@ Since data is often read from CSV files as floating-point numbers, we first need
     m.add_protocol(protocol)
 
     # Fit the model to the data
-    m.fit(df_gloria)
+    m.fit(data_gloria)
 
     # Predict
     forecast = m.predict(periods=30)

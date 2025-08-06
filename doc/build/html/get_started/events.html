@@ -137,13 +137,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -246,13 +239,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     Getting Started
@@ -406,7 +392,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">BoxCar</span>
 
 <span class="c1"># Define the event profile</span>
-<span class="n">event</span> <span class="o">=</span> <span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>          <span class="c1"># three-day flat pulse</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>          <span class="c1"># three-day flat pulse</span>
 
 <span class="c1"># Create a Gloria model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">()</span>
@@ -415,18 +401,19 @@
 <span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
     <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;SingleEvent&quot;</span><span class="p">,</span>   <span class="c1"># choose the regressor class</span>
-    <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span>                    <span class="c1"># attach the profile</span>
-    <span class="n">t_start</span><span class="o">=</span><span class="s2">&quot;2018-07-06 9:00:00&quot;</span>    <span class="c1"># anchor time</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>                    <span class="c1"># attach the profile</span>
+    <span class="n">t_anchor</span><span class="o">=</span><span class="s2">&quot;2018-07-06 9:00:00&quot;</span>    <span class="c1"># anchor time</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method takes the profile via <code class="docutils literal notranslate"><span class="pre">event=event</span></code> and selects the regressor with <code class="docutils literal notranslate"><span class="pre">regressor_type=&quot;SingleEvent&quot;</span></code>. Any further arguments required by that regressor - in this case the anchor time <code class="docutils literal notranslate"><span class="pre">t_start</span></code> - are passed as keyword parameters.</p>
+<p>The <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method takes the profile via <code class="docutils literal notranslate"><span class="pre">event=event</span></code> and selects the regressor with <code class="docutils literal notranslate"><span class="pre">regressor_type=&quot;SingleEvent&quot;</span></code>. Any further arguments required by that regressor - in this case the anchor time <code class="docutils literal notranslate"><span class="pre">t_anchor</span></code> - are passed as keyword parameters.</p>
 <p>The following script is a full example modelling the drop in the power consumption dataset using the event we just created. Note that compared to the <a class="reference internal" href="modeling_trends.html#ref-modeling-trends"><span class="std std-ref">modeling trends</span></a> section we turned off changepoints using <code class="docutils literal notranslate"><span class="pre">n_changepoints=0</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">BoxCar</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/AEP_hourly.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;Datetime&quot;</span>
@@ -456,14 +443,14 @@
 <span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;weekly&quot;</span><span class="p">,</span> <span class="s2">&quot;7 d&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
 <span class="c1"># Create the event profile</span>
-<span class="n">event</span> <span class="o">=</span> <span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
 
 <span class="c1"># Add event to model with desired event regressor</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
     <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;SingleEvent&quot;</span><span class="p">,</span>
-    <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span>
-    <span class="n">t_start</span> <span class="o">=</span> <span class="s2">&quot;2018-07-06 9:00:00&quot;</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
+    <span class="n">t_anchor</span> <span class="o">=</span> <span class="s2">&quot;2018-07-06 9:00:00&quot;</span>
 <span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
@@ -497,7 +484,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">Gaussian</span>
 
 <span class="c1"># Load the data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/AEP_hourly.csv&quot;</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;Datetime&quot;</span>
@@ -519,20 +507,20 @@
 <span class="p">)</span>
 
 <span class="c1"># Add observed seasonalities</span>
-<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="s2">&quot;24 h&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="hll"><span class="c1"># m.add_seasonality(&quot;weekly&quot;, &quot;7 d&quot;, 2)  # &lt;-- weekly component removed</span>
-</span>
+<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="s2">&quot;24 h&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span><span class="c1"># m.add_seasonality(&quot;weekly&quot;, &quot;7 d&quot;, 2)  # &lt;-- weekly component removed</span>
+
 <span class="c1"># Create the event profile</span>
-<span class="n">event</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;18h&quot;</span><span class="p">)</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;18h&quot;</span><span class="p">)</span>
 
 <span class="c1"># Add event to model with desired event regressor</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
-<span class="hll">    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;PeriodicEvent&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- periodic event regressor</span>
-</span>    <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span>
-<span class="hll">    <span class="n">t_start</span> <span class="o">=</span> <span class="s2">&quot;2018-07-29 5:00:00&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- midpoint of weekend</span>
-</span><span class="hll">    <span class="n">period</span> <span class="o">=</span> <span class="s2">&quot;7d&quot;</span>                        <span class="c1"># &lt;-- weekly period</span>
-</span><span class="p">)</span>
+<span class="hll">    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
+</span>    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;PeriodicEvent&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- periodic event regressor</span>
+<span class="hll">    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
+</span><span class="hll">    <span class="n">t_anchor</span> <span class="o">=</span> <span class="s2">&quot;2018-07-29 5:00:00&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- midpoint of weekend</span>
+</span>    <span class="n">period</span> <span class="o">=</span> <span class="s2">&quot;7d&quot;</span>                        <span class="c1"># &lt;-- weekly period</span>
+<span class="p">)</span>
 
 <span class="c1"># Fit the model to the data</span>
 <span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>

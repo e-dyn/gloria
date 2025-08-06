@@ -17,7 +17,8 @@ In our introductory example :ref:`basic usage <ref-basic-usage>`, we deliberatel
     import matplotlib.pyplot as plt # For plotting
     
     # Load the data
-    data = pd.read_csv("data/AEP_hourly.csv")
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv"
+    data = pd.read_csv(url)
 
     # Save the column names for later usage
     timestamp_name = "Datetime"
@@ -121,7 +122,7 @@ While the last result is already more well-behaved, we see that one of the autom
 Adjust the Prior Scale
 ----------------------
 
-Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale = 0.0025``, which is much stricter than the default value of ``0.05``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
+Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale = 2.5e-3``, which is much stricter than the default value of ``0.05``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
 
 .. image:: pics/02_changepoints_fig05.png
   :align: center

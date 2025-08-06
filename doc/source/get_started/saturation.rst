@@ -31,7 +31,9 @@ We first restrict the data set to the initial nine days. In this range, the tota
    from gloria import Gloria, cast_series_to_kind
 
    # Load the data
-   data = pd.read_csv("data/real/seat_occupancy.csv").head(220)
+   url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv"
+   data = pd.read_csv(url).head(220)
+
 
    # Save the column names for later usage
    timestamp_name = "date"
@@ -90,7 +92,8 @@ Sydney surely cares for its residents and makes an effort to provide more space 
     from gloria import Gloria, cast_series_to_kind
 
     # Load the data
-    data = pd.read_csv("data/real/seat_occupancy.csv")
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv"
+    data = pd.read_csv(url)
 
     # Save the column names for later usage
     timestamp_name = "date"
