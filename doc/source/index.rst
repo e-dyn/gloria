@@ -18,7 +18,7 @@ It enhances Prophet’s GLM-based structure with advanced probabilistic modeling
 Get started
 ............
 
-.. grid:: 1 1 2 3
+.. grid:: 1 1 2 2
    :gutter: 4
    :margin: 0 0 2 0
 
