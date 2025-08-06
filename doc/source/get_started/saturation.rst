@@ -1,5 +1,8 @@
 .. _ref-saturation:
 .. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
 
 Saturation
 ==========
@@ -22,13 +25,15 @@ Constant Capacity
 We first restrict the data set to the initial nine days. In this range, the total number of seats is fixed at 60. As we are handling count data with an upper bound, we use the ``binomial`` model.
 
 .. code-block:: python
-    :emphasize-lines: 33
+   :emphasize-lines: 33
 
    import pandas as pd
    from gloria import Gloria, cast_series_to_kind
 
    # Load the data
-   data = pd.read_csv("data/real/seat_occupancy.csv").head(220)
+   url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv"
+   data = pd.read_csv(url).head(220)
+
 
    # Save the column names for later usage
    timestamp_name = "date"
@@ -78,7 +83,7 @@ Because the capacity is known exactly, we choose ``capacity_mode="constant"`` an
 Varying Capacity
 ----------------
 
-Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The ``binomial`` model with ``capacity_mode=vectorized`` is the perfect fit for this situation. While we previously had to specify a *constant* capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter ``population_name``. Note that both data frames passed to :meth:`~Gloria.fit` *and* :meth:`~Gloria.predict` must include this column:
+Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The ``binomial`` model with ``capacity_mode=vectorized`` is the perfect fit for this situation. While we previously had to specify a *constant* capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter ``capacity_name``. Note that both data frames passed to :meth:`~Gloria.fit` *and* :meth:`~Gloria.predict` must include this column:
 
 .. code-block:: python
     :emphasize-lines: 10, 17, 24, 33
@@ -87,26 +92,27 @@ Sydney surely cares for its residents and makes an effort to provide more space 
     from gloria import Gloria, cast_series_to_kind
 
     # Load the data
-    data = pd.read_csv("data/real/seat_occupancy.csv")
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv"
+    data = pd.read_csv(url)
 
     # Save the column names for later usage
     timestamp_name = "date"
     metric_name = "occupied"
-    population_name = "seats"
+    capacity_name = "seats"
 
     # Convert to datetime
     data[timestamp_name] = pd.to_datetime(data[timestamp_name])
 
     # Convert data type to unsigned int
     data[metric_name] = cast_series_to_kind(data[metric_name], "u")
-    data[population_name] = cast_series_to_kind(data[population_name], "u")
+    data[capacity_name] = cast_series_to_kind(data[capacity_name], "u")
 
     # Set up the Gloria model
     m = Gloria(
         model="binomial",
         metric_name=metric_name,
         timestamp_name=timestamp_name,
-        population_name="seats",
+        capacity_name="seats",
         sampling_period="1 h",
         n_changepoints = 5
     )
@@ -118,7 +124,7 @@ Sydney surely cares for its residents and makes an effort to provide more space 
     m.fit(data, capacity_mode="vectorized")
 
     # Predict
-    data_predict = data.loc[:,[timestamp_name, population_name]]
+    data_predict = data.loc[:,[timestamp_name, capacity_name]]
     prediction = m.predict(data_predict)
 
     # Plot
@@ -156,8 +162,8 @@ The capacities are configured via the parameters ``capacity_mode`` and ``capacit
      - The capacity is optimized such that the response variable is distributed around the expectation value :math:`N \times p` with :math:`N=` capacity and :math:`p=` ``value``. This mode is the default using ``value=0.5``
      - ``value`` must be in :math:`[0,1]`
    * - ``"vectorized"``
-     - ``value`` varies with each data point in the time series. The corresponding column ``population_name`` must be provided by the input data.
-     - ``value`` in the ``population_name`` column must not exceed the corresponding values in the metric column.
+     - ``value`` varies with each data point in the time series. The corresponding column ``capacity_name`` must be provided by the input data.
+     - ``value`` in the ``capacity_name`` column must not exceed the corresponding values in the metric column.
 
 .. rubric:: Footnotes
 

@@ -1,6 +1,10 @@
 .. _ref-calendric-data:
 
 .. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
+
 
 Calendric Data
 ==============
@@ -15,8 +19,9 @@ To demonstrate them, we once more employ the power consumption data set, but agg
     from gloria import Gloria
     
     # Load the data
-    data = pd.read_csv("data/AEP_hourly.csv")
-    
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv"
+    data = pd.read_csv(url)
+
     # Convert to datetime
     data["Datetime"] = pd.to_datetime(data["Datetime"])
     

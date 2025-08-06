@@ -1,4 +1,8 @@
+.. _ref-decomposition_types:
 .. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
 
 Decomposition Types
 ===================
@@ -63,7 +67,9 @@ To illustrate additive vs. multiplicative behaviour, we take a look at a well-kn
   from gloria import Gloria, cast_series_to_kind
 
   # Read the data
-  data = pd.read_csv("data/real/AirPassengers.csv")
+  url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AirPassengers.csv"
+  data = pd.read_csv(url)
+
 
   # Rename columns for convenience
   data.rename(

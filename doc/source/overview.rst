@@ -1,3 +1,9 @@
+.. _overview:
+.. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: index/
+
 Overview
 ========
 

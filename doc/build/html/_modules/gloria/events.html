@@ -1,0 +1,1091 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gloria.events &#8212; Gloria 0.1.0.dev1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=32272829"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/tabs.js?v=3ee01567"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/gloria/events';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.0.dev1" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0.dev1 documentation - Home"/>
+    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0.dev1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../get_started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">gloria.events</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for gloria.events</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2025 e-dynamics GmbH and affiliates</span>
+<span class="c1">#</span>
+<span class="c1"># This source code is licensed under the MIT license found in the</span>
+<span class="c1"># LICENSE file in the root directory of this source tree.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Definition of Event base class and its implementations</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">### --- Module Imports --- ###</span>
+<span class="c1"># Standard Library</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="c1"># Third Party</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseModel</span><span class="p">,</span>
+    <span class="n">ConfigDict</span><span class="p">,</span>
+    <span class="n">Field</span><span class="p">,</span>
+    <span class="n">ValidationInfo</span><span class="p">,</span>
+    <span class="n">field_validator</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+<span class="c1"># Gloria</span>
+<span class="c1">### --- Global Constants Definitions --- ###</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria.utilities.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timedelta</span>
+
+
+<span class="c1">### --- Class and Function Definitions --- ###</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for all events</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span>
+        <span class="c1"># All events will use some sort of pd.Timestamp or pd.Timedelta</span>
+        <span class="n">arbitrary_types_allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_event_type</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns name of the event class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a time series with a single instance of the event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timestamps : :class:`pandas.Series`</span>
+<span class="sd">            The input timestamps as independent variable</span>
+<span class="sd">        t_start : :class:`pandas.Timestamp`</span>
+<span class="sd">            Location of the event</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            In case the inheriting Event class did not implement the generate</span>
+<span class="sd">            method</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`pandas.Series`</span>
+<span class="sd">            The output time series including the event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the event to a serializable dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Dictionary containing the event type. All other event fields will</span>
+<span class="sd">            be added by event child classes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_type</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">event_dict</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward declaration of class method for static type checking.</span>
+<span class="sd">        See details in event_from_dict().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_for_missing_keys</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Confirms that all required fields for the requested event type are</span>
+<span class="sd">        found in the event dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_dict : dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            Raised if any keys are missing</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use sets to find the difference between event model fields and passed</span>
+        <span class="c1"># dictionary keys</span>
+        <span class="n">required_fields</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">is_required</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">missing_keys</span> <span class="o">=</span> <span class="n">required_fields</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">event_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># If any is missing, raise an error.</span>
+        <span class="k">if</span> <span class="n">missing_keys</span><span class="p">:</span>
+            <span class="n">missing_keys_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">missing_keys</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Key(s) </span><span class="si">{</span><span class="n">missing_keys_str</span><span class="si">}</span><span class="s2"> required for event of type &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; but not found in event dictionary.&quot;</span>
+            <span class="p">)</span>
+
+
+<div class="viewcode-block" id="BoxCar">
+<a class="viewcode-back" href="../../api/api/gloria.BoxCar.html#gloria.BoxCar">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BoxCar</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A BoxCar shaped event.</span>
+
+<span class="sd">    For a given time :math:`t` the event can be described by</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        f(t) = \\left\\{</span>
+<span class="sd">            \\begin{array}{ll}</span>
+<span class="sd">                1 &amp; t_0 \\le t &lt; t_0 + w \\\\</span>
+<span class="sd">                0 &amp; \\text{otherwise}</span>
+<span class="sd">            \\end{array}</span>
+<span class="sd">        \\right.</span>
+
+<span class="sd">    with ``width=w`` being a constructor parameter and ``t_start=t_0`` the</span>
+<span class="sd">    input of :meth:`~gloria.BoxCar.generate`. The following plot illustrates</span>
+<span class="sd">    the boxcar function.</span>
+
+<span class="sd">    .. image:: ../pics/example_boxcar.png</span>
+<span class="sd">      :align: center</span>
+<span class="sd">      :width: 500</span>
+<span class="sd">      :alt: Example plot of a boxcar function.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">      Setting the boxcar event&#39;s ``width`` equal to the :class:`Gloria` model&#39;s</span>
+<span class="sd">      ``sampling_period`` yields a :math:`\\delta`-shaped regressor - identical</span>
+<span class="sd">      to the holiday regressors used by</span>
+<span class="sd">      `Prophet &lt;https://facebook.github.io/prophet/&gt;`_.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    width : :class:`pandas.Timedelta` | str</span>
+<span class="sd">        Temporal width of the boxcar function given as</span>
+<span class="sd">        :class:`pandas.Timedelta` or string representing such.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">width</span><span class="p">:</span> <span class="n">Timedelta</span>
+
+<div class="viewcode-block" id="BoxCar.generate">
+<a class="viewcode-back" href="../../api/api/gloria.BoxCar.html#gloria.BoxCar.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a time series with a single boxcar event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timestamps : :class:`pandas.Series`</span>
+<span class="sd">            The input timestamps at which the boxcar event is to be evaluated.</span>
+<span class="sd">        t_start : :class:`pandas.Timestamp`</span>
+<span class="sd">            Location of the boxcar&#39;s rising edge</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`pandas.Series`</span>
+<span class="sd">            The output time series including the boxcar event with amplitude 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestamps</span> <span class="o">&gt;=</span> <span class="n">t_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">timestamps</span> <span class="o">&lt;</span> <span class="n">t_start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mask</span> <span class="o">*</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="BoxCar.to_dict">
+<a class="viewcode-back" href="../../api/api/gloria.BoxCar.html#gloria.BoxCar.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the BoxCar event to a JSON-serializable dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields including an extra</span>
+<span class="sd">            ``event_type = &quot;BoxCar&quot;`` item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Start with event type</span>
+        <span class="n">event_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># Add additional fields</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event_dict</span></div>
+
+
+<div class="viewcode-block" id="BoxCar.from_dict">
+<a class="viewcode-back" href="../../api/api/gloria.BoxCar.html#gloria.BoxCar.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a BoxCar object from a dictionary.</span>
+
+<span class="sd">        The key-value pairs of the dictionary must correspond to the</span>
+<span class="sd">        constructor arguments of the event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_dict : dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BoxCar</span>
+<span class="sd">            BoxCar object with fields from ``event_dict``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert width string to pd.Timedelta</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">event_dict</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Gaussian">
+<a class="viewcode-back" href="../../api/api/gloria.Gaussian.html#gloria.Gaussian">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Gaussian</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Gaussian shaped event with ``order`` parameter for generating flat-top</span>
+<span class="sd">    Gaussians.</span>
+
+<span class="sd">    For a given time :math:`t` the event can be described by</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        f(t) = \\exp\\left(-\\left(</span>
+<span class="sd">            \\frac{\\left(t-t_0\\right)^2}{2\\sigma^2}</span>
+<span class="sd">        \\right)^n\\right)</span>
+
+
+<span class="sd">    with ``width=sigma`` and ``order=n`` being constructor parameters as well</span>
+<span class="sd">    as ``t_start=t_0`` the input of :meth:`~gloria.Gaussian.generate`. For</span>
+<span class="sd">    :math:`n=1` the function is a simple Gaussian and for increasing :math:`n`</span>
+<span class="sd">    its maximum region increasingly flattens. The following plot illustrates</span>
+<span class="sd">    the Gaussian function for different :math:`n`.</span>
+
+<span class="sd">    .. image:: ../pics/example_gaussian.png</span>
+<span class="sd">      :align: center</span>
+<span class="sd">      :width: 500</span>
+<span class="sd">      :alt: Example plot of a Gaussian function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    width : :class:`pandas.Timedelta` | str</span>
+<span class="sd">        Temporal width of the Gaussian function given as</span>
+<span class="sd">        :class:`pandas.Timedelta` or string representing such.</span>
+<span class="sd">    order : float</span>
+<span class="sd">        Controls the flatness of the Gaussian function with ``order=1`` being a</span>
+<span class="sd">        usual Gaussian and a flat-top function for increasing ``order``. Must</span>
+<span class="sd">        be greater than 0.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">width</span><span class="p">:</span> <span class="n">Timedelta</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Gaussian.generate">
+<a class="viewcode-back" href="../../api/api/gloria.Gaussian.html#gloria.Gaussian.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a time series with a single Gaussian event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timestamps : :class:`pandas.Series`</span>
+<span class="sd">            The input timestamps at which the Gaussian event is to be</span>
+<span class="sd">            evaluated.</span>
+<span class="sd">        t_start : :class:`pandas.Timestamp`</span>
+<span class="sd">            Location of the Gaussian event&#39;s mode.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`pandas.Series`</span>
+<span class="sd">            The output time series including the Gaussian event with amplitude</span>
+<span class="sd">            1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># normalize the input timestamps</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestamps</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
+        <span class="c1"># Evaluate the Gaussian</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Gaussian.to_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Gaussian.html#gloria.Gaussian.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the Gaussian event to a JSON-serializable dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields including an extra</span>
+<span class="sd">            ``event_type = &quot;Gaussian&quot;`` item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Start with event type</span>
+        <span class="n">event_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># Add additional fields</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">return</span> <span class="n">event_dict</span></div>
+
+
+<div class="viewcode-block" id="Gaussian.from_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Gaussian.html#gloria.Gaussian.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a Gaussian object from a dictionary.</span>
+
+<span class="sd">        The key-value pairs of the dictionary must correspond to the</span>
+<span class="sd">        constructor arguments of the event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_dict : dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Gaussian</span>
+<span class="sd">            Gaussian object with fields from ``event_dict``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Convert width string to pd.Timedelta</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">event_dict</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Cauchy">
+<a class="viewcode-back" href="../../api/api/gloria.Cauchy.html#gloria.Cauchy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cauchy</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Cauchy shaped event.</span>
+
+<span class="sd">    For a given time :math:`t` the event can be described by</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        f(t) = \\frac{1}{4\\cdot \\left(t-t_0 \\right)^2 / w^2 + 1}</span>
+
+
+<span class="sd">    with ``width=w`` being a constructor parameter as well as ``t_start=t_0``</span>
+<span class="sd">    the input of :meth:`~gloria.Cauchy.generate`. The following plot</span>
+<span class="sd">    illustrates the Cauchy function.</span>
+
+<span class="sd">    .. image:: ../pics/example_cauchy.png</span>
+<span class="sd">      :align: center</span>
+<span class="sd">      :width: 500</span>
+<span class="sd">      :alt: Example plot of a Cauchy function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    width : :class:`pandas.Timedelta` | str</span>
+<span class="sd">        Temporal width of the Cauchy function given as</span>
+<span class="sd">        :class:`pandas.Timedelta` or string representing such.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">width</span><span class="p">:</span> <span class="n">Timedelta</span>
+
+<div class="viewcode-block" id="Cauchy.generate">
+<a class="viewcode-back" href="../../api/api/gloria.Cauchy.html#gloria.Cauchy.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a time series with a single Cauchy event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timestamps : :class:`pandas.Series`</span>
+<span class="sd">            The input timestamps at which the Cauchy event is to be evaluated.</span>
+<span class="sd">        t_start : :class:`pandas.Timestamp`</span>
+<span class="sd">            Location of the Cauchy event&#39;s mode.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`pandas.Series`</span>
+<span class="sd">            The output time series including the Cauchy event with amplitude 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># normalize the input timestamps</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestamps</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
+        <span class="c1"># Evaluate the Cauchy</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">t</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Cauchy.to_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Cauchy.html#gloria.Cauchy.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the Cauchy event to a JSON-serializable dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields including an extra</span>
+<span class="sd">            ``event_type = &quot;Cauchy&quot;`` item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Start with event type</span>
+        <span class="n">event_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># Add additional fields</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event_dict</span></div>
+
+
+<div class="viewcode-block" id="Cauchy.from_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Cauchy.html#gloria.Cauchy.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a Cauchy object from a dictionary.</span>
+
+<span class="sd">        The key-value pairs of the dictionary must correspond to the</span>
+<span class="sd">        constructor arguments of the event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_dict : dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Cauchy</span>
+<span class="sd">            Cauchy object with fields from ``event_dict``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert width string to pd.Timedelta</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">event_dict</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Exponential">
+<a class="viewcode-back" href="../../api/api/gloria.Exponential.html#gloria.Exponential">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Exponential</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A two-sided exponential decay shaped event.</span>
+
+<span class="sd">    For a given time :math:`t` the event can be described by</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        f(t) = \\exp\\left(</span>
+<span class="sd">            -\\log 2 \\left|\\frac{t-t_0}{w\\left(t\\right)}\\right|</span>
+<span class="sd">        \\right).</span>
+
+<span class="sd">    Here, :math:`w\\left(t\\right) = w_\\text{lead}` is the left-sided</span>
+<span class="sd">    lead-width for :math:`t&lt;t_0` and :math:`w\\left(t\\right) = w_\\text{lag}`</span>
+<span class="sd">    is the right-sided lag-width for :math:`t\\ge t_0`, set by ``lead_width``</span>
+<span class="sd">    and ``lag_width`` in the constructor, respectively. The parameter</span>
+<span class="sd">    ``t_start=t_0`` is an input of :meth:`~gloria.Exponential.generate`. The</span>
+<span class="sd">    following plot illustrates the two-sided exponential decay function.</span>
+
+<span class="sd">    .. image:: ../pics/example_exponential.png</span>
+<span class="sd">      :align: center</span>
+<span class="sd">      :width: 500</span>
+<span class="sd">      :alt: Example plot of a two-sided exponential decay function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lead_width : :class:`pandas.Timedelta` | str</span>
+<span class="sd">        Temporal left-sided lead-width of the exponential function given as</span>
+<span class="sd">        :class:`pandas.Timedelta` or string representing such.</span>
+<span class="sd">    lag_width : :class:`pandas.Timedelta` | str</span>
+<span class="sd">        Temporal right-sided lag-width of the exponential function given as</span>
+<span class="sd">        :class:`pandas.Timedelta` or string representing such.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Widths of both exponential decay wings</span>
+    <span class="n">lead_width</span><span class="p">:</span> <span class="n">Timedelta</span>
+    <span class="n">lag_width</span><span class="p">:</span> <span class="n">Timedelta</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;lead_width&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_lead_width</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">lead_width</span><span class="p">:</span> <span class="n">Timedelta</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Timedelta</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If lead width is below zero, sets to zero and warn user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lead_width</span> <span class="o">&lt;</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="c1"># Gloria</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.utilities.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+            <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Lead width of exponential decay &lt; 0 interpreted as lag decay.&quot;</span>
+                <span class="s2">&quot; Setting lead_width = 0.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">lead_width</span> <span class="o">=</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lead_width</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;lag_width&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_lag_width</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span>
+        <span class="n">lag_width</span><span class="p">:</span> <span class="n">Timedelta</span><span class="p">,</span>
+        <span class="n">other_fields</span><span class="p">:</span> <span class="n">ValidationInfo</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Timedelta</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If lag width is below zero, sets to zero and warn user. Also check</span>
+<span class="sd">        whether lag_width = lag_width = 0 and issue warning.</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lag_width</span> <span class="o">&lt;</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="c1"># Gloria</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.utilities.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+            <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Lag width of exponential decay event &lt; 0 interpreted as lead&quot;</span>
+                <span class="s2">&quot; decay. Setting lag_width = 0.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">lag_width</span> <span class="o">=</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">lag_width</span> <span class="o">==</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span>
+            <span class="n">other_fields</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;lead_width&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># Gloria</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.utilities.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+            <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Lead and lag width of exponential decay event = 0 - likely&quot;</span>
+                <span class="s2">&quot; numerical issues during fitting.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lag_width</span>
+
+<div class="viewcode-block" id="Exponential.generate">
+<a class="viewcode-back" href="../../api/api/gloria.Exponential.html#gloria.Exponential.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a time series with a single Exponential event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timestamps : :class:`pandas.Series`</span>
+<span class="sd">            The input timestamps at which the Exponential event is to be</span>
+<span class="sd">            evaluated.</span>
+<span class="sd">        t_start : :class:`pandas.Timestamp`</span>
+<span class="sd">            Location of the Exponential event&#39;s mode.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`pandas.Series`</span>
+<span class="sd">            The output time series including the Exponential event with</span>
+<span class="sd">            amplitude 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Shift the input timestamps</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timestamps</span> <span class="o">-</span> <span class="n">t_start</span>
+
+        <span class="n">mask_lead</span> <span class="o">=</span> <span class="n">timestamps</span> <span class="o">&lt;</span> <span class="n">t_start</span>
+        <span class="n">mask_lag</span> <span class="o">=</span> <span class="n">timestamps</span> <span class="o">&gt;=</span> <span class="n">t_start</span>
+
+        <span class="c1"># Create event and fill with zeros</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c1"># Add the one-sided lead exponential</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lead_width</span> <span class="o">&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">mask_lead</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lead_width</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">mask_lead</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="c1"># Add the one-sided lag exponential</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag_width</span> <span class="o">&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">mask_lag</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag_width</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">mask_lag</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">arg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="Exponential.to_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Exponential.html#gloria.Exponential.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts the Exponential event to a JSON-serializable dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields including an extra</span>
+<span class="sd">            ``event_type = &quot;Exponential&quot;`` item.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Start with event type</span>
+        <span class="n">event_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="c1"># Add additional fields</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lead_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lead_width</span><span class="p">)</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lag_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lag_width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event_dict</span></div>
+
+
+<div class="viewcode-block" id="Exponential.from_dict">
+<a class="viewcode-back" href="../../api/api/gloria.Exponential.html#gloria.Exponential.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a Exponential object from a dictionary.</span>
+
+<span class="sd">        The key-value pairs of the dictionary must correspond to the</span>
+<span class="sd">        constructor arguments of the event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_dict : dict[str, Any]</span>
+<span class="sd">            Dictionary containing all event fields</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Exponential</span>
+<span class="sd">            Exponential object with fields from ``event_dict``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert lead_width string to pd.Timedelta</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lead_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lead_width&quot;</span><span class="p">])</span>
+        <span class="c1"># Convert lag_width string to pd.Timedelta</span>
+        <span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lag_width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">event_dict</span><span class="p">[</span><span class="s2">&quot;lag_width&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">event_dict</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># A map of Event class names to actual classes</span>
+<span class="n">EVENT_MAP</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Event</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;BoxCar&quot;</span><span class="p">:</span> <span class="n">BoxCar</span><span class="p">,</span>
+    <span class="s2">&quot;Gaussian&quot;</span><span class="p">:</span> <span class="n">Gaussian</span><span class="p">,</span>
+    <span class="s2">&quot;Exponential&quot;</span><span class="p">:</span> <span class="n">Exponential</span><span class="p">,</span>
+    <span class="s2">&quot;Cauchy&quot;</span><span class="p">:</span> <span class="n">Cauchy</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">event_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Event</span><span class="p">],</span> <span class="n">event_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Identifies the appropriate event type calls its from_dict() method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event_dict : dict[str, Any]</span>
+<span class="sd">        Dictionary containing all event fields including event type.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        Is raised in case the event type stored in event_dict does not</span>
+<span class="sd">        correspond to any event class.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Event</span>
+<span class="sd">        The appropriate event constructed from the event_dict fields.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">event_dict</span> <span class="o">=</span> <span class="n">event_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Get the event type</span>
+    <span class="k">if</span> <span class="s2">&quot;event_type&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">event_dict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;The input dictionary must have the key &#39;event_type&#39;.&quot;</span><span class="p">)</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">event_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
+    <span class="c1"># Check that the event type exists</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">event_class</span> <span class="o">=</span> <span class="n">EVENT_MAP</span><span class="p">[</span><span class="n">event_type</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Event Type &#39;</span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&#39; does not exist.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="c1"># Ensure that event dictionary contains all required fields.</span>
+    <span class="n">event_class</span><span class="o">.</span><span class="n">check_for_missing_keys</span><span class="p">(</span><span class="n">event_dict</span><span class="p">)</span>
+    <span class="c1"># Call the from_dict() method of the correct event</span>
+    <span class="k">return</span> <span class="n">event_class</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">event_dict</span><span class="p">)</span>
+
+
+<span class="c1"># Add event_from_dict() as class method to the Event base class, so it can</span>
+<span class="c1"># always called as Event.from_dict(event_dict) with any dictionary as long as</span>
+<span class="c1"># it contains the event_type field.</span>
+<span class="n">Event</span><span class="o">.</span><span class="n">from_dict</span> <span class="o">=</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">event_from_dict</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Benjamin Kambs, Patrik Wollgarten.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

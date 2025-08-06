@@ -8,7 +8,7 @@
 project = "Gloria"
 copyright = "2025, Benjamin Kambs, Patrik Wollgarten"
 author = "Benjamin Kambs, Patrik Wollgarten"
-release = "0.1.0.dev1"
+release = "0.1.0"
 # Gloria
 import gloria
 
@@ -24,6 +24,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx_copybutton",
+    "sphinx.ext.viewcode",
+    "sphinx_design",
 ]
 
 
@@ -54,9 +56,31 @@ napoleon_use_admonition_for_examples = False
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
-# html_theme_options = {
-#     "logo": {
-#         "image_light": "_static/glorialogo.png",
-#         "image_dark": "_static/glorialogo_dark.png",
-#     }
-# }
+html_theme_options = {
+    "logo": {
+        "image_light": "_static/glorialogo.png",
+        "image_dark": "_static/glorialogo.png",
+    },
+    "navigation_with_keys": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/e-dyn/gloria",
+            "icon": "fab fa-github",
+        },
+    ],
+    "use_edit_page_button": False,
+    "show_prev_next": True,
+    "navbar_start": ["navbar-logo"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "primary_sidebar_end": ["sidebar-ethical-ads"],
+    "footer_start": [],
+    "footer_end": [],
+}
+
+html_show_sourcelink = False  # sicherheitshalber trotzdem setzen
+html_copy_source = False  # optional, keine .txt-Dateien erzeugen
+
+html_sidebars = {
+    "**": ["sidebar-nav-bs.html"],
+}

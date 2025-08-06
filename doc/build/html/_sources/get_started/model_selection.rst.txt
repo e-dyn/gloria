@@ -40,10 +40,10 @@ Here’s a **quick reference**:
      - ``"negative binomial"``
    * - Binomial
      - Discrete; bounded between 0 and n; fixed number of trials
-     - ``"binomial constant n"`` or ``"binomial vectorized n"``
+     - ``"binomial"``
    * - Beta-Binomial
      - Discrete; bounded like Binomial; includes variability in success probability (overdispersed Binomial)
-     - ``"beta-binomial constant n"``
+     - ``"beta-binomial"``
 
 
 The last column in this table refers to the value you have to set for the ``model`` argument in the :class:`Gloria` constructor. 
