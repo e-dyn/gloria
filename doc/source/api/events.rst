@@ -1,4 +1,4 @@
-.. _ref-events:
+.. _ref-profiles:
 
 Events
 ======

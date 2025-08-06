@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from gloria import Gloria
 
 # Gloria
-from gloria.events import BoxCar, Event
+from gloria.profiles import BoxCar, Profile
 from gloria.protocols.protocol_base import Protocol
 from gloria.regressors import IntermittentEvent
 from gloria.utilities.constants import _HOLIDAY
@@ -203,15 +203,15 @@ class Holiday(IntermittentEvent):
         holiday names.
     prior_scale : float
         Parameter modulating the strength of the regressors. Larger values
-        allow the model to fit larger a larger impact of the event, smaller
+        allow the model to fit a larger impact of the event, smaller
         values dampen the impact. Must be larger than zero.
-    event : Event
-        The event that periodically occurs. Allowed event types are described
-        in the :ref:`ref-events` section.
+    profile : Profile
+        The profile that periodically occurs. Allowed profile types are
+        described in the :ref:`ref-events` section.
     t_list : list[:class:`pandas.Timestamp`]
-        A list of timestamps at which ``event`` occurs. The exact meaning of
+        A list of timestamps at which ``profile`` occurs. The exact meaning of
         each timestamp in the list depends on implementation details of the
-        underlying ``event``, but typically refers to its mode.
+        underlying ``profile``, but typically refers to its mode.
 
         .. note::
             A user provided ``t_list`` will be ignored and overwritten with an
@@ -272,7 +272,9 @@ class Holiday(IntermittentEvent):
         # Ensure that regressor dictionary contains all required fields.
         cls.check_for_missing_keys(regressor_dict)
         # Convert non-built-in fields
-        regressor_dict["event"] = Event.from_dict(regressor_dict["event"])
+        regressor_dict["profile"] = Profile.from_dict(
+            regressor_dict["profile"]
+        )
         return cls(**regressor_dict)
 
     def get_t_list(self: Self, t: pd.Series) -> list[pd.Timestamp]:
@@ -310,7 +312,7 @@ class Holiday(IntermittentEvent):
 
     def get_impact(self: Self, t: pd.Series) -> float:
         """
-        Calculate fraction of overall events occurring within a timerange.
+        Calculate fraction of overall profiles occurring within a timerange.
 
         Parameters
         ----------
@@ -320,14 +322,14 @@ class Holiday(IntermittentEvent):
         Returns
         -------
         impact : float
-            Fraction of overall events occurring between minimum and maximum
+            Fraction of overall profiles occurring between minimum and maximum
             date of ``t``.
 
         """
         # Set list of all occurences of desired holiday
         t_list = self.get_t_list(t)
-        # In case no event is in the list, return zero to signal that no event
-        # will be fitted
+        # In case no profile is in the list, return zero to signal that no
+        # profile will be fitted
         if len(t_list) == 0:
             return 0.0
         # Count instances in t_list that are within the timestamp range
@@ -396,10 +398,10 @@ class CalendricData(Protocol):
         values allow the model to fit larger holiday impact, smaller values
         dampen the impact. Must be larger than 0. If ``None`` (default),
         the forecaster's ``event_prior_scale`` is used.
-    holiday_event : :ref:`Event <ref-events>`
-        Event object that defines the temporal shape of each holiday regressor.
-        The default is a one-day :class:`BoxCar` event replicating Prophet-
-        style holiday regressors.
+    holiday_profile : :ref:`Profile <ref-profiles>`
+        Profile object that defines the temporal shape of each holiday
+        regressor. The default is a one-day :class:`BoxCar` profile replicating
+        Prophet-style holiday regressors.
     seasonality_prior_scale : float | None
         Global strength parameter for every seasonality added by the protocol.
         Larger values permit stronger seasonal variation, smaller values dampen
@@ -457,7 +459,7 @@ class CalendricData(Protocol):
     country: Optional[str] = None
     subdiv: Optional[str] = None
     holiday_prior_scale: Optional[float] = Field(gt=0, default=None)
-    holiday_event: Event = BoxCar(width=pd.Timedelta("1d"))
+    holiday_profile: Profile = BoxCar(width=pd.Timedelta("1d"))
     seasonality_prior_scale: Optional[float] = Field(gt=0, default=None)
     yearly_seasonality: Union[bool, str, int] = "auto"
     quarterly_seasonality: Union[bool, str, int] = False
@@ -465,23 +467,23 @@ class CalendricData(Protocol):
     weekly_seasonality: Union[bool, str, int] = "auto"
     daily_seasonality: Union[bool, str, int] = "auto"
 
-    @field_validator("holiday_event", mode="before")
+    @field_validator("holiday_profile", mode="before")
     @classmethod
-    def validate_holiday_event(
-        cls: Type[Self], holiday_event: Union[Event, dict[str, Any]]
-    ) -> Event:
+    def validate_holiday_profile(
+        cls: Type[Self], holiday_profile: Union[Profile, dict[str, Any]]
+    ) -> Profile:
         """
-        In case the input event was given as a dictionary this before-validator
-        attempts to convert it to an Event.
+        In case the input profile was given as a dictionary this
+        before-validator attempts to convert it to an Profile.
         """
         try:
-            if isinstance(holiday_event, dict):
-                return Event.from_dict(holiday_event)
+            if isinstance(holiday_profile, dict):
+                return Profile.from_dict(holiday_profile)
         except Exception as e:
             raise ValueError(
-                f"Creating event from dictionary failed: {e}"
+                f"Creating profile from dictionary failed: {e}"
             ) from e
-        return holiday_event
+        return holiday_profile
 
     @field_validator(
         *(s + "_seasonality" for s in DEFAULT_SEASONALITIES.keys())
@@ -556,7 +558,7 @@ class CalendricData(Protocol):
                     name=holiday,
                     prior_scale=ps,
                     regressor_type="Holiday",
-                    event=self.holiday_event,
+                    profile=self.holiday_profile,
                     country=self.country,
                     subdiv=self.subdiv,
                 )
@@ -706,8 +708,8 @@ class CalendricData(Protocol):
             **super().to_dict(),
             # Pydantic converts fields with built-in data types
             **self.model_dump(),
-            # The holiday event is a non-standard type
-            "holiday_event": self.holiday_event.to_dict(),
+            # The holiday profile is a non-standard type
+            "holiday_profile": self.holiday_profile.to_dict(),
         }
         return protocol_dict
 

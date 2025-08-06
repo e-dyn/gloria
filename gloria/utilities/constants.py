@@ -30,7 +30,7 @@ _GLORIA_DEFAULTS = dict(
     sampling_period=pd.Timedelta("1d"),
     timestamp_name="ds",
     metric_name="y",
-    population_name="",
+    capacity_name="",
     changepoints=None,
     n_changepoints=25,
     changepoint_range=0.8,
@@ -39,13 +39,13 @@ _GLORIA_DEFAULTS = dict(
     changepoint_prior_scale=3,
     dispersion_prior_scale=3,
     interval_width=0.8,
-    uncertainty_samples=1000,
+    trend_samples=1000,
 )
 
 
 class FitDefaults(TypedDict):
     optimize_mode: Literal["MAP", "MLE"]
-    sample: bool
+    use_laplace: bool
     capacity: Optional[int]
     capacity_mode: Optional[str]
     capacity_value: Optional[float]
@@ -53,7 +53,7 @@ class FitDefaults(TypedDict):
 
 _FIT_DEFAULTS: FitDefaults = {
     "optimize_mode": "MAP",
-    "sample": False,
+    "use_laplace": False,
     "capacity": None,
     "capacity_mode": None,
     "capacity_value": None,

@@ -1,7 +1,7 @@
 [project]
 name = "gloria"
-version = "0.1.0.dev1"
-description = "Gloria fosters a new vision of Prophet's time series forecasting."
+version = "0.1.0"
+description = "Gloria is a modern open-source framework for time series analysis and forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
     {name = "Patrik Wollgarten", email = "p.wollgarten@e-dynamics.de"}
@@ -24,7 +24,7 @@ dependencies = [
     "pydata-sphinx-theme (>=0.16.1,<0.17.0)",
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -39,8 +39,13 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://www.e-dynamics.de/"
+Documentation = "https://e-dyn.github.io/gloria/"
+Repository = "https://github.com/e-dyn/gloria"
 
 [tool.poetry]
+include = [
+  { path = "gloria/stan_models/*.stan", format = ["sdist", "wheel"] }
+]
 
 [tool.poetry.group.dev]
 optional = true

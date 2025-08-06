@@ -170,7 +170,7 @@ def plot_trend_component(
             )
             interval_defaults.update(interval_kwargs)
 
-            if uncertainty and m.uncertainty_samples:
+            if uncertainty and m.trend_samples:
                 artists += [
                     ax.fill_between(
                         fcst_t,

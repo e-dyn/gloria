@@ -3,3 +3,4 @@ gloria/stan_models/cmdstan-*/
 **/logfiles/
 **/models
 demonstrations/
+dist/

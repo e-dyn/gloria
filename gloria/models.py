@@ -142,10 +142,10 @@ LINK_FUNC_MAP = {
 }
 
 
-class BinomialPopulation(BaseModel):
+class BinomialCapacity(BaseModel):
     """
     Configuration parameters used by the augment_data method of the model
-    BinomialConstantN and BetaBinomialConstantN to determine the population
+    BinomialConstantN and BetaBinomialConstantN to determine the capacity
     size.
     """
 
@@ -158,7 +158,7 @@ class BinomialPopulation(BaseModel):
         cls, value: Union[int, float], info
     ) -> Union[int, float]:
         """
-        Validates the value pass along with the population size estimation
+        Validates the value pass along with the capacity size estimation
         method.
         """
         # Safeguard if validation of mode already failed
@@ -169,19 +169,19 @@ class BinomialPopulation(BaseModel):
         if info.data["mode"] == "constant":
             if not isinstance(value, int):
                 raise ValueError(
-                    "In population mode 'constant' the population"
+                    "In capacity mode 'constant' the capacity"
                     f" value (={value}) must be an integer."
                 )
         elif info.data["mode"] == "factor":
             if value < 1:
                 raise ValueError(
-                    "In population mode 'factor' the population "
+                    "In capacity mode 'factor' the capacity "
                     f"value (={value}) must be >= 1."
                 )
         elif info.data["mode"] == "scale":
             if (value >= 1) or (value <= 0):
                 raise ValueError(
-                    "In population mode 'scale' the population "
+                    "In capacity mode 'scale' the capacity "
                     f"value (={value}) must be 0 < value < 1."
                 )
         return value
@@ -452,7 +452,7 @@ class ModelBackendBase(ABC):
         # the stan_variables() method. the '#type:ignore' let's us initialize
         # it with None
         self.stan_fit: Union[CmdStanMLE, CmdStanLaplace] = None  # type: ignore
-        self.sample = False
+        self.use_laplace = False
         self.fit_params: dict[str, Any] = dict()
 
     @abstractmethod
@@ -510,7 +510,7 @@ class ModelBackendBase(ABC):
             Raw response variable.  Shape can be any, provided it broadcasts
             with ``N`` if ``N`` is an array.
         capacity : Optional[Union[int, np.ndarray]]
-            Population size(s) for normalisation.  If ``None`` (default) no
+            Capacity size(s) for normalisation.  If ``None`` (default) no
             division is performed.  If an array is given it must have the same
             shape as ``y``.
         lower_bound : bool, optional
@@ -623,17 +623,27 @@ class ModelBackendBase(ABC):
         # Optimize initial parameters
         res = minimize(trend_optimizer, x0=[m, k, *np.zeros(stan_data.S)])
 
+        # Extract parameters
+        m, k, delta = res.x[0], res.x[1], res.x[2:]
+
         # Restrict parameters to allowed range
-        m = min(max(res.x[0], 0), 1)
         k = min(max(res.x[1], -0.5), 0.5)
+        if m < 0:
+            k_old = k
+            k = k + m / stan_data.t_change[0]
+            m = 0
+            delta[0] = delta[0] + (k_old - k)
+        elif m > 0:
+            k_old = k
+            k = k + (m - 1) / stan_data.t_change[0]
+            m = 1
+            delta[0] = delta[0] + (k_old - k)
 
         # Return initial parameters. Beta is left as zero. It can be
         # additionally pre-fitted using the pre-optimize flag in the interface
         # fit method. In that case the model backend fit method will use a
         # MAP estimate.
-        return ModelParams(
-            m=m, k=k, delta=np.array(res.x[2:]), beta=np.zeros(stan_data.K)
-        )
+        return ModelParams(m=m, k=k, delta=delta, beta=np.zeros(stan_data.K))
 
     def estimate_variance(
         self: Self, stan_data: ModelInputData, trend_params: ModelParams
@@ -663,8 +673,10 @@ class ModelBackendBase(ABC):
         trend_arg, _ = self.predict_regression(
             stan_data.t, stan_data.X, trend_params.dict()
         )
+
         # 2. Apply the inverse link
         trend_linked = self.link_pair.inverse(trend_arg)
+
         # 3. Get the expectation value
         trend = self.yhat_func(trend_linked)
 
@@ -678,7 +690,7 @@ class ModelBackendBase(ABC):
         self: Self,
         stan_data: ModelInputData,
         optimize_mode: Literal["MAP", "MLE"],
-        sample: bool,
+        use_laplace: bool,
         capacity: Optional[int] = None,
         capacity_mode: Optional[str] = None,
         capacity_value: Optional[float] = None,
@@ -695,7 +707,7 @@ class ModelBackendBase(ABC):
         optimize_mode : Literal['MAP', 'MLE'], optional
             If 'MAP' (default), the optimization step yiels the Maximum A
             Posteriori, if 'MLE' the Maximum Likehood Estimate
-        sample : bool, optional
+        use_laplace : bool, optional
             If True (default), the optimization is followed by a sampling over
             the Laplace approximation around the posterior mode.
         capacity : int, optional
@@ -810,16 +822,16 @@ class ModelBackendBase(ABC):
                 **cast(Mapping[str, Any], optimize_args)
             )
 
-        if sample:
+        if use_laplace:
             get_logger().info("Starting Laplace sampling.")
             self.stan_fit = self.model.laplace_sample(
                 data=stan_data.dict(), mode=optimized_model, jacobian=jacobian
             )
-            self.sample = True
+            self.use_laplace = True
 
         else:
             self.stan_fit = optimized_model
-            self.sample = False
+            self.use_laplace = False
 
         # Save relevant fit parameters in dictionary
         self.fit_params = {
@@ -840,7 +852,7 @@ class ModelBackendBase(ABC):
         t: np.ndarray,
         X: np.ndarray,
         interval_width: float,
-        n_samples: int,
+        trend_samples: int,
         capacity_vec: Optional[np.ndarray] = None,
     ) -> pd.DataFrame:
         """
@@ -855,7 +867,7 @@ class ModelBackendBase(ABC):
             Overall feature matrix
         interval_width : float
             Confidence interval width: Must fall in [0, 1]
-        n_samples : int
+        trend_samples : int
             Number of samples to draw from
         capacity_vec : Optional[np.ndarray], optional
             Vectorized capacity - only relevant for models 'binomial' and
@@ -894,12 +906,12 @@ class ModelBackendBase(ABC):
         # sampled parameters, it is sufficient to call this function only once
         # outside the loop
         trend_uncertainty = self.trend_uncertainty(
-            t, interval_width, n_samples
+            t, interval_width, trend_samples
         )
 
-        # If we drew samples using the Laplace algorithm, self.sample is True
-        # In this case we are able to get yhat uppers and lowers.
-        if self.sample:
+        # If we drew samples using the Laplace algorithm, self.use_laplace is
+        # True. In this case we are able to get yhat uppers and lowers.
+        if self.use_laplace:
             get_logger().info(
                 "Evaluate model at all samples for yhat upper "
                 "and lower bounds."
@@ -1138,7 +1150,7 @@ class ModelBackendBase(ABC):
         return k_t * t + m_t
 
     def trend_uncertainty(
-        self: Self, t: np.ndarray, interval_width: float, n_samples: int
+        self: Self, t: np.ndarray, interval_width: float, trend_samples: int
     ) -> Uncertainty:
         """
         Generates upper and lower bound estimations for the trend prediction.
@@ -1150,7 +1162,7 @@ class ModelBackendBase(ABC):
             Timestamps as integers
         interval_width : float
             Confidence interval width: Must fall in [0, 1]
-        n_samples : int
+        trend_samples : int
             Number of samples to draw from
 
         Returns
@@ -1163,7 +1175,7 @@ class ModelBackendBase(ABC):
         """
 
         # If no samples were requested, return simply zero
-        if n_samples == 0:
+        if trend_samples == 0:
             upper = np.zeros(t.shape)
             lower = np.zeros(t.shape)
             return Uncertainty(upper=upper, lower=lower)
@@ -1182,7 +1194,7 @@ class ModelBackendBase(ABC):
 
         # Randomly choose timestamps with rate changes over all samples
         bool_slope_change = (
-            np.random.uniform(size=(n_samples, T_future)) < likelihood
+            np.random.uniform(size=(trend_samples, T_future)) < likelihood
         )
         # A matrix full of rate changes drawn from the Laplace distribution
         shift_values = np.random.laplace(
@@ -1344,13 +1356,13 @@ class Binomial(ModelBackendBase):
 
         if not vectorized:
             # Validate capacity parameters
-            capacity_settings = BinomialPopulation.from_parameters(
+            capacity_settings = BinomialCapacity.from_parameters(
                 capacity=capacity,
                 capacity_mode=capacity_mode,
                 capacity_value=capacity_value,
             )
 
-            # Get population size depending on selected mode
+            # Get capacity size depending on selected mode
             stan_data.capacity = get_capacity(
                 y=stan_data.y,
                 mode=capacity_settings.mode,
@@ -1924,13 +1936,13 @@ class BetaBinomial(ModelBackendBase):
 
         if not vectorized:
             # Validate capacity parameters
-            capacity_settings = BinomialPopulation.from_parameters(
+            capacity_settings = BinomialCapacity.from_parameters(
                 capacity=capacity,
                 capacity_mode=capacity_mode,
                 capacity_value=capacity_value,
             )
 
-            # Get population size depending on selected mode
+            # Get capacity size depending on selected mode
             stan_data.capacity = get_capacity(
                 y=stan_data.y,
                 mode=capacity_settings.mode,
