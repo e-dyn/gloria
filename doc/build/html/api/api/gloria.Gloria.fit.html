@@ -56,7 +56,7 @@
     <link rel="prev" title="gloria.Gloria.add_seasonality" href="gloria.Gloria.add_seasonality.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1" />
+  <meta name="docsearch:version" content="0.1.0" />
   </head>
   
   
@@ -123,7 +123,7 @@
     
     
     <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
-    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
   
   
 </a></div>
@@ -138,13 +138,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
@@ -248,13 +241,6 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
-<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
   </a>
@@ -344,7 +330,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Holiday.html">gloria.Holiday</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../events.html">Events</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../profiles.html">Profiles</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.BoxCar.html">gloria.BoxCar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Cauchy.html">gloria.Cauchy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Exponential.html">gloria.Exponential</a></li>
@@ -458,39 +444,36 @@ respective columns must be present as well.</p></li>
 keyed by <code class="docutils literal notranslate"><span class="pre">[fit]</span></code>. If <em>None</em> (default), TOML configuration is
 skipped. TOML configuration precedes model settings saved in
 <code class="docutils literal notranslate"><span class="pre">self._config</span></code> as well as default settings.</p></li>
-<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Additional keyword arguments to configure the model fitting:</p>
+<li><p><strong>optimize_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code> (default), the optimization step yields the Maximum A
+Posteriori estimation, if <code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code> a Maximum likehood estimation.</p></li>
+<li><p><strong>use_laplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the optimization is followed by a sampling
+over the Laplace approximation around the posterior mode.</p></li>
+<li><p><strong>capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – An upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models.
+Note that <code class="docutils literal notranslate"><span class="pre">capacity</span></code> must be &gt;= all values in the metric column
+of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Specifying <code class="docutils literal notranslate"><span class="pre">capacity</span></code> is
+mutually exclusive with providing a  <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and
+<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pair.</p></li>
+<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Two modes are available:</p>
 <ul>
-<li><p><strong>optimize_mode</strong> (<cite>str</cite>, default: <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code>): If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code>, the
-optimization yields the Maximum A Posteriori estimation; if
-<code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code>, it yields a Maximum Likelihood estimation.</p></li>
-<li><p><strong>sample</strong> (<cite>bool</cite>, default: <code class="docutils literal notranslate"><span class="pre">True</span></code>): If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the
-optimization is followed by sampling over the Laplace
-approximation around the posterior mode.</p></li>
-<li><p><strong>capacity</strong> (<cite>int</cite>, optional): Upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code>
-and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models. Must be ≥ max value in the metric
-column of <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
-<li><p><strong>capacity_mode</strong> (<cite>str</cite>, optional): Method used to estimate
-capacity.
-Options:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: max(response) x <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: optimize capacity so response
-≈ <span class="math notranslate nohighlight">\(N \times p\)</span></p></li>
-</ul>
-</div></blockquote>
-</li>
-<li><dl class="simple">
-<dt><strong>capacity_value</strong> (<cite>float</cite>, optional): Must be:</dt><dd><ul class="simple">
-<li><p>≥ 1 if <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code></p></li>
-<li><p>in <span class="math notranslate nohighlight">\([0, 1]\)</span> if <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;scale&quot;</span></code></p></li>
-</ul>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: The capacity is the maximum of the response
+variable times <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: The capacity is optimized such that the response
+variable is distributed around the expectation value
+<span class="math notranslate nohighlight">\(N \times p\)</span> with <span class="math notranslate nohighlight">\(N=\)</span> capacity and <span class="math notranslate nohighlight">\(p=\)</span>
+<code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>. This mode is the default using
+<code class="docutils literal notranslate"><span class="pre">capacity_value=0.5</span></code>.</p></li>
 </ul>
 </p></li>
-<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
+<li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:</p>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be
+<span class="math notranslate nohighlight">\(\ge\)</span> 1</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;scale&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be in
+<span class="math notranslate nohighlight">\([0,1]\)</span>.</p></li>
+</ul>
+</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>

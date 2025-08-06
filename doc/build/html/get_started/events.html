@@ -55,7 +55,7 @@
     <link rel="prev" title="Modeling Trends" href="modeling_trends.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1" />
+  <meta name="docsearch:version" content="0.1.0" />
   </head>
   
   
@@ -122,7 +122,7 @@
     
     
     <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
-    <img src="../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
   
   
 </a></div>
@@ -379,7 +379,7 @@
 <p>In Gloria, every event has two key parts:</p>
 <ol class="arabic simple">
 <li><p><strong>Anchor</strong>: a reference instant that marks where the event is aligned in time. Anchors are managed through <em>event regressors</em>, namely <a class="reference internal" href="../api/api/gloria.SingleEvent.html#gloria.SingleEvent" title="gloria.SingleEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleEvent</span></code></a>, <a class="reference internal" href="../api/api/gloria.IntermittentEvent.html#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a>, <a class="reference internal" href="../api/api/gloria.PeriodicEvent.html#gloria.PeriodicEvent" title="gloria.PeriodicEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeriodicEvent</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Holiday.html#gloria.Holiday" title="gloria.Holiday"><code class="xref py py-class docutils literal notranslate"><span class="pre">Holiday</span></code></a>.</p></li>
-<li><p><strong>Profile</strong>: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type <a class="reference internal" href="../api/events.html#ref-events"><span class="std std-ref">Event</span></a> and include <a class="reference internal" href="../api/api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>, <a class="reference internal" href="../api/api/gloria.Cauchy.html#gloria.Cauchy" title="gloria.Cauchy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cauchy</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a>.</p></li>
+<li><p><strong>Profile</strong>: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type <a class="reference internal" href="../api/profiles.html#ref-profiles"><span class="std std-ref">Profile</span></a> and include <a class="reference internal" href="../api/api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a>, <a class="reference internal" href="../api/api/gloria.Cauchy.html#gloria.Cauchy" title="gloria.Cauchy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cauchy</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a>.</p></li>
 </ol>
 <p>The figure illustrates the idea. In the first column you see <a class="reference internal" href="../api/api/gloria.SingleEvent.html#gloria.SingleEvent" title="gloria.SingleEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleEvent</span></code></a> instances that occur only once: each row shows a different profile (black solid line), all aligned to the same anchor time (red dashed vertical line).</p>
 <p>You can place several anchors along the time axis - irregularly or at equal intervals - yielding the patterns in the second and third columns and corresponding to <a class="reference internal" href="../api/api/gloria.IntermittentEvent.html#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a> and <a class="reference internal" href="../api/api/gloria.PeriodicEvent.html#gloria.PeriodicEvent" title="gloria.PeriodicEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">PeriodicEvent</span></code></a>, respectively. At every anchor, the same profile is stamped. Mathematically, the full signal is the convolution of one profile with the collection of anchor times.</p>
@@ -400,13 +400,13 @@
 <span class="c1"># Add event to model</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
-    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;SingleEvent&quot;</span><span class="p">,</span>   <span class="c1"># choose the regressor class</span>
-    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>                    <span class="c1"># attach the profile</span>
-    <span class="n">t_anchor</span><span class="o">=</span><span class="s2">&quot;2018-07-06 9:00:00&quot;</span>    <span class="c1"># anchor time</span>
+    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;SingleEvent&quot;</span><span class="p">,</span>     <span class="c1"># choose the regressor class</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>                  <span class="c1"># attach the profile</span>
+    <span class="n">t_anchor</span><span class="o">=</span><span class="s2">&quot;2018-07-06 9:00:00&quot;</span>     <span class="c1"># anchor time</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method takes the profile via <code class="docutils literal notranslate"><span class="pre">event=event</span></code> and selects the regressor with <code class="docutils literal notranslate"><span class="pre">regressor_type=&quot;SingleEvent&quot;</span></code>. Any further arguments required by that regressor - in this case the anchor time <code class="docutils literal notranslate"><span class="pre">t_anchor</span></code> - are passed as keyword parameters.</p>
+<p>The <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method takes the profile via <code class="docutils literal notranslate"><span class="pre">profile=profile</span></code> and selects the regressor with <code class="docutils literal notranslate"><span class="pre">regressor_type=&quot;SingleEvent&quot;</span></code>. Any further arguments required by that regressor - in this case the anchor time <code class="docutils literal notranslate"><span class="pre">t_anchor</span></code> - are passed as keyword parameters.</p>
 <p>The following script is a full example modelling the drop in the power consumption dataset using the event we just created. Note that compared to the <a class="reference internal" href="modeling_trends.html#ref-modeling-trends"><span class="std std-ref">modeling trends</span></a> section we turned off changepoints using <code class="docutils literal notranslate"><span class="pre">n_changepoints=0</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">BoxCar</span>
@@ -518,7 +518,7 @@
 <span class="hll">    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
 </span>    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;PeriodicEvent&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- periodic event regressor</span>
 <span class="hll">    <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">,</span>
-</span><span class="hll">    <span class="n">t_anchor</span> <span class="o">=</span> <span class="s2">&quot;2018-07-29 5:00:00&quot;</span><span class="p">,</span>      <span class="c1"># &lt;-- midpoint of weekend</span>
+</span><span class="hll">    <span class="n">t_anchor</span> <span class="o">=</span> <span class="s2">&quot;2018-07-29 5:00:00&quot;</span><span class="p">,</span>     <span class="c1"># &lt;-- midpoint of weekend</span>
 </span>    <span class="n">period</span> <span class="o">=</span> <span class="s2">&quot;7d&quot;</span>                        <span class="c1"># &lt;-- weekly period</span>
 <span class="p">)</span>
 

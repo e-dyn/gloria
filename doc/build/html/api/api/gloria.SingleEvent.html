@@ -55,7 +55,7 @@
     <link rel="prev" title="gloria.Seasonality" href="gloria.Seasonality.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1" />
+  <meta name="docsearch:version" content="0.1.0" />
   </head>
   
   
@@ -122,7 +122,7 @@
     
     
     <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
-    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
   
   
 </a></div>
@@ -137,13 +137,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
@@ -247,13 +240,6 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
-<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
   </a>
@@ -343,7 +329,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Holiday.html">gloria.Holiday</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../events.html">Events</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../profiles.html">Profiles</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gloria.BoxCar.html">gloria.BoxCar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Cauchy.html">gloria.Cauchy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Exponential.html">gloria.Exponential</a></li>
@@ -441,7 +427,7 @@
 <h1>gloria.SingleEvent<a class="headerlink" href="#gloria-singleevent" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gloria.SingleEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">SingleEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/regressors.html#SingleEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.SingleEvent" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">SingleEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_anchor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/regressors.html#SingleEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.SingleEvent" title="Link to this definition">#</a></dt>
 <dd><p>A regressor to model a single occurrence of an event.</p>
 <p>The regressor is added to the <a class="reference internal" href="gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> model using
 <a class="reference internal" href="gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> and does not need to be handled
@@ -451,13 +437,13 @@ directly by the user.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – A descriptive, unique name to identify the regressor.</p></li>
 <li><p><strong>prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Parameter modulating the strength of the regressors. Larger values
-allow the model to fit larger a larger impact of the event, smaller
+allow the model to fit a larger impact of the event, smaller
 values dampen the impact. Must be larger than zero.</p></li>
-<li><p><strong>event</strong> (<em>Event</em>) – The event that occurs at <code class="docutils literal notranslate"><span class="pre">t_start</span></code>. Allowed event types are described
-in the <a class="reference internal" href="../events.html#ref-events"><span class="std std-ref">Events</span></a> section.</p></li>
-<li><p><strong>t_start</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> | str) – The timestamp at which <code class="docutils literal notranslate"><span class="pre">event</span></code> occurs. The exact meaning of
-<code class="docutils literal notranslate"><span class="pre">t_start</span></code> depends on the implementation details of the underlying
-<code class="docutils literal notranslate"><span class="pre">event</span></code>, but typically refers to its mode.</p></li>
+<li><p><strong>profile</strong> (<em>Profile</em>) – The profile that occurs at <code class="docutils literal notranslate"><span class="pre">t_anchor</span></code>. Allowed profile types are
+described in the <a class="reference internal" href="../profiles.html#ref-profiles"><span class="std std-ref">Profiles</span></a> section.</p></li>
+<li><p><strong>t_anchor</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> | str) – The timestamp at which <code class="docutils literal notranslate"><span class="pre">profile</span></code> occurs. The exact meaning of
+<code class="docutils literal notranslate"><span class="pre">t_anchor</span></code> depends on the implementation details of the underlying
+<code class="docutils literal notranslate"><span class="pre">profile</span></code>, but typically refers to its mode.</p></li>
 </ul>
 </dd>
 </dl>
@@ -484,16 +470,16 @@ constructor arguments of the regressor.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.SingleEvent.get_impact">
 <span class="sig-name descname"><span class="pre">get_impact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/regressors.html#SingleEvent.get_impact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.SingleEvent.get_impact" title="Link to this definition">#</a></dt>
-<dd><p>Calculate fraction of overall events occurring within a timerange.</p>
+<dd><p>Calculate fraction of overall profiles occurring within a timerange.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>t</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>.</p></li>
-<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>impact</strong> – Fraction of overall events occurring between minimum and maximum
+<dd class="field-even"><p><strong>impact</strong> – Fraction of overall profiles occurring between minimum and maximum
 date of <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -515,7 +501,7 @@ be evaluated</p></li>
 feature matrix unchanged. Only has effect for
 <a class="reference internal" href="gloria.ExternalRegressor.html#gloria.ExternalRegressor" title="gloria.ExternalRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExternalRegressor</span></code></a>. Any input will be ignored for
 <a class="reference internal" href="#gloria.SingleEvent" title="gloria.SingleEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleEvent</span></code></a>.</p></li>
-<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -544,7 +530,7 @@ feature matrix unchanged. Only has effect for
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
 </dd>
 </dl>
 </dd></dl>

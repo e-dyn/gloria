@@ -15,7 +15,7 @@ API Reference
    gloria
    configuration
    regressors
-   events
+   profiles
    protocols
    diagnostics
    serialize

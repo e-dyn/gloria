@@ -207,7 +207,7 @@ class Holiday(IntermittentEvent):
         values dampen the impact. Must be larger than zero.
     profile : Profile
         The profile that periodically occurs. Allowed profile types are
-        described in the :ref:`ref-events` section.
+        described in the :ref:`ref-profiles` section.
     t_list : list[:class:`pandas.Timestamp`]
         A list of timestamps at which ``profile`` occurs. The exact meaning of
         each timestamp in the list depends on implementation details of the
@@ -378,7 +378,7 @@ class CalendricData(Protocol):
     The protocol contributes:
 
     * **Seasonalities** - yearly, quarterly, monthly, weekly, and daily terms.
-    * **Holidays** - :ref:`Event <ref-events>` regressors for every public
+    * **Holidays** - :class:`Holiday` event regressors for every public
       holiday in ``country`` and (optionally) ``subdiv``.
 
 

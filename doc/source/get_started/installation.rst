@@ -15,7 +15,6 @@ Installation
 Installing Gloria
 -----------------
     
-Gloria resides in the public GitHub repository ``https://github.com/e-dyn/gloria``. 
 
 We recommend to install Gloria into a dedicated `virtual environment <https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments>`_. Once the environment is created and activated use [#f1]_
 
@@ -23,7 +22,7 @@ We recommend to install Gloria into a dedicated `virtual environment <https://pa
 
     pip install gloria
 
-to clone and install the package in one step. To verify it is correctly installed, run the following command:
+to install the package. To verify it is correctly installed, run the following command:
 
 .. code-block:: console
 
@@ -58,7 +57,24 @@ With the toolchain ready, start a Python REPL session by simply entering ``pytho
     >>> from gloria import Gloria
     >>> Gloria()
 
-Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. Once this is finished you are all set. You should now be able to use gloria inside your python applications.
+Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. You shoul see an output in your your console similar to the following
+
+.. code-block:: console
+
+    >>> 12:45:37 - gloria - INFO - Cannot find CmdStan version 2.36.0. Installing now.
+    >>> CmdStan install directory: path\to\site-packages\gloria\stan_models
+    >>> 12:45:37 - cmdstanpy - INFO - Add C++ toolchain to $PATH: C:\Users\thatsyou\.cmdstan\RTools40
+    >>> Installing CmdStan version: 2.36.0
+    >>> Downloading CmdStan version 2.36.0
+    >>> Download successful, file: C:\Users\thatsyou\AppData\Local\Temp\tmpzjwnmxh2
+    >>> Extracting distribution
+    >>> Unpacked download as cmdstan-2.36.0
+    >>> Building version cmdstan-2.36.0, may take several minutes, depending on your system.
+    >>> Installed cmdstan-2.36.0
+    >>> Test model compilation
+    >>> 12:50:31 - gloria - INFO - CmdStan successfully installed.
+
+Once this is finished you are all set. You should now be able to use gloria inside your python applications.
 
 .. rubric:: Footnotes
 

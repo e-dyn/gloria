@@ -56,7 +56,7 @@
     <link rel="prev" title="gloria.Cauchy" href="gloria.Cauchy.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1" />
+  <meta name="docsearch:version" content="0.1.0" />
   </head>
   
   
@@ -123,7 +123,7 @@
     
     
     <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.0 documentation - Home"/>
-    <img src="../../_static/glorialogo.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
+    <img src="../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.0 documentation - Home"/>
   
   
 </a></div>
@@ -138,13 +138,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
@@ -248,13 +241,6 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../overview.html">
-    Overview
-  </a>
-</li>
-
-
-<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../get_started/index.html">
     Getting Started
   </a>
@@ -344,7 +330,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gloria.Holiday.html">gloria.Holiday</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../events.html">Events</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../profiles.html">Profiles</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="gloria.BoxCar.html">gloria.BoxCar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gloria.Cauchy.html">gloria.Cauchy</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">gloria.Exponential</a></li>
@@ -419,7 +405,7 @@
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API Reference</a></li>
     
     
-    <li class="breadcrumb-item"><a href="../events.html" class="nav-link">Events</a></li>
+    <li class="breadcrumb-item"><a href="../profiles.html" class="nav-link">Profiles</a></li>
     
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">gloria.Exponential</span></li>
   </ul>
@@ -442,9 +428,9 @@
 <h1>gloria.Exponential<a class="headerlink" href="#gloria-exponential" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gloria.Exponential">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">Exponential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lead_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lag_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/events.html#Exponential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential" title="Link to this definition">#</a></dt>
-<dd><p>A two-sided exponential decay shaped event.</p>
-<p>For a given time <span class="math notranslate nohighlight">\(t\)</span> the event can be described by</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gloria.</span></span><span class="sig-name descname"><span class="pre">Exponential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lead_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lag_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/profiles.html#Exponential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential" title="Link to this definition">#</a></dt>
+<dd><p>A two-sided exponential decay shaped profile.</p>
+<p>For a given time <span class="math notranslate nohighlight">\(t\)</span> the profile can be described by</p>
 <div class="math notranslate nohighlight">
 \[f(t) = \exp\left(
     -\log 2 \left|\frac{t-t_0}{w\left(t\right)}\right|
@@ -453,7 +439,7 @@
 lead-width for <span class="math notranslate nohighlight">\(t&lt;t_0\)</span> and <span class="math notranslate nohighlight">\(w\left(t\right) = w_\text{lag}\)</span>
 is the right-sided lag-width for <span class="math notranslate nohighlight">\(t\ge t_0\)</span>, set by <code class="docutils literal notranslate"><span class="pre">lead_width</span></code>
 and <code class="docutils literal notranslate"><span class="pre">lag_width</span></code> in the constructor, respectively. The parameter
-<code class="docutils literal notranslate"><span class="pre">t_start=t_0</span></code> is an input of <a class="reference internal" href="#gloria.Exponential.generate" title="gloria.Exponential.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a>. The
+<code class="docutils literal notranslate"><span class="pre">t_anchor=t_0</span></code> is an input of <a class="reference internal" href="#gloria.Exponential.generate" title="gloria.Exponential.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a>. The
 following plot illustrates the two-sided exponential decay function.</p>
 <a class="reference internal image-reference" href="../../_images/example_exponential.png"><img alt="Example plot of a two-sided exponential decay function." class="align-center" src="../../_images/example_exponential.png" style="width: 500px;" />
 </a>
@@ -470,16 +456,16 @@ following plot illustrates the two-sided exponential decay function.</p>
 <p class="rubric">Methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Exponential.from_dict">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/events.html#Exponential.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.from_dict" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/profiles.html#Exponential.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.from_dict" title="Link to this definition">#</a></dt>
 <dd><p>Creates a Exponential object from a dictionary.</p>
 <p>The key-value pairs of the dictionary must correspond to the
-constructor arguments of the event.</p>
+constructor arguments of the profile.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>event_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all event fields</p>
+<dd class="field-odd"><p><strong>profile_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all profile fields</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Exponential object with fields from <code class="docutils literal notranslate"><span class="pre">event_dict</span></code></p>
+<dd class="field-even"><p>Exponential object with fields from <code class="docutils literal notranslate"><span class="pre">profile_dict</span></code></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gloria.Exponential" title="gloria.Exponential">Exponential</a></p>
@@ -489,19 +475,19 @@ constructor arguments of the event.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Exponential.generate">
-<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/events.html#Exponential.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.generate" title="Link to this definition">#</a></dt>
-<dd><p>Generate a time series with a single Exponential event.</p>
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_anchor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/profiles.html#Exponential.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.generate" title="Link to this definition">#</a></dt>
+<dd><p>Generate a time series with a single Exponential profile.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – The input timestamps at which the Exponential event is to be
+<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – The input timestamps at which the Exponential profile is to be
 evaluated.</p></li>
-<li><p><strong>t_start</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>) – Location of the Exponential event’s mode.</p></li>
-<li><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p></li>
+<li><p><strong>t_anchor</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>) – Location of the Exponential profile’s mode.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The output time series including the Exponential event with
+<dd class="field-even"><p>The output time series including the Exponential profile with
 amplitude 1.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -512,18 +498,18 @@ amplitude 1.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gloria.Exponential.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/events.html#Exponential.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.to_dict" title="Link to this definition">#</a></dt>
-<dd><p>Converts the Exponential event to a JSON-serializable dictionary.</p>
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/profiles.html#Exponential.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Exponential.to_dict" title="Link to this definition">#</a></dt>
+<dd><p>Converts the Exponential profile to a JSON-serializable dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary containing all event fields including an extra
-<code class="docutils literal notranslate"><span class="pre">event_type</span> <span class="pre">=</span> <span class="pre">&quot;Exponential&quot;</span></code> item.</p>
+<dd class="field-odd"><p>Dictionary containing all profile fields including an extra
+<code class="docutils literal notranslate"><span class="pre">profile_type</span> <span class="pre">=</span> <span class="pre">&quot;Exponential&quot;</span></code> item.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>self</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.13)"><em>Self</em></a>)</p>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
 </dd>
 </dl>
 </dd></dl>

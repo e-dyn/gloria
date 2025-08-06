@@ -15,7 +15,7 @@ Gloria provides a flexible framework for representing events in your dataset. Im
 In Gloria, every event has two key parts:
 
 1. **Anchor**: a reference instant that marks where the event is aligned in time. Anchors are managed through *event regressors*, namely :class:`SingleEvent`, :class:`IntermittentEvent`, :class:`PeriodicEvent`, and :class:`Holiday`.
-2. **Profile**: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type :ref:`Event <ref-events>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
+2. **Profile**: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type :ref:`Profile <ref-profiles>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
 
 The figure illustrates the idea. In the first column you see :class:`SingleEvent` instances that occur only once: each row shows a different profile (black solid line), all aligned to the same anchor time (red dashed vertical line).
 
@@ -44,12 +44,12 @@ As mentioned, an event consists of an *event regressor* and an *event profile* a
     # Add event to model
     m.add_event(
         name="drop", 
-        regressor_type="SingleEvent",   # choose the regressor class 
-        profile=profile,                    # attach the profile
-        t_anchor="2018-07-06 9:00:00"    # anchor time
+        regressor_type="SingleEvent",     # choose the regressor class 
+        profile=profile,                  # attach the profile
+        t_anchor="2018-07-06 9:00:00"     # anchor time
     )
     
-The :meth:`~Gloria.add_event` method takes the profile via ``event=event`` and selects the regressor with ``regressor_type="SingleEvent"``. Any further arguments required by that regressor - in this case the anchor time ``t_anchor`` - are passed as keyword parameters.
+The :meth:`~Gloria.add_event` method takes the profile via ``profile=profile`` and selects the regressor with ``regressor_type="SingleEvent"``. Any further arguments required by that regressor - in this case the anchor time ``t_anchor`` - are passed as keyword parameters.
 
 The following script is a full example modelling the drop in the power consumption dataset using the event we just created. Note that compared to the :ref:`modeling trends <ref-modeling-trends>` section we turned off changepoints using ``n_changepoints=0``:
 
@@ -171,7 +171,7 @@ The next example shows how to capture the regular weekend drop in power consumpt
         name="drop", 
         regressor_type="PeriodicEvent",      # <-- periodic event regressor
         profile=profile,
-        t_anchor = "2018-07-29 5:00:00",      # <-- midpoint of weekend
+        t_anchor = "2018-07-29 5:00:00",     # <-- midpoint of weekend
         period = "7d"                        # <-- weekly period
     )
     
