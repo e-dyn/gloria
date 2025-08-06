@@ -102,7 +102,7 @@ Try it, contribute, or just explore:
 
 - 🛠️ `GitHub Repository <https://github.com/e-dyn/gloria>`__
 - 📬 `Issue Tracker <https://github.com/e-dyn/gloria/issues>`__
-- `License MIT <https://github.com/e-dyn/gloria/blob/main/LICENSE>`__
+- 📄 `License MIT <https://github.com/e-dyn/gloria/blob/main/LICENSE>`__
 
 
 Table of contents

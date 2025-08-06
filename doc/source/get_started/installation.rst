@@ -10,18 +10,18 @@ Installation
 
 .. note::
 
-    Gloria requires Python version :math:`\ge` 3.9 and :math:`<` 3.13. If you do not have it installed, please refer to `python.org <https://www.python.org/>`_. Also, you need git, as you will build Gloria from source. Depending on your system, we recommend `Git for Windows <https://git-scm.com/downloads/win>`_, `Git for macOS <https://git-scm.com/downloads/mac>`_, or `Git for Linux and Unix <https://git-scm.com/downloads/linux>`_
+    Gloria requires Python version :math:`\ge` 3.9 and :math:`<` 3.13. If you do not have it installed, please refer to `python.org <https://www.python.org/>`_. 
 
 Installing Gloria
 -----------------
     
-Gloria resides in the private GitHub repository ``https://github.com/benkambs/gloria-betatest``. Prior to the beta test your GitHub account was added as *outside collaborator*, enabling you to clone the code to your local machine and subsequently install it.
+Gloria resides in the public GitHub repository ``https://github.com/e-dyn/gloria``. 
 
 We recommend to install Gloria into a dedicated `virtual environment <https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments>`_. Once the environment is created and activated use [#f1]_
 
 .. code-block:: console
 
-    pip install git+https://github.com/benkambs/gloria-betatest.git
+    pip install gloria
 
 to clone and install the package in one step. To verify it is correctly installed, run the following command:
 
@@ -29,7 +29,7 @@ to clone and install the package in one step. To verify it is correctly installe
 
     > pip show gloria
     Name: gloria
-    Version: 0.1.0.dev1
+    Version: 0.1.0
     Summary: ...
     
 Installing CmdStan
