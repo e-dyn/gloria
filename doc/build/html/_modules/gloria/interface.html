@@ -134,19 +134,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../get_started/index.html">
-    Getting Started
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../api/index.html">
-    API Reference
-  </a>
-</li>
-
   </ul>
 </nav></div>
       
@@ -218,19 +205,6 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../get_started/index.html">
-    Getting Started
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../api/index.html">
-    API Reference
-  </a>
-</li>
-
   </ul>
 </nav></div>
           
@@ -1473,7 +1447,7 @@
 <span class="sd">            - **capacity_mode** (`str`, optional): Method used to estimate</span>
 <span class="sd">              capacity.</span>
 <span class="sd">              Options:</span>
-<span class="sd">                - ``&quot;factor&quot;``: max(response) × ``capacity_value``</span>
+<span class="sd">                - ``&quot;factor&quot;``: max(response) x ``capacity_value``</span>
 <span class="sd">                - ``&quot;scale&quot;``: optimize capacity so response</span>
 <span class="sd">                  ≈ :math:`N \\times p`</span>
 <span class="sd">            - **capacity_value** (`float`, optional): Must be:</span>
@@ -1492,16 +1466,17 @@
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        The configuration of the ``fit`` method is composed of four layers, each one</span>
-<span class="sd">        overriding the previous:</span>
+<span class="sd">        The configuration of the ``fit`` method is composed of four layers,</span>
+<span class="sd">        each one overriding the previous:</span>
 
-<span class="sd">        1. **Model defaults** – baseline configuration with default values.</span>
-<span class="sd">        2. **Global TOML file** – key-value pairs in the ``[fit]`` section of the TOML file</span>
-<span class="sd">           passed to :meth:`Gloria.from_toml`, if the instance was created that way.</span>
-<span class="sd">        3. **Local TOML file** – key-value pairs in the ``[fit]`` section of the TOML file</span>
-<span class="sd">           provided via ``toml_path``.</span>
-<span class="sd">        4. **Keyword overrides** – additional arguments provided via ``**kwargs`` take</span>
-<span class="sd">           highest precedence.</span>
+<span class="sd">        1. **Model defaults** - baseline configuration with default values.</span>
+<span class="sd">        2. **Global TOML file** - key-value pairs in the ``[fit]`` section of</span>
+<span class="sd">           the TOML file passed to :meth:`Gloria.from_toml`, if the instance</span>
+<span class="sd">           was created that way.</span>
+<span class="sd">        3. **Local TOML file** - key-value pairs in the ``[fit]`` section of</span>
+<span class="sd">           the TOML file provided via ``toml_path``.</span>
+<span class="sd">        4. **Keyword overrides** - additional arguments provided via</span>
+<span class="sd">           ``**kwargs`` take highest precedence.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>

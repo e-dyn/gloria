@@ -1,5 +1,8 @@
 .. _ref-saturation:
 .. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
 
 Saturation
 ==========

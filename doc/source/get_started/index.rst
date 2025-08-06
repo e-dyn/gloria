@@ -1,3 +1,5 @@
+.. _get_started:
+
 Getting Started
 ===============
 
@@ -7,7 +9,7 @@ On this page you find a series of basic tutorials that should get you up and run
 .. toctree::
    :maxdepth: 1
    
-   .. installation::
+   installation
    basic_usage
    seasonalities
    modeling_trends

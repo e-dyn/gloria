@@ -1,5 +1,10 @@
 .. _ref-basic-usage:
 
+.. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
+
 Basic Usage
 ===========
 

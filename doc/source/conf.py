@@ -60,5 +60,27 @@ html_theme_options = {
     "logo": {
         "image_light": "_static/glorialogo.png",
         "image_dark": "_static/glorialogo.png",
-    }
+    },
+    "navigation_with_keys": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/e-dyn/gloria",
+            "icon": "fab fa-github",
+        },
+    ],
+    "use_edit_page_button": False,
+    "show_prev_next": True,
+    "navbar_start": ["navbar-logo"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "primary_sidebar_end": ["sidebar-ethical-ads"],
+    "footer_start": [],
+    "footer_end": [],
+}
+
+html_show_sourcelink = False  # sicherheitshalber trotzdem setzen
+html_copy_source = False  # optional, keine .txt-Dateien erzeugen
+
+html_sidebars = {
+    "**": ["sidebar-nav-bs.html"],
 }
