@@ -1,6 +1,6 @@
 [project]
 name = "gloria"
-version = "0.1.0"
+version = "0.1.1"
 description = "Gloria is a modern open-source framework for time series analysis and forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
@@ -41,7 +41,8 @@ Repository = "https://github.com/e-dyn/gloria"
 
 [tool.poetry]
 include = [
-  { path = "gloria/stan_models/*.stan", format = ["sdist", "wheel"] }
+  { path = "gloria/stan_models/*.stan", format = ["sdist", "wheel"] },
+  { path = "gloria/stan_models/*.exe", format = ["sdist", "wheel"] }
 ]
 
 [tool.poetry.group.dev]
