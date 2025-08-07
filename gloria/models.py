@@ -633,7 +633,7 @@ class ModelBackendBase(ABC):
             k = k + m / stan_data.t_change[0]
             m = 0
             delta[0] = delta[0] + (k_old - k)
-        elif m > 0:
+        elif m > 1:
             k_old = k
             k = k + (m - 1) / stan_data.t_change[0]
             m = 1

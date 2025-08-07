@@ -8,7 +8,7 @@
 project = "Gloria"
 copyright = "2025, Benjamin Kambs, Patrik Wollgarten"
 author = "Benjamin Kambs, Patrik Wollgarten"
-release = "0.1.0"
+release = "0.1.1"
 # Gloria
 import gloria
 
