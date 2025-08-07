@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Gloria documentation &#8212; Gloria 0.1.0.dev1 documentation</title>
+    <title>Gloria documentation &#8212; Gloria 0.1.1 documentation</title>
   
   
   
@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=4c969af8" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -40,12 +41,13 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=32272829"></script>
+    <script src="_static/documentation_options.js?v=c7fef49e"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/tabs.js?v=3ee01567"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -53,7 +55,7 @@
     <link rel="next" title="Getting Started" href="get_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1" />
+  <meta name="docsearch:version" content="0.1.1" />
   </head>
   
   
@@ -114,8 +116,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.1 documentation - Home"/>
+    <img src="_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.1 documentation - Home"/>
   
-    <p class="title logo__title">Gloria 0.1.0.dev1 documentation</p>
   
 </a></div>
     
@@ -168,6 +176,22 @@
   <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
   <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
 </button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
       
     </div>
     
@@ -248,6 +272,22 @@
   <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
 </button></div>
         
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
       </div>
     
   </div>
@@ -282,10 +322,118 @@
                   
   <section id="gloria-documentation">
 <h1>Gloria documentation<a class="headerlink" href="#gloria-documentation" title="Link to this heading">#</a></h1>
-<a class="reference internal image-reference" href="_images/glorialogo.png"><img alt="Gloria_logo" src="_images/glorialogo.png" style="width: 300px;" />
-</a>
-<p><strong>Version</strong>: 0.1.0.dev1</p>
-<p>Gloria is a timeseries forecasting tool inspired by <a class="reference external" href="https://facebook.github.io/prophet/">Prophet</a>. It extends Prophet’s use of generalized linear models (GLMs) to handle a wide variety of data types and constraints in a statistically coherent way through appropriate distributions such as binomial, Poisson, beta, and others.</p>
+<p><strong>Version</strong>: 0.1.1</p>
+<p><strong>Gloria</strong> is a flexible time series forecasting tool inspired by <a class="reference external" href="https://facebook.github.io/prophet/">Prophet</a>.
+It enhances Prophet’s GLM-based structure with advanced probabilistic modeling using tailored distributions
+(e.g., binomial, Poisson, beta) – ideal for real-world forecasting under uncertainty.</p>
+<section id="get-started">
+<span id="cards-clickable"></span><h2>Get started<a class="headerlink" href="#get-started" title="Link to this heading">#</a></h2>
+<div class="sd-container-fluid sd-sphinx-override sd-mt-0 sd-mb-0 sd-ml-2 sd-mr-0 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-4 sd-g-xs-4 sd-g-sm-4 sd-g-md-4 sd-g-lg-4 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+🚀 Get Started</div>
+<p class="sd-card-text"><strong>Learn by doing.</strong>
+Tutorials and workflows for building, training, and evaluating models.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="get_started/index.html"><span class="doc">Getting Started</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+🧠 API Reference</div>
+<p class="sd-card-text"><strong>Explore the internals.</strong>
+Detailed reference for functions, models, and utility classes.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="api/index.html"><span class="doc">API Reference</span></a></div>
+</div>
+</div>
+</div>
+</section>
+<section id="built-for-professionals">
+<h2>Built for Professionals<a class="headerlink" href="#built-for-professionals" title="Link to this heading">#</a></h2>
+<div class="sd-container-fluid sd-sphinx-override sd-mt-2 sd-mb-2 sd-ml-2 sd-mr-2 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-6 sd-g-3 sd-g-xs-3 sd-g-sm-3 sd-g-md-3 sd-g-lg-3 docutils">
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Distributional Flexibility</div>
+<p class="sd-card-text">Go beyond the normal distribution and model count data (Poisson,
+Binomial, Negative Binomial, Beta-Binomial), bounded rates (Beta), or
+non-negative floats (Gamma) natively</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Any Time Grid</div>
+<p class="sd-card-text">Gloria handles arbitrary sampling intervals (not just daily)</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Rich Event Modeling</div>
+<p class="sd-card-text">Parametric and extensible event library to handle holidays, campaigns, or
+maintenance windows - any event, any shape, for realistic impacts and
+reduced overfitting.</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Fully Explainable</div>
+<p class="sd-card-text">Gloria’s models are explicit, fully documented, and always inspectable.</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Composable Pipelines</div>
+<p class="sd-card-text">Gloria’S modular design lets you build custom forecasting workflows by
+combining and extending components like events, distributions, and
+regressors.</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-4 sd-col-xs-4 sd-col-sm-4 sd-col-md-4 sd-col-lg-4 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-text-center docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Modern Python Stack</div>
+<p class="sd-card-text">Type hints, pydantic for validation, and a clean API design reminiscent
+of <a class="reference external" href="https://facebook.github.io/prophet/">Prophet</a>. but with a much more
+maintainable and extensible codebase.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="get-involved">
+<h2>Get involved<a class="headerlink" href="#get-involved" title="Link to this heading">#</a></h2>
+<p>Gloria is Open Source and thrives through your ideas, usage, and feedback.
+Try it, contribute, or just explore:</p>
+<ul class="simple">
+<li><p>🛠️ <a class="reference external" href="https://github.com/e-dyn/gloria">GitHub Repository</a></p></li>
+<li><p>📬 <a class="reference external" href="https://github.com/e-dyn/gloria/issues">Issue Tracker</a></p></li>
+<li><p>📄 <a class="reference external" href="https://github.com/e-dyn/gloria/blob/main/LICENSE">License MIT</a></p></li>
+</ul>
+</section>
+<section id="table-of-contents">
+<h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="get_started/index.html">Getting Started</a><ul>
@@ -301,11 +449,12 @@
 <li class="toctree-l2"><a class="reference internal" href="get_started/external_regressors.html">External Regressors</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html#id1">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/gloria.html">Gloria</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/configuration.html">Configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/regressors.html">Regressors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/profiles.html">Profiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/protocols.html">Protocols</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/diagnostics.html">Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/serialize.html">Serialization</a></li>
@@ -314,6 +463,7 @@
 </li>
 </ul>
 </div>
+</section>
 </section>
 
 
@@ -347,13 +497,19 @@
 
 
   <div class="sidebar-secondary-item">
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div></div>
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-started">Get started</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#built-for-professionals">Built for Professionals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-involved">Get involved</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a></li>
+</ul>
+  </nav></div>
 
 </div></div>
               
@@ -372,44 +528,6 @@
 <script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
-  
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
-    
-      © Copyright 2025, Benjamin Kambs, Patrik Wollgarten.
-      <br/>
-    
-  </p>
-</div>
-      
-        <div class="footer-item">
-
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
-</p></div>
-      
-    </div>
-  
-</div>
-
   </footer>
   </body>
 </html>

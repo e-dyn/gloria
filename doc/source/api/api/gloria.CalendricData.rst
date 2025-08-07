@@ -41,6 +41,9 @@
    .. automethod:: CalendricData.to_dict
    
    
+   .. automethod:: CalendricData.validate_holiday_profile
+   
+   
    
    
    

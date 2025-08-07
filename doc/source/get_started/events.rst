@@ -1,5 +1,8 @@
 .. _ref-events-tutorial:
 .. currentmodule:: gloria
+.. autosummary::
+   :template: autosummary/small_class.rst
+   :toctree: get_started/
 
 Events
 ======
@@ -12,7 +15,7 @@ Gloria provides a flexible framework for representing events in your dataset. Im
 In Gloria, every event has two key parts:
 
 1. **Anchor**: a reference instant that marks where the event is aligned in time. Anchors are managed through *event regressors*, namely :class:`SingleEvent`, :class:`IntermittentEvent`, :class:`PeriodicEvent`, and :class:`Holiday`.
-2. **Profile**: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type :ref:`Event <ref-events>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
+2. **Profile**: the temporal shape that unfolds around each anchor. All profiles available in Gloria are of type :ref:`Profile <ref-profiles>` and include :class:`BoxCar`, :class:`Gaussian`, :class:`Cauchy`, and :class:`Exponential`.
 
 The figure illustrates the idea. In the first column you see :class:`SingleEvent` instances that occur only once: each row shows a different profile (black solid line), all aligned to the same anchor time (red dashed vertical line).
 
@@ -33,7 +36,7 @@ As mentioned, an event consists of an *event regressor* and an *event profile* a
     from gloria import Gloria, BoxCar
     
     # Define the event profile
-    event = BoxCar(width="3d")          # three-day flat pulse
+    profile = BoxCar(width="3d")          # three-day flat pulse
     
     # Create a Gloria model
     m = Gloria()
@@ -41,12 +44,12 @@ As mentioned, an event consists of an *event regressor* and an *event profile* a
     # Add event to model
     m.add_event(
         name="drop", 
-        regressor_type="SingleEvent",   # choose the regressor class 
-        event=event,                    # attach the profile
-        t_start="2018-07-06 9:00:00"    # anchor time
+        regressor_type="SingleEvent",     # choose the regressor class 
+        profile=profile,                  # attach the profile
+        t_anchor="2018-07-06 9:00:00"     # anchor time
     )
     
-The :meth:`~Gloria.add_event` method takes the profile via ``event=event`` and selects the regressor with ``regressor_type="SingleEvent"``. Any further arguments required by that regressor - in this case the anchor time ``t_start`` - are passed as keyword parameters.
+The :meth:`~Gloria.add_event` method takes the profile via ``profile=profile`` and selects the regressor with ``regressor_type="SingleEvent"``. Any further arguments required by that regressor - in this case the anchor time ``t_anchor`` - are passed as keyword parameters.
 
 The following script is a full example modelling the drop in the power consumption dataset using the event we just created. Note that compared to the :ref:`modeling trends <ref-modeling-trends>` section we turned off changepoints using ``n_changepoints=0``:
 
@@ -56,7 +59,8 @@ The following script is a full example modelling the drop in the power consumpti
     from gloria import Gloria, BoxCar
 
     # Load the data
-    data = pd.read_csv("data/AEP_hourly.csv")
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv"
+    data = pd.read_csv(url)
 
     # Save the column names for later usage
     timestamp_name = "Datetime"
@@ -86,14 +90,14 @@ The following script is a full example modelling the drop in the power consumpti
     m.add_seasonality("weekly", "7 d", 2)
 
     # Create the event profile
-    event = BoxCar(width="3d")
+    profile = BoxCar(width="3d")
 
     # Add event to model with desired event regressor
     m.add_event(
         name="drop", 
         regressor_type="SingleEvent", 
-        event=event,
-        t_start = "2018-07-06 9:00:00"
+        profile=profile,
+        t_anchor = "2018-07-06 9:00:00"
     )
 
     # Fit the model to the data
@@ -131,20 +135,21 @@ The next example shows how to capture the regular weekend drop in power consumpt
     
     import pandas as pd
     from gloria import Gloria, Gaussian
-
+    
     # Load the data
-    data = pd.read_csv("data/AEP_hourly.csv")
-
+    url = "https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AEP_hourly.csv"
+    data = pd.read_csv(url)
+    
     # Save the column names for later usage
     timestamp_name = "Datetime"
     metric_name = "AEP_MW"
-
+    
     # Convert to datetime
     data[timestamp_name] = pd.to_datetime(data[timestamp_name])
-
+    
     # Restrict data
     data = data.sort_values(by = "Datetime").tail(336)
-
+    
     # Set up the Gloria model
     m = Gloria(
         model="gamma",
@@ -153,29 +158,29 @@ The next example shows how to capture the regular weekend drop in power consumpt
         sampling_period="1 h",
         n_changepoints=0,
     )
-
+    
     # Add observed seasonalities
     m.add_seasonality("daily", "24 h", 2)
     # m.add_seasonality("weekly", "7 d", 2)  # <-- weekly component removed
-
+    
     # Create the event profile
-    event = Gaussian(width="18h")
-
+    profile = Gaussian(width="18h")
+    
     # Add event to model with desired event regressor
     m.add_event(
         name="drop", 
         regressor_type="PeriodicEvent",      # <-- periodic event regressor
-        event=event,
-        t_start = "2018-07-29 5:00:00",      # <-- midpoint of weekend
+        profile=profile,
+        t_anchor = "2018-07-29 5:00:00",     # <-- midpoint of weekend
         period = "7d"                        # <-- weekly period
     )
-
+    
     # Fit the model to the data
     m.fit(data)
-
+    
     # Predict
     prediction = m.predict(periods=100)
-
+    
     # Plot
     m.plot(prediction, include_legend=True, plot_kwargs= { "dpi" : 200 } )
 

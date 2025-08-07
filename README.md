@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://e-dyn.github.io/gloria/_images/glorialogo.png" alt="Gloria Logo" style="width:70%;">
+  <img src="https://e-dyn.github.io/gloria/_static/glorialogo.png" alt="Gloria Logo" style="width:70%;">
 </h1><br>
 
 ![Static Badge](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
@@ -24,4 +24,5 @@ Gloria is a modern open-source framework for time series analysis and forecastin
 * **Source Code**: https://github.com/e-dyn/gloria
 * **Bug Reports and Feature Requests**: https://github.com/e-dyn/gloria/issues
 * **License**: [MIT](https://github.com/e-dyn/gloria/blob/main/LICENSE)
+
 
