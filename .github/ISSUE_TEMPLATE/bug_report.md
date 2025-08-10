@@ -11,12 +11,10 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Additional context**
-Add any other context about the problem here. Helpful information include plots of the Gloria results or the log-file written by Gloria.
-
-> **Note**: Gloria's logging system tracks information about your machine, operating system and environment your were running the script in. If you feel any particular piece of information about your system might be important, feel free to point it out
+Add any other context about the problem here. Helpful information include plots of the Gloria results, the log-file written by Gloria (found in `site-packages/gloria/logfiles`), system information such as your machine, operating system and Python environment.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
 **To Reproduce**
-Steps to reproduce the unexpected behavior. Helpful attachments include your executed script, its ``.json`` configuration file, as well as the data set you were trying to fit (the data itself, a link, or, if it was one of ours, simply the filename)
+Steps to reproduce the unexpected behavior. Helpful attachments include your executed script, its ``.toml`` configuration file, if applicable, as well as the data set you were trying to fit (the data itself, a link, or, if it was one of ours, simply the filename)
