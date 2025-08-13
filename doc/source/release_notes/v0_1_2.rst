@@ -1,0 +1,13 @@
+.. _ref-installation:
+
+.. currentmodule:: gloria
+Version 0.1.2
+=============
+
+Documentation
+-------------
+- `Release notes <https://e-dyn.github.io/gloria/release_notes/index.html>`_ page added to the docs
+
+Contributors
+------------
+- Benjamin Kambs

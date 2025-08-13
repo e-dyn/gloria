@@ -106,3 +106,4 @@ Table of contents
 
    get_started/index
    api/index
+   release_notes/index
