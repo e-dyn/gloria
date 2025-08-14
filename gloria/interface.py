@@ -2047,7 +2047,7 @@ class Gloria(BaseModel):
                     capacity_mode = fit_kwargs.get("capacity_mode")
                     capacity_value = fit_kwargs.get("capacity_value")
 
-                    if capacity_mode == "vectorized":
+                    if self.vectorized:
                         # Plot capacity directly if capacity is vectorized
                         capacity_defaults = {
                             "color": "grey",
