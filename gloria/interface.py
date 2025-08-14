@@ -2034,10 +2034,10 @@ class Gloria(BaseModel):
                     )
 
                 # Add a line showing the capacity if requested
-                if show_capacity and self.model in {
+                if show_capacity and self.model in (
                     "binomial",
                     "beta-binomial",
-                }:
+                ):
                     # Distinguish whether model has a vectorized capacity
                     if self.vectorized:
                         # Plot capacity directly if capacity is vectorized
@@ -2064,16 +2064,15 @@ class Gloria(BaseModel):
                         **capacity_defaults,
                     )
 
-                elif show_capacity and self.model not in {
+                elif show_capacity and self.model not in (
                     "binomial",
                     "beta-binomial",
-                }:
+                ):
                     # Warn user if capacity is requested for incompatible
                     # model
-                    print(
-                        "Capacities are only considered with the binomial "
-                        "or beta-binomial model. It is therefore not an "
-                        "option to display the capacities."
+                    get_logger().warn(
+                        "Ignoring 'show_capacity=True' as model "
+                        f"'{self.model}' does not have a capacity."
                     )
 
                 # Remove Seaborn's default legend
