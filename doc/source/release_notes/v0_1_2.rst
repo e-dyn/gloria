@@ -1,12 +1,18 @@
 .. _ref-installation:
 
 .. currentmodule:: gloria
+
 Version 0.1.2
 =============
+
+Bugfixes
+--------
+- :meth:`Gloria.plot` with ``show_capacity`` set to ``True`` now correctly uses the internal state ``self.vectorized`` to distinguish between vectorized and constant capacities (see `#60 <https://github.com/e-dyn/gloria/issues/60>`_). 
 
 Documentation
 -------------
 - `Release notes <https://e-dyn.github.io/gloria/release_notes/index.html>`_ page added to the docs
+- Corrected :ref:`Saturation <ref-saturation>` tutorial by removing references to the non-existent ``capacity_mode="vectorized"`` and aligning prose to code blocks (see `#59 <https://github.com/e-dyn/gloria/issues/59>`_).
 
 Contributors
 ------------

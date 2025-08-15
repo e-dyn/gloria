@@ -1136,10 +1136,12 @@ class Gloria(BaseModel):
             mutually exclusive with providing a  ``capacity_mode`` and
             ``capacity_value`` pair.
         capacity_mode : str, optional
-            A method used to estimate the capacity. Two modes are available:
+            A method used to estimate the capacity. Three modes are available:
 
+            - ``"constant"``: The provided ``capacity_value`` equals the
+              capacity.
             - ``"factor"``: The capacity is the maximum of the response
-              variable times ``capacity_value``
+              variable times ``capacity_value``.
             - ``"scale"``: The capacity is optimized such that the response
               variable is distributed around the expectation value
               :math:`N \\times p` with :math:`N=` capacity and :math:`p=`
@@ -1148,9 +1150,11 @@ class Gloria(BaseModel):
         capacity_value : float, optional
             A value associated with the selected ``capacity_mode``:
 
-            - If ``capacity_mode = "factor"``, ``capacity_value`` must be
-              :math:`\\ge` 1
-            - If ``capacity_mode = "scale"``, ``capacity_value`` must be in
+            - If ``capacity_mode="constant"``, ``capacity_value`` must be an
+              integer :math:`\\ge` the maximum of the response variable.
+            - If ``capacity_mode="factor"``, ``capacity_value`` must be
+              :math:`\\ge` 1.
+            - If ``capacity_mode="scale"``, ``capacity_value`` must be in
               :math:`[0,1]`.
 
         Raises
