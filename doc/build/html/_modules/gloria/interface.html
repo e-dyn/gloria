@@ -382,7 +382,6 @@
     <span class="n">Field</span><span class="p">,</span>
     <span class="n">field_validator</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
 
 <span class="c1"># Gloria</span>
@@ -390,7 +389,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">MODEL_MAP</span><span class="p">,</span>
     <span class="n">ModelInputData</span><span class="p">,</span>
-    <span class="n">distance_to_scale</span><span class="p">,</span>
     <span class="n">get_model_backend</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria.plot</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -1511,10 +1509,12 @@
 <span class="sd">            mutually exclusive with providing a  ``capacity_mode`` and</span>
 <span class="sd">            ``capacity_value`` pair.</span>
 <span class="sd">        capacity_mode : str, optional</span>
-<span class="sd">            A method used to estimate the capacity. Two modes are available:</span>
+<span class="sd">            A method used to estimate the capacity. Three modes are available:</span>
 
+<span class="sd">            - ``&quot;constant&quot;``: The provided ``capacity_value`` equals the </span>
+<span class="sd">              capacity.</span>
 <span class="sd">            - ``&quot;factor&quot;``: The capacity is the maximum of the response</span>
-<span class="sd">              variable times ``capacity_value``</span>
+<span class="sd">              variable times ``capacity_value``.</span>
 <span class="sd">            - ``&quot;scale&quot;``: The capacity is optimized such that the response</span>
 <span class="sd">              variable is distributed around the expectation value</span>
 <span class="sd">              :math:`N \\times p` with :math:`N=` capacity and :math:`p=`</span>
@@ -1523,9 +1523,11 @@
 <span class="sd">        capacity_value : float, optional</span>
 <span class="sd">            A value associated with the selected ``capacity_mode``:</span>
 
-<span class="sd">            - If ``capacity_mode = &quot;factor&quot;``, ``capacity_value`` must be</span>
-<span class="sd">              :math:`\\ge` 1</span>
-<span class="sd">            - If ``capacity_mode = &quot;scale&quot;``, ``capacity_value`` must be in</span>
+<span class="sd">            - If ``capacity_mode=&quot;constant&quot;``, ``capacity_value`` must be an </span>
+<span class="sd">              integer :math:`\ge` the maximum of the response variable.</span>
+<span class="sd">            - If ``capacity_mode=&quot;factor&quot;``, ``capacity_value`` must be</span>
+<span class="sd">              :math:`\\ge` 1.</span>
+<span class="sd">            - If ``capacity_mode=&quot;scale&quot;``, ``capacity_value`` must be in</span>
 <span class="sd">              :math:`[0,1]`.</span>
 
 <span class="sd">        Raises</span>
@@ -2436,90 +2438,45 @@
                     <span class="p">)</span>
 
                 <span class="c1"># Add a line showing the capacity if requested</span>
-                <span class="k">if</span> <span class="n">show_capacity</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">in</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">show_capacity</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">in</span> <span class="p">(</span>
                     <span class="s2">&quot;binomial&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;beta-binomial&quot;</span><span class="p">,</span>
-                <span class="p">}:</span>
-
-                    <span class="c1"># Extract capacity-related settings</span>
-                    <span class="n">fit_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fit_kwargs&quot;</span><span class="p">,</span> <span class="p">{})</span>
-                    <span class="n">capacity</span> <span class="o">=</span> <span class="n">fit_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;capacity&quot;</span><span class="p">)</span>
-                    <span class="n">capacity_mode</span> <span class="o">=</span> <span class="n">fit_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;capacity_mode&quot;</span><span class="p">)</span>
-                    <span class="n">capacity_value</span> <span class="o">=</span> <span class="n">fit_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;capacity_value&quot;</span><span class="p">)</span>
-
-                    <span class="k">if</span> <span class="n">capacity_mode</span> <span class="o">==</span> <span class="s2">&quot;vectorized&quot;</span><span class="p">:</span>
+                <span class="p">):</span>
+                    <span class="c1"># Distinguish whether model has a vectorized capacity</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorized</span><span class="p">:</span>
                         <span class="c1"># Plot capacity directly if capacity is vectorized</span>
-                        <span class="n">capacity_defaults</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity_name</span><span class="p">,</span>
-                        <span class="p">}</span>
-                        <span class="n">capacity_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">capacity_kwargs</span><span class="p">)</span>
-
-                        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_name</span><span class="p">],</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">capacity_name</span><span class="p">],</span>
-                            <span class="o">**</span><span class="n">capacity_defaults</span><span class="p">,</span>
-                        <span class="p">)</span>
-
-                    <span class="k">elif</span> <span class="p">(</span>
-                        <span class="n">capacity_mode</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="s2">&quot;factor&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">}</span>
-                        <span class="ow">or</span> <span class="n">capacity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                    <span class="p">):</span>
+                        <span class="n">capacity_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity_name</span>
+                        <span class="n">capacity_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">capacity_name</span><span class="p">]</span>
+                    <span class="c1"># Or a constant capacity</span>
+                    <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Plot a constant or derived capacity line</span>
-                        <span class="n">capacity_defaults</span> <span class="o">=</span> <span class="p">{</span>
-                            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;capacity&quot;</span><span class="p">,</span>
-                        <span class="p">}</span>
-                        <span class="n">capacity_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">capacity_kwargs</span><span class="p">)</span>
+                        <span class="n">capacity_label</span> <span class="o">=</span> <span class="s2">&quot;capacity&quot;</span>
+                        <span class="n">capacity_values</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">model_backend</span><span class="o">.</span><span class="n">stan_data</span><span class="o">.</span><span class="n">capacity</span>
+                        <span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
+                    <span class="n">capacity_defaults</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">capacity_label</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="n">capacity_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">capacity_kwargs</span><span class="p">)</span>
 
-                        <span class="c1"># Determine the capacity value based on mode</span>
-                        <span class="k">if</span> <span class="n">capacity_mode</span> <span class="o">==</span> <span class="s2">&quot;scale&quot;</span><span class="p">:</span>
-                            <span class="c1"># Scale capacity_value to match metric scale</span>
-                            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
-                                <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">distance_to_scale</span><span class="p">(</span>
-                                    <span class="n">f</span><span class="p">,</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span><span class="p">],</span>
-                                    <span class="n">capacity_value</span><span class="p">,</span>
-                                <span class="p">),</span>
-                                <span class="n">x0</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">capacity_value</span><span class="p">,</span>
-                                <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
-                            <span class="p">)</span>
-                            <span class="n">plot_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
-                                <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                                    <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                                    <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span><span class="p">])</span>
-                                <span class="p">)</span>
-                            <span class="p">)</span>
+                    <span class="c1"># Plot the capacity line</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_name</span><span class="p">],</span>
+                        <span class="n">capacity_values</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">capacity_defaults</span><span class="p">,</span>
+                    <span class="p">)</span>
 
-                        <span class="k">elif</span> <span class="n">capacity_mode</span> <span class="o">==</span> <span class="s2">&quot;factor&quot;</span><span class="p">:</span>
-                            <span class="c1"># Multiply capacity_value by max metric</span>
-                            <span class="n">plot_value</span> <span class="o">=</span> <span class="n">capacity_value</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                                <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span><span class="p">])</span>
-                            <span class="p">)</span>
-
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># Use constant capacity or fallback value</span>
-                            <span class="n">plot_value</span> <span class="o">=</span> <span class="n">capacity_value</span> <span class="ow">or</span> <span class="n">capacity</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="n">plot_value</span><span class="p">)</span>
-                        <span class="c1"># Plot the capacity line</span>
-                        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_name</span><span class="p">],</span>
-                            <span class="p">[</span><span class="n">plot_value</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span>
-                            <span class="o">**</span><span class="n">capacity_defaults</span><span class="p">,</span>
-                        <span class="p">)</span>
-
-                <span class="k">elif</span> <span class="n">show_capacity</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span>
+                <span class="k">elif</span> <span class="n">show_capacity</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
                     <span class="s2">&quot;binomial&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;beta-binomial&quot;</span><span class="p">,</span>
-                <span class="p">}:</span>
+                <span class="p">):</span>
                     <span class="c1"># Warn user if capacity is requested for incompatible</span>
                     <span class="c1"># model</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="s2">&quot;Capacities are only considered with the binomial &quot;</span>
-                        <span class="s2">&quot;or beta-binomial model. It is therefore not an &quot;</span>
-                        <span class="s2">&quot;option to display the capacities.&quot;</span>
+                    <span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;Ignoring &#39;show_capacity=True&#39; as model &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">&#39; does not have a capacity.&quot;</span>
                     <span class="p">)</span>
 
                 <span class="c1"># Remove Seaborn&#39;s default legend</span>
