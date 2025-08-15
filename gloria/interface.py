@@ -25,7 +25,6 @@ from pydantic import (
     Field,
     field_validator,
 )
-from scipy.optimize import minimize
 from typing_extensions import Self
 
 # Gloria
@@ -33,7 +32,6 @@ import gloria.utilities.serialize as gs
 from gloria.models import (
     MODEL_MAP,
     ModelInputData,
-    distance_to_scale,
     get_model_backend,
 )
 from gloria.plot import (
@@ -2036,90 +2034,45 @@ class Gloria(BaseModel):
                     )
 
                 # Add a line showing the capacity if requested
-                if show_capacity and self.model in {
+                if show_capacity and self.model in (
                     "binomial",
                     "beta-binomial",
-                }:
-
-                    # Extract capacity-related settings
-                    fit_kwargs = self.model_extra.get("fit_kwargs", {})
-                    capacity = fit_kwargs.get("capacity")
-                    capacity_mode = fit_kwargs.get("capacity_mode")
-                    capacity_value = fit_kwargs.get("capacity_value")
-
-                    if capacity_mode == "vectorized":
+                ):
+                    # Distinguish whether model has a vectorized capacity
+                    if self.vectorized:
                         # Plot capacity directly if capacity is vectorized
-                        capacity_defaults = {
-                            "color": "grey",
-                            "linestyle": "--",
-                            "label": self.capacity_name,
-                        }
-                        capacity_defaults.update(capacity_kwargs)
-
-                        ax.plot(
-                            self.history[self.timestamp_name],
-                            self.history[self.capacity_name],
-                            **capacity_defaults,
-                        )
-
-                    elif (
-                        capacity_mode in {"constant", "factor", "scale"}
-                        or capacity is not None
-                    ):
+                        capacity_label = self.capacity_name
+                        capacity_values = self.history[self.capacity_name]
+                    # Or a constant capacity
+                    else:
                         # Plot a constant or derived capacity line
-                        capacity_defaults = {
-                            "color": "grey",
-                            "linestyle": "--",
-                            "label": "capacity",
-                        }
-                        capacity_defaults.update(capacity_kwargs)
+                        capacity_label = "capacity"
+                        capacity_values = [
+                            self.model_backend.stan_data.capacity
+                        ] * len(self.history)
+                    capacity_defaults = {
+                        "color": "grey",
+                        "linestyle": "--",
+                        "label": capacity_label,
+                    }
+                    capacity_defaults.update(capacity_kwargs)
 
-                        # Determine the capacity value based on mode
-                        if capacity_mode == "scale":
-                            # Scale capacity_value to match metric scale
-                            res = minimize(
-                                lambda f: distance_to_scale(
-                                    f,
-                                    self.history[self.metric_name],
-                                    capacity_value,
-                                ),
-                                x0=1 / capacity_value,
-                                bounds=[(1, None)],
-                            )
-                            plot_value = int(
-                                np.ceil(
-                                    res.x[0]
-                                    * max(self.history[self.metric_name])
-                                )
-                            )
+                    # Plot the capacity line
+                    ax.plot(
+                        self.history[self.timestamp_name],
+                        capacity_values,
+                        **capacity_defaults,
+                    )
 
-                        elif capacity_mode == "factor":
-                            # Multiply capacity_value by max metric
-                            plot_value = capacity_value * np.ceil(
-                                max(self.history[self.metric_name])
-                            )
-
-                        else:
-                            # Use constant capacity or fallback value
-                            plot_value = capacity_value or capacity
-                            print(plot_value)
-                        # Plot the capacity line
-                        ax.plot(
-                            self.history[self.timestamp_name],
-                            [plot_value] * len(self.history),
-                            **capacity_defaults,
-                        )
-
-                elif show_capacity and self.model not in {
+                elif show_capacity and self.model not in (
                     "binomial",
                     "beta-binomial",
-                }:
+                ):
                     # Warn user if capacity is requested for incompatible
                     # model
-                    print(
-                        "Capacities are only considered with the binomial "
-                        "or beta-binomial model. It is therefore not an "
-                        "option to display the capacities."
+                    get_logger().warn(
+                        "Ignoring 'show_capacity=True' as model "
+                        f"'{self.model}' does not have a capacity."
                     )
 
                 # Remove Seaborn's default legend
