@@ -372,10 +372,17 @@
                   
   <section id="version-0-1-2">
 <span id="ref-installation"></span><h1>Version 0.1.2<a class="headerlink" href="#version-0-1-2" title="Link to this heading">#</a></h1>
+<section id="bugfixes">
+<h2>Bugfixes<a class="headerlink" href="#bugfixes" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/api/gloria.Gloria.plot.html#gloria.Gloria.plot" title="gloria.Gloria.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.plot()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">show_capacity</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code> now correctly uses the internal state <code class="docutils literal notranslate"><span class="pre">self.vectorized</span></code> to distinguish between vectorized and constant capacities (see <a class="reference external" href="https://github.com/e-dyn/gloria/issues/60">#60</a>).</p></li>
+</ul>
+</section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://e-dyn.github.io/gloria/release_notes/index.html">Release notes</a> page added to the docs</p></li>
+<li><p>Corrected <a class="reference internal" href="../get_started/saturation.html#ref-saturation"><span class="std std-ref">Saturation</span></a> tutorial by removing references to the non-existent <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;vectorized&quot;</span></code> and aligning prose to code blocks (see <a class="reference external" href="https://github.com/e-dyn/gloria/issues/59">#59</a>).</p></li>
 </ul>
 </section>
 <section id="contributors">
@@ -424,6 +431,7 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bugfixes">Bugfixes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributors">Contributors</a></li>
 </ul>
