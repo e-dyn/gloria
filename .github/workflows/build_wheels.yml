@@ -53,4 +53,25 @@ jobs:
         name: artifact-source-dist
         path: "./**/dist/*.tar.gz"
 
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: [make-wheels, make-sdist]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: artifact-*
+          merge-multiple: true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          packages-dir: dist
+          skip-existing: true
 
