@@ -1,0 +1,56 @@
+name: "Build wheels"
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+
+jobs:
+  make-wheels:
+    name: Make ${{ matrix.os }} wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["macos-latest", "ubuntu-latest", "windows-latest"]
+      fail-fast: false
+
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v5
+
+      - name: "Build wheels"
+        uses: pypa/cibuildwheel@v3.1.3
+        with:
+          package-dir: .
+
+        env:
+          CIBW_ENVIRONMENT: >
+            GLORIA_REPACKAGE_CMDSTAN=TRUE
+
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_BUILD: cp312-*
+          CIBW_SKIP: "*musllinux*"
+          CIBW_ARCHS: native
+          CIBW_BUILD_FRONTEND: build
+
+      - name: "Upload wheel as artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ matrix.os }}-wheel
+          path: "./**/*.whl"
+
+  make-sdist:
+    name: Make source distribution
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - run: pipx run build --sdist
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: artifact-source-dist
+        path: "./**/dist/*.tar.gz"
+
+
