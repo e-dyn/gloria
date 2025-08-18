@@ -13,7 +13,7 @@ from typing import Tuple
 
 # Third Party
 import cmdstanpy
-from setuptools import Extension, setup
+from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
 from wheel.bdist_wheel import bdist_wheel
 
@@ -183,7 +183,7 @@ class WheelABINone(bdist_wheel):
 
 
 setup(
-    packages=["gloria"],
+    packages=find_packages(include=["gloria", "gloria.*"]),
     package_dir={"gloria": "gloria"},
     # Extension marks this as platform-specific
     ext_modules=[Extension("gloria.stan", [])],
