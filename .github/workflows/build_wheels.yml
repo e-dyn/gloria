@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.os }}-wheel
-          path: "./**/*.whl"
+          path: wheelhouse/*.whl
 
   make-sdist:
     name: Make source distribution
@@ -51,15 +51,16 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: artifact-source-dist
-        path: "./**/dist/*.tar.gz"
+        path: dist/*.tar.gz
 
   publish-testpypi:
     name: Publish to TestPyPI
     needs: [make-wheels, make-sdist]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-      - name: Download all built artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
