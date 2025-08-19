@@ -22,61 +22,23 @@ We recommend to install Gloria into a dedicated `virtual environment <https://pa
 
     pip install gloria
 
-to install the package. To verify it is correctly installed, run the following command:
-
-.. code-block:: console
-
-    > pip show gloria
-    Name: gloria
-    Version: 0.1.0
-    Summary: ...
-    
-Installing CmdStan
-------------------
-
-Gloria's backend employs the statistical programming language `Stan <https://mc-stan.org/>`_ and uses `CmdStan <https://mc-stan.org/docs/cmdstan-guide/>`_ as interface. As of now, Gloria needs to have a full installation of CmdStan, which will be automatically triggered once you create a Gloria model for the first time. However, prior to that a C++ toolchain consisting of a modern C++ compiler and GNU-Make utility need to be installed. Depending on your system, do one of the following [#f2]_
-
-.. tab:: Windows
-    
-    The Python interface to CmdStan provides the necessary functionality to install the toolchain automatically. Nothing needs to be done on a Windows machine (that's a first).
-    
-.. tab:: MacOS
-
-    The Xcode and Xcode command line tools must be installed. Xcode is available for free from the Mac App Store. To install the Xcode command line tools, run the shell command: ``xcode-select --install.``
-    
-.. tab:: Linux
-
-    The required C++ compiler is ``g++ 4.9 3``. On most systems the GNU-Make utility is pre-installed and is the default ``make`` utility. There is usually a pre-installed C++ compiler as well, but not necessarily new enough.
-    
-
-
-With the toolchain ready, start a Python REPL session by simply entering ``python`` into your shell and run the following commands:
+to install the package. To verify it is correctly installed, start a Python REPL session by simply entering ``python`` into your shell and run the following commands:
 
 .. code-block:: console
 
     >>> from gloria import Gloria
     >>> Gloria()
-
-Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. You shoul see an output in your your console similar to the following
+    
+This will output a newly instantiated Gloria object similar to the following
 
 .. code-block:: console
 
-    >>> 12:45:37 - gloria - INFO - Cannot find CmdStan version 2.36.0. Installing now.
-    >>> CmdStan install directory: path\to\site-packages\gloria\stan_models
-    >>> 12:45:37 - cmdstanpy - INFO - Add C++ toolchain to $PATH: C:\Users\thatsyou\.cmdstan\RTools40
-    >>> Installing CmdStan version: 2.36.0
-    >>> Downloading CmdStan version 2.36.0
-    >>> Download successful, file: C:\Users\thatsyou\AppData\Local\Temp\tmpzjwnmxh2
-    >>> Extracting distribution
-    >>> Unpacked download as cmdstan-2.36.0
-    >>> Building version cmdstan-2.36.0, may take several minutes, depending on your system.
-    >>> Installed cmdstan-2.36.0
-    >>> Test model compilation
-    >>> 12:50:31 - gloria - INFO - CmdStan successfully installed.
-
-Once this is finished you are all set. You should now be able to use gloria inside your python applications.
+    >>> Gloria(model='normal', sampling_period=Timedelta('1 days 00:00:00'), timestamp_name='ds', metric_name='y', capacity_name='', changepoints=None, n_changepoints=25, changepoint_range=0.8, seasonality_prior_scale=3, event_prior_scale=3, changepoint_prior_scale=3, dispersion_prior_scale=3, interval_width=0.8, trend_samples=1000, model_backend=<gloria.models.Normal object at 0x0000015509551CD0>, vectorized=False, external_regressors={}, seasonalities={}, events={}, prior_scales={}, protocols=[], history=Empty DataFrame
+    Columns: []
+    Index: [], first_timestamp=Timestamp('1970-01-01 00:00:00'), X=Empty DataFrame
+    Columns: []
+    Index: [], fit_kwargs={})
 
 .. rubric:: Footnotes
 
 .. [#f1] The package installer *pip* is typically installed along with Python, in particular if it was installed via `python.org <https://www.python.org/>`_. If pip is not installed, you can follow the instructions found `here <https://pip.pypa.io/en/stable/installation/>`_.
-.. [#f2] Instructions borrowed from `CmdStanPy C++ Toolchain Requirements <https://mc-stan.org/cmdstanpy/installation.html>`_.

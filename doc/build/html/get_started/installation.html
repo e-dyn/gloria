@@ -398,58 +398,24 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install gloria</span>
 </pre></div>
 </div>
-<p>to install the package. To verify it is correctly installed, run the following command:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; pip show gloria</span>
-<span class="go">Name: gloria</span>
-<span class="go">Version: 0.1.0</span>
-<span class="go">Summary: ...</span>
-</pre></div>
-</div>
-</section>
-<section id="installing-cmdstan">
-<h2>Installing CmdStan<a class="headerlink" href="#installing-cmdstan" title="Link to this heading">#</a></h2>
-<p>Gloria’s backend employs the statistical programming language <a class="reference external" href="https://mc-stan.org/">Stan</a> and uses <a class="reference external" href="https://mc-stan.org/docs/cmdstan-guide/">CmdStan</a> as interface. As of now, Gloria needs to have a full installation of CmdStan, which will be automatically triggered once you create a Gloria model for the first time. However, prior to that a C++ toolchain consisting of a modern C++ compiler and GNU-Make utility need to be installed. Depending on your system, do one of the following <a class="footnote-reference brackets" href="#f2" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
-<div class="tab-set docutils">
-<input checked="True" class="tab-input" id="tab-set--0-input--1" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--1">Windows</label><div class="tab-content docutils">
-<p>The Python interface to CmdStan provides the necessary functionality to install the toolchain automatically. Nothing needs to be done on a Windows machine (that’s a first).</p>
-</div>
-<input class="tab-input" id="tab-set--0-input--2" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--2">MacOS</label><div class="tab-content docutils">
-<p>The Xcode and Xcode command line tools must be installed. Xcode is available for free from the Mac App Store. To install the Xcode command line tools, run the shell command: <code class="docutils literal notranslate"><span class="pre">xcode-select</span> <span class="pre">--install.</span></code></p>
-</div>
-<input class="tab-input" id="tab-set--0-input--3" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--3">Linux</label><div class="tab-content docutils">
-<p>The required C++ compiler is <code class="docutils literal notranslate"><span class="pre">g++</span> <span class="pre">4.9</span> <span class="pre">3</span></code>. On most systems the GNU-Make utility is pre-installed and is the default <code class="docutils literal notranslate"><span class="pre">make</span></code> utility. There is usually a pre-installed C++ compiler as well, but not necessarily new enough.</p>
-</div>
-</div>
-<p>With the toolchain ready, start a Python REPL session by simply entering <code class="docutils literal notranslate"><span class="pre">python</span></code> into your shell and run the following commands:</p>
+<p>to install the package. To verify it is correctly installed, start a Python REPL session by simply entering <code class="docutils literal notranslate"><span class="pre">python</span></code> into your shell and run the following commands:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; from gloria import Gloria</span>
 <span class="go">&gt;&gt;&gt; Gloria()</span>
 </pre></div>
 </div>
-<p>Now you need a little patience while the CmdStan Toolchain and CmdStan itself are being installed. You shoul see an output in your your console similar to the following</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; 12:45:37 - gloria - INFO - Cannot find CmdStan version 2.36.0. Installing now.</span>
-<span class="go">&gt;&gt;&gt; CmdStan install directory: path\to\site-packages\gloria\stan_models</span>
-<span class="go">&gt;&gt;&gt; 12:45:37 - cmdstanpy - INFO - Add C++ toolchain to $PATH: C:\Users\thatsyou\.cmdstan\RTools40</span>
-<span class="go">&gt;&gt;&gt; Installing CmdStan version: 2.36.0</span>
-<span class="go">&gt;&gt;&gt; Downloading CmdStan version 2.36.0</span>
-<span class="go">&gt;&gt;&gt; Download successful, file: C:\Users\thatsyou\AppData\Local\Temp\tmpzjwnmxh2</span>
-<span class="go">&gt;&gt;&gt; Extracting distribution</span>
-<span class="go">&gt;&gt;&gt; Unpacked download as cmdstan-2.36.0</span>
-<span class="go">&gt;&gt;&gt; Building version cmdstan-2.36.0, may take several minutes, depending on your system.</span>
-<span class="go">&gt;&gt;&gt; Installed cmdstan-2.36.0</span>
-<span class="go">&gt;&gt;&gt; Test model compilation</span>
-<span class="go">&gt;&gt;&gt; 12:50:31 - gloria - INFO - CmdStan successfully installed.</span>
+<p>This will output a newly instantiated Gloria object similar to the following</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; Gloria(model=&#39;normal&#39;, sampling_period=Timedelta(&#39;1 days 00:00:00&#39;), timestamp_name=&#39;ds&#39;, metric_name=&#39;y&#39;, capacity_name=&#39;&#39;, changepoints=None, n_changepoints=25, changepoint_range=0.8, seasonality_prior_scale=3, event_prior_scale=3, changepoint_prior_scale=3, dispersion_prior_scale=3, interval_width=0.8, trend_samples=1000, model_backend=&lt;gloria.models.Normal object at 0x0000015509551CD0&gt;, vectorized=False, external_regressors={}, seasonalities={}, events={}, prior_scales={}, protocols=[], history=Empty DataFrame</span>
+<span class="go">Columns: []</span>
+<span class="go">Index: [], first_timestamp=Timestamp(&#39;1970-01-01 00:00:00&#39;), X=Empty DataFrame</span>
+<span class="go">Columns: []</span>
+<span class="go">Index: [], fit_kwargs={})</span>
 </pre></div>
 </div>
-<p>Once this is finished you are all set. You should now be able to use gloria inside your python applications.</p>
 <p class="rubric">Footnotes</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="f1" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>The package installer <em>pip</em> is typically installed along with Python, in particular if it was installed via <a class="reference external" href="https://www.python.org/">python.org</a>. If pip is not installed, you can follow the instructions found <a class="reference external" href="https://pip.pypa.io/en/stable/installation/">here</a>.</p>
-</aside>
-<aside class="footnote brackets" id="f2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p>Instructions borrowed from <a class="reference external" href="https://mc-stan.org/cmdstanpy/installation.html">CmdStanPy C++ Toolchain Requirements</a>.</p>
 </aside>
 </aside>
 </section>
@@ -503,7 +469,6 @@
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-gloria">Installing Gloria</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-cmdstan">Installing CmdStan</a></li>
 </ul>
   </nav></div>
 
