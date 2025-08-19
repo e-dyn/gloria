@@ -1,9 +1,17 @@
-.. _ref-installation:
 
 .. currentmodule:: gloria
 
 Version 0.1.2
 =============
+
+Simplified Installation
+-----------------------
+There are now wheels on `PyPI <https://pypi.org/project/gloria/>`_ for Windows, MacOS, and Linux including system-specific precompiled Stan models and a pruned CmdStan distribution. This CmdStan distribution contains all binaries and libraries required to run the models and brings two advantages:
+
+1. Previously, a full CmdStan installation was required as part of Gloria's setup. This process took several minutes and consumed around 1 GB of disk space. The new pruned version is now installed automatically with Gloria and only takes a few 10 MB. This drastically simplifies :ref:`Gloria's installation <ref-installation>` process.
+2. Each model previously had to be compiled once on the first use by Gloria, which occasionally caused runtime errors on some machines (see `#65 <https://github.com/e-dyn/gloria/issues/65>`_). Now, all models are precompiled, eliminating the need for runtime compilation.
+
+The packaging setup is based on `this cookiecutter template <https://github.com/WardBrian/cookiecutter-cmdstanpy-wrapper>`_ by `Brian Ward <https://github.com/WardBrian>`_.
 
 Bugfixes
 --------
@@ -11,8 +19,9 @@ Bugfixes
 
 Documentation
 -------------
-- `Release notes <https://e-dyn.github.io/gloria/release_notes/index.html>`_ page added to the docs
-- Corrected :ref:`Saturation <ref-saturation>` tutorial by removing references to the non-existent ``capacity_mode="vectorized"`` and aligning prose to code blocks (see `#59 <https://github.com/e-dyn/gloria/issues/59>`_).
+- `Release notes <https://e-dyn.github.io/gloria/release_notes/index.html>`_ page added to the docs.
+- Corrected :ref:`Saturation <ref-saturation>` tutorial by removing references to the non-existent. ``capacity_mode="vectorized"`` and aligning prose to code blocks (see `#59 <https://github.com/e-dyn/gloria/issues/59>`_).
+- Removed the CmdStan installation section from the :ref:`installation <ref-installation>` tutorial.
 
 Contributors
 ------------

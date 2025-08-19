@@ -49,6 +49,7 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'release_notes/v0_1_2';</script>
+    <link rel="icon" href="../_static/gloria_favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Release notes" href="index.html" />
@@ -371,7 +372,16 @@
                 <article class="bd-article">
                   
   <section id="version-0-1-2">
-<span id="ref-installation"></span><h1>Version 0.1.2<a class="headerlink" href="#version-0-1-2" title="Link to this heading">#</a></h1>
+<h1>Version 0.1.2<a class="headerlink" href="#version-0-1-2" title="Link to this heading">#</a></h1>
+<section id="simplified-installation">
+<h2>Simplified Installation<a class="headerlink" href="#simplified-installation" title="Link to this heading">#</a></h2>
+<p>There are now wheels on <a class="reference external" href="https://pypi.org/project/gloria/">PyPI</a> for Windows, MacOS, and Linux including system-specific precompiled Stan models and a pruned CmdStan distribution. This CmdStan distribution contains all binaries and libraries required to run the models and brings two advantages:</p>
+<ol class="arabic simple">
+<li><p>Previously, a full CmdStan installation was required as part of Gloria’s setup. This process took several minutes and consumed around 1 GB of disk space. The new pruned version is now installed automatically with Gloria and only takes a few 10 MB. This drastically simplifies <a class="reference internal" href="../get_started/installation.html#ref-installation"><span class="std std-ref">Gloria’s installation</span></a> process.</p></li>
+<li><p>Each model previously had to be compiled once on the first use by Gloria, which occasionally caused runtime errors on some machines (see <a class="reference external" href="https://github.com/e-dyn/gloria/issues/65">#65</a>). Now, all models are precompiled, eliminating the need for runtime compilation.</p></li>
+</ol>
+<p>The packaging setup is based on <a class="reference external" href="https://github.com/WardBrian/cookiecutter-cmdstanpy-wrapper">this cookiecutter template</a> by <a class="reference external" href="https://github.com/WardBrian">Brian Ward</a>.</p>
+</section>
 <section id="bugfixes">
 <h2>Bugfixes<a class="headerlink" href="#bugfixes" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -381,8 +391,9 @@
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference external" href="https://e-dyn.github.io/gloria/release_notes/index.html">Release notes</a> page added to the docs</p></li>
-<li><p>Corrected <a class="reference internal" href="../get_started/saturation.html#ref-saturation"><span class="std std-ref">Saturation</span></a> tutorial by removing references to the non-existent <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;vectorized&quot;</span></code> and aligning prose to code blocks (see <a class="reference external" href="https://github.com/e-dyn/gloria/issues/59">#59</a>).</p></li>
+<li><p><a class="reference external" href="https://e-dyn.github.io/gloria/release_notes/index.html">Release notes</a> page added to the docs.</p></li>
+<li><p>Corrected <a class="reference internal" href="../get_started/saturation.html#ref-saturation"><span class="std std-ref">Saturation</span></a> tutorial by removing references to the non-existent. <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;vectorized&quot;</span></code> and aligning prose to code blocks (see <a class="reference external" href="https://github.com/e-dyn/gloria/issues/59">#59</a>).</p></li>
+<li><p>Removed the CmdStan installation section from the <a class="reference internal" href="../get_started/installation.html#ref-installation"><span class="std std-ref">installation</span></a> tutorial.</p></li>
 </ul>
 </section>
 <section id="contributors">
@@ -431,6 +442,7 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplified-installation">Simplified Installation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bugfixes">Bugfixes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributors">Contributors</a></li>

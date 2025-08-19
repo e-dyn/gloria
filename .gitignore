@@ -1,6 +1,9 @@
-gloria/stan_models/cmdstan-*/
+gloria/stan_models/*
+!gloria/stan_models/*.stan
 **/__pycache__
 **/logfiles/
 **/models
 demonstrations/
 dist/
+stashed_stuff/
+wheelhouse/

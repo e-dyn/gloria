@@ -1,0 +1,2 @@
+# include Stan sources in the sdist
+recursive-include gloria/stan_models *.stan
