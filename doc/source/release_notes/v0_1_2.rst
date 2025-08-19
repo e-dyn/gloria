@@ -15,7 +15,8 @@ The packaging setup is based on `this cookiecutter template <https://github.com/
 
 Bugfixes
 --------
-- :meth:`Gloria.plot` with ``show_capacity`` set to ``True`` now correctly uses the internal state ``self.vectorized`` to distinguish between vectorized and constant capacities (see `#60 <https://github.com/e-dyn/gloria/issues/60>`_). 
+- :meth:`Gloria.plot` with ``show_capacity`` set to ``True`` now correctly uses the internal state ``self.vectorized`` to distinguish between vectorized and constant capacities (see `#60 <https://github.com/e-dyn/gloria/issues/60>`_).
+- Fixed a bug in :meth:`Gloria.plot_components` that caused a mismatch between number of ticks and labels on the timestamp axis (see `#66 <https://github.com/e-dyn/gloria/issues/66>`_)
 
 Documentation
 -------------
