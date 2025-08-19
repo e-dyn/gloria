@@ -53,8 +53,8 @@ jobs:
         name: artifact-source-dist
         path: dist/*.tar.gz
 
-  publish-testpypi:
-    name: Publish to TestPyPI
+  publish-pypi:
+    name: Publish to PyPI
     needs: [make-wheels, make-sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
