@@ -206,7 +206,7 @@ def plot_trend_component(
             # Customize tick labels
             ticklabel_defaults = dict(
                 rotation=45,
-                horizontalalignment="right",
+                horizontalalignment="center",
             )
             ticklabel_defaults.update(ticklabel_kwargs)
             for label in ax.get_xticklabels():
@@ -394,6 +394,7 @@ def plot_seasonality_component(
             # X-ticks and labels
             x_dates = pd.to_datetime(df[m.timestamp_name])
             if component == "yearly":
+                x_dates = x_dates.loc[x_dates.dt.day == 1]
                 ax.set_xticks(x_dates)
                 tick_labels = [
                     "Jan",
@@ -411,11 +412,20 @@ def plot_seasonality_component(
                 ]
                 ax.set_xticklabels(tick_labels)
             elif component == "quarterly":
+                x_dates = x_dates.loc[x_dates.dt.day == 1]
                 ax.set_xticks(x_dates)
-                ax.set_xticklabels([f"Month {d+1}" for d in range(3)])
+                ax.set_xticklabels(
+                    [f"Month {m+1}" for m in range(len(x_dates))]
+                )
             elif component == "monthly":
+                # Get main month
+                month = x_dates.dt.month.median()
+                # Filter for main month and weekly ticks
+                x_dates = x_dates.loc[
+                    (x_dates.dt.day % 7 == 1) & (x_dates.dt.month == month)
+                ]
                 ax.set_xticks(x_dates)
-                ax.set_xticklabels([f"{d+1}" for d in range(31)])
+                ax.set_xticklabels([f"Week {w//7+1}" for w in x_dates.dt.day])
             elif component == "weekly":
                 ax.set_xticks(x_dates)
                 weekdays = [
@@ -443,7 +453,7 @@ def plot_seasonality_component(
             # Tick label customization
             ticklabel_defaults = {
                 "rotation": 45,
-                "horizontalalignment": "right",
+                "horizontalalignment": "center",
             }
             ticklabel_defaults.update(ticklabel_kwargs)
 
@@ -626,7 +636,7 @@ def plot_event_component(
             # Tick label styling
             ticklabel_defaults = {
                 "rotation": 45,
-                "horizontalalignment": "right",
+                "horizontalalignment": "center",
             }
             ticklabel_defaults.update(ticklabel_kwargs)
 
