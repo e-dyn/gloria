@@ -18,6 +18,7 @@ Bugfixes
 - :meth:`Gloria.plot` with ``show_capacity`` set to ``True`` now correctly uses the internal state ``self.vectorized`` to distinguish between vectorized and constant capacities (`#60 <https://github.com/e-dyn/gloria/issues/60>`_).
 - Fixed a bug in :meth:`Gloria.plot_components` that caused a mismatch between number of ticks and labels on the timestamp axis (`#66 <https://github.com/e-dyn/gloria/issues/66>`_)
 - Default values for automatic capacity calculation in :meth:`Gloria.fit` are now set to ``capacity_mode="scale"`` and ``capacity_value=0.5`` (`#73 <https://github.com/e-dyn/gloria/issues/73>`_)
+- Fixed a bug that caused a ``ValueError`` in :meth:`Gloria.predict` for the beta-binomial model due to a shape mismatch between the distribution's scale parameter and the number of prediction timestamps (`#74 <https://github.com/e-dyn/gloria/issues/74>`_)
 
 Documentation
 -------------
