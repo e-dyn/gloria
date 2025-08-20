@@ -35,7 +35,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://www.e-dynamics.de/"
+Homepage = "https://www.e-dynamics.de/gloria-open-source-framework/"
 Documentation = "https://e-dyn.github.io/gloria/"
 Repository = "https://github.com/e-dyn/gloria"
 
