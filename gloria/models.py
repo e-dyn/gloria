@@ -1862,11 +1862,15 @@ class BetaBinomial(ModelBackendBase):
             self.stan_data.capacity if capacity_vec is None else capacity_vec
         )
 
-        if capacity_vec is not None:
-            scale = (
-                4 * (capacity - 1) / (capacity * self.fit_params["kappa"] ** 2)
-                - 1
-            )
+        # Average kappa if laplace was used
+        if self.use_laplace:
+            kappa = self.fit_params["kappa"].mean()
+        else:
+            kappa = self.fit_params["kappa"]
+
+        # Do not use scale parameter from fit but calculate it based on
+        # capacity and kappa. This way, scale will have the correct shape.
+        scale = 4 * (capacity - 1) / (capacity * kappa**2) - 1
 
         # Calculate success probability
         p = yhat / capacity
