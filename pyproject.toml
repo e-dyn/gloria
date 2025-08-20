@@ -1,6 +1,6 @@
 [project]
 name = "gloria"
-version = "0.1.1"
+version = "0.1.2"
 description = "Gloria is a modern open-source framework for time series analysis and forecasting."
 authors = [
     {name = "Benjamin Kambs", email = "b.kambs@e-dynamics.de"},
@@ -84,7 +84,7 @@ line-length = 79
 [tool.ruff]
 line-length = 79
 target-version = "py39"
-extend-exclude = ["scripts", "stashed_stuff", "doc"]
+extend-exclude = ["scripts", "stashed_stuff", "doc", "gloria/tests"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -123,7 +123,10 @@ import_heading_stdlib = "Standard Library"
 import_heading_thirdparty = "Third Party"
 import_heading_firstparty = "Gloria"
 known_first_party = ["gloria"]
-skip = "gloria/stan_models/"
+skip = [
+    "gloria/stan_models/",
+    "gloria/tests/"
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -131,7 +134,8 @@ exclude = [
     "gloria/stan_models(/.*)?",
     "scripts(/.*)?",
     "stashed_stuff(/.*)?",
-    "doc(/.*)?"
+    "doc(/.*)?",
+    "gloria/tests(/.*)?"
 ]
 
 [build-system]

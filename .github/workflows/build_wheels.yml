@@ -29,10 +29,11 @@ jobs:
             GLORIA_REPACKAGE_CMDSTAN=TRUE
 
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_BUILD: cp312-*
+          CIBW_BUILD: cp39-* cp310-* cp311-* cp312-*
           CIBW_SKIP: "*musllinux*"
           CIBW_ARCHS: native
           CIBW_BUILD_FRONTEND: build
+          CIBW_TEST_COMMAND: python {project}/gloria/tests/test_wheels.py
 
       - name: "Upload wheel as artifact"
         uses: actions/upload-artifact@v4
