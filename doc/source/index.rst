@@ -75,7 +75,7 @@ Built for Professionals
       :text-align: center
       :columns: 4
 
-      Gloria'S modular design lets you build custom forecasting workflows by 
+      Gloria's modular design lets you build custom forecasting workflows by 
       combining and extending components like events, distributions, and 
       regressors.
       
