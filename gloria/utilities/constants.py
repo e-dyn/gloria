@@ -55,8 +55,8 @@ _FIT_DEFAULTS: FitDefaults = {
     "optimize_mode": "MAP",
     "use_laplace": False,
     "capacity": None,
-    "capacity_mode": None,
-    "capacity_value": None,
+    "capacity_mode": "scale",
+    "capacity_value": 0.5,
 }
 
 
