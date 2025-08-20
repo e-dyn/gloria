@@ -278,8 +278,30 @@ def assemble_config(
 
     """
 
+    def augment_capacity(
+        config: dict[str, Any], method: str
+    ) -> dict[str, Any]:
+        """
+        Once any capacity parameter is set for the fit method, the remaining
+        ones need to be set to None. Otherwise merging the configs will only
+        partially overwrite old capacity parameters.
+        """
+        capacity_pars = ("capacity", "capacity_mode", "capacity_value")
+        # If no capacity parameter was set, return config as is
+        is_capacity_set = any(par in config for par in capacity_pars)
+        if not is_capacity_set:
+            return config
+
+        # Set all capacity parameters that are not present to None
+        if method == "fit":
+            for par in capacity_pars:
+                if par not in config:
+                    config[par] = None
+        return config
+
     # Baseline with internal model configurations, if available.
     config = model._config.get(method, dict())
+    config = augment_capacity(config, method)
 
     # 1. Update with TOML config
     if toml_path is not None:
@@ -289,6 +311,7 @@ def assemble_config(
 
         # Get method table of config file
         toml_config = toml_config.get(method, dict())
+        toml_config = augment_capacity(toml_config, method)
 
         # Overwrite config with keys in TOML config
         config = config | toml_config
@@ -296,6 +319,7 @@ def assemble_config(
     # 2. Update with kwarg config
 
     # Overwrite config with keys in TOML config
+    kwargs = augment_capacity(kwargs, method)
     config = config | kwargs
 
     # Remove keys that have no corresponding arguments in the method

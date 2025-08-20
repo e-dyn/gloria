@@ -1,0 +1,31 @@
+
+.. currentmodule:: gloria
+
+Version 0.1.2
+=============
+
+Simplified Installation
+-----------------------
+There are now wheels on `PyPI <https://pypi.org/project/gloria/>`_ for Windows, MacOS, and Linux including system-specific precompiled Stan models and a pruned CmdStan distribution. This CmdStan distribution contains all binaries and libraries required to run the models and brings two advantages:
+
+1. Previously, a full CmdStan installation was required as part of Gloria's setup. This process took several minutes and consumed around 1 GB of disk space. The new pruned version is now installed automatically with Gloria and only takes a few 10 MB. This drastically simplifies :ref:`Gloria's installation <ref-installation>` process.
+2. Each model previously had to be compiled once on the first use by Gloria, which occasionally caused runtime errors on some machines (`#65 <https://github.com/e-dyn/gloria/issues/65>`_). Now, all models are precompiled, eliminating the need for runtime compilation.
+
+The packaging setup is based on `this cookiecutter template <https://github.com/WardBrian/cookiecutter-cmdstanpy-wrapper>`_ by `Brian Ward <https://github.com/WardBrian>`_.
+
+Bugfixes
+--------
+- :meth:`Gloria.plot` with ``show_capacity`` set to ``True`` now correctly uses the internal state ``self.vectorized`` to distinguish between vectorized and constant capacities (`#60 <https://github.com/e-dyn/gloria/issues/60>`_).
+- Fixed a bug in :meth:`Gloria.plot_components` that caused a mismatch between number of ticks and labels on the timestamp axis (`#66 <https://github.com/e-dyn/gloria/issues/66>`_)
+- Default values for automatic capacity calculation in :meth:`Gloria.fit` are now set to ``capacity_mode="scale"`` and ``capacity_value=0.5`` (`#73 <https://github.com/e-dyn/gloria/issues/73>`_)
+- Fixed a bug that caused a ``ValueError`` in :meth:`Gloria.predict` for the beta-binomial model due to a shape mismatch between the distribution's scale parameter and the number of prediction timestamps (`#74 <https://github.com/e-dyn/gloria/issues/74>`_)
+
+Documentation
+-------------
+- `Release notes <https://e-dyn.github.io/gloria/release_notes/index.html>`_ page added to the docs.
+- Corrected :ref:`Saturation <ref-saturation>` tutorial by removing references to the non-existent. ``capacity_mode="vectorized"`` and aligning prose to code blocks (`#59 <https://github.com/e-dyn/gloria/issues/59>`_).
+- Removed the CmdStan installation section from the :ref:`installation <ref-installation>` tutorial.
+
+Contributors
+------------
+- Benjamin Kambs

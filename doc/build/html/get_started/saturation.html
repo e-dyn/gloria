@@ -50,13 +50,14 @@
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/saturation';</script>
+    <link rel="icon" href="../_static/gloria_favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Calendric Data" href="calendric_data.html" />
     <link rel="prev" title="Decomposition Types" href="decomposition_types.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.1" />
+  <meta name="docsearch:version" content="0.1.2" />
   </head>
   
   
@@ -148,6 +149,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../api/index.html">
     API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release notes
   </a>
 </li>
 
@@ -250,6 +258,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../api/index.html">
     API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release notes
   </a>
 </li>
 
@@ -394,7 +409,6 @@
 <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/seat_occupancy.csv&quot;</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">220</span><span class="p">)</span>
 
-
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
 <span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;occupied&quot;</span>
@@ -417,12 +431,9 @@
 <span class="c1"># Add observed seasonalities</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="s2">&quot;1d&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
-<span class="c1"># Configure capacity values</span>
-<span class="n">n_seats</span> <span class="o">=</span> <span class="mi">60</span>
-<span class="hll">
-</span><span class="c1"># Fit the model to the data</span>
-<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="n">n_seats</span><span class="p">)</span>
-
+<span class="c1"># Fit the model to the data</span>
+<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+</span>
 <span class="c1"># Predict</span>
 <span class="n">data_predict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">timestamp_name</span><span class="p">]]</span>
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_predict</span><span class="p">)</span>
@@ -431,14 +442,18 @@
 <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_capacity</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the highlighted fit step, the capacity is defined as 60. The capacity is only taken into account by the <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models and is absolutely necessary. It is also possible to pass the constant capacity via the pair of variables <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>.</p>
-<p>Because the capacity is known exactly, we choose <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;constant&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">capacity_value=60</span></code>, i.e. the number of seats recorded in the data set. The result of the binomial fit can be seen below. During pedestrian rush hours, virtually all seats are taken, meaning the data reach their capacity, which is shown as a dashed gray line in the plot. The fitted model saturates in this range, as can be seen by the oscillations being capped at 60. Note that even the confidence interval does not exceed the capacity.</p>
+<p>Both <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models require the capacity as user input. Accordingly, we pass the known value by <code class="docutils literal notranslate"><span class="pre">capacity=60</span></code> into the highlighted fit step.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> API additionally allows to pass constant capacities using <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> / <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pairs. For instance, <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;constant&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">capacity_value=60</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">capacity=60</span></code>, but the modes <code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code> are available as well. These are useful when the capacity is not exactly known <a class="footnote-reference brackets" href="#f2" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+</div>
+<p>The result of the binomial fit can be seen below. During pedestrian rush hours, virtually all seats are taken, meaning the data reach their capacity, which is shown as a dashed gray line in the plot. The fitted model saturates in this range, as can be seen by the oscillations being capped at 60. Note that not even the confidence interval violates the limit set by capacity.</p>
 <a class="reference internal image-reference" href="../_images/saturation_fig01.png"><img alt="Seat occupation fitted with a binomial model of constant capacity" class="align-center" src="../_images/saturation_fig01.png" style="width: 700px;" />
 </a>
 </section>
 <section id="varying-capacity">
 <h2>Varying Capacity<a class="headerlink" href="#varying-capacity" title="Link to this heading">#</a></h2>
-<p>Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The <code class="docutils literal notranslate"><span class="pre">binomial</span></code> model with <code class="docutils literal notranslate"><span class="pre">capacity_mode=vectorized</span></code> is the perfect fit for this situation. While we previously had to specify a <em>constant</em> capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter <code class="docutils literal notranslate"><span class="pre">capacity_name</span></code>. Note that both data frames passed to <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> <em>and</em> <a class="reference internal" href="../api/api/gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a> must include this column:</p>
+<p>Sydney surely cares for its residents and makes an effort to provide more space for sitting. Accordingly, after the initial nine days, the number of seats significantly increases. The <code class="docutils literal notranslate"><span class="pre">binomial</span></code> model using a <em>vectorized</em> capacity is the perfect fit for this situation. While we previously had to specify a <em>constant</em> capacity, the capacity can now vary with each data point in the time series. Accordingly, the input data must contain a capacity column. When setting up the model, we specify this column using the parameter <code class="docutils literal notranslate"><span class="pre">capacity_name</span></code>. Note that both data frames passed to <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> <em>and</em> <a class="reference internal" href="../api/api/gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a> must include this column. Also note that the capacity is not anymore passed as argument to <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>, as it is now fully specified by the input data:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
 
@@ -448,32 +463,32 @@
 
 <span class="c1"># Save the column names for later usage</span>
 <span class="n">timestamp_name</span> <span class="o">=</span> <span class="s2">&quot;date&quot;</span>
-<span class="hll"><span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;occupied&quot;</span>
-</span><span class="n">capacity_name</span> <span class="o">=</span> <span class="s2">&quot;seats&quot;</span>
-
+<span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;occupied&quot;</span>
+<span class="hll"><span class="n">capacity_name</span> <span class="o">=</span> <span class="s2">&quot;seats&quot;</span>
+</span>
 <span class="c1"># Convert to datetime</span>
 <span class="n">data</span><span class="p">[</span><span class="n">timestamp_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">timestamp_name</span><span class="p">])</span>
 
 <span class="c1"># Convert data type to unsigned int</span>
-<span class="hll"><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
-</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
-
+<span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">metric_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+<span class="hll"><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">capacity_name</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+</span>
 <span class="c1"># Set up the Gloria model</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;binomial&quot;</span><span class="p">,</span>
     <span class="n">metric_name</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span>
-<span class="hll">    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
-</span>    <span class="n">capacity_name</span><span class="o">=</span><span class="s2">&quot;seats&quot;</span><span class="p">,</span>
-    <span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 h&quot;</span><span class="p">,</span>
+    <span class="n">timestamp_name</span><span class="o">=</span><span class="n">timestamp_name</span><span class="p">,</span>
+<span class="hll">    <span class="n">capacity_name</span><span class="o">=</span><span class="n">capacity_name</span><span class="p">,</span>
+</span>    <span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1 h&quot;</span><span class="p">,</span>
     <span class="n">n_changepoints</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="p">)</span>
 
 <span class="c1"># Add observed seasonalities</span>
 <span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;daily&quot;</span><span class="p">,</span> <span class="s2">&quot;1d&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
-<span class="hll"><span class="c1"># Fit the model to the data</span>
-</span><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">capacity_mode</span><span class="o">=</span><span class="s2">&quot;vectorized&quot;</span><span class="p">)</span>
-
+<span class="c1"># Fit the model to the data</span>
+<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span>
 <span class="c1"># Predict</span>
 <span class="n">data_predict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">timestamp_name</span><span class="p">,</span> <span class="n">capacity_name</span><span class="p">]]</span>
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data_predict</span><span class="p">)</span>
@@ -489,7 +504,17 @@
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
 <p>In this tutorial, we saw how Gloria’s bounded-count models behave when a time series approaches its capacity. In such cases, the models automatically dampen further growth: seasonal components are clipped to the ceiling, trend changepoints flatten, and predictive intervals are truncated so they never exceed the specified upper limit. Whether the capacity is fixed  or time-varying, Gloria incorporates the bound directly into the likelihood, allowing it to represent the transition from linear growth to a plateau without manual tuning. As a result, forecasts remain realistic even in heavily saturated regimes, while still tracking ordinary fluctuations when the system operates below capacity.</p>
-<p>The capacities are configured via the parameters <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>. There are four available modes:</p>
+<p class="rubric">Footnotes</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>More precisely, <code class="docutils literal notranslate"><span class="pre">count</span></code> was summed over the hourly measurements of four separate sensors distributed across the city.</p>
+</aside>
+<aside class="footnote brackets" id="f2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Available <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> parameter pairs are listed in the following table:</p>
+</aside>
+</aside>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 15.0%" />
@@ -515,20 +540,9 @@
 <td><p>The capacity is optimized such that the response variable is distributed around the expectation value <span class="math notranslate nohighlight">\(N \times p\)</span> with <span class="math notranslate nohighlight">\(N=\)</span> capacity and <span class="math notranslate nohighlight">\(p=\)</span> <code class="docutils literal notranslate"><span class="pre">value</span></code>. This mode is the default using <code class="docutils literal notranslate"><span class="pre">value=0.5</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">value</span></code> must be in <span class="math notranslate nohighlight">\([0,1]\)</span></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;vectorized&quot;</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">value</span></code> varies with each data point in the time series. The corresponding column <code class="docutils literal notranslate"><span class="pre">capacity_name</span></code> must be provided by the input data.</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">value</span></code> in the <code class="docutils literal notranslate"><span class="pre">capacity_name</span></code> column must not exceed the corresponding values in the metric column.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
-<p class="rubric">Footnotes</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="f1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>More precisely, <code class="docutils literal notranslate"><span class="pre">count</span></code> was summed over the hourly measurements of four separate sensors distributed across the city.</p>
-</aside>
-</aside>
 </section>
 </section>
 

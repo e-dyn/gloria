@@ -22,7 +22,6 @@ from cmdstanpy import (
     CmdStanLaplace,
     CmdStanMLE,
     CmdStanModel,
-    install_cmdstan,
     set_cmdstan_path,
 )
 from pydantic import (
@@ -413,28 +412,12 @@ class ModelBackendBase(ABC):
         # installations
         models_path = Path(__file__).parent / "stan_models"
         cmdstan_path = models_path / f"cmdstan-{_CMDSTAN_VERSION}"
-        # If not yet installed, install CmdStan with desired version
-        if not cmdstan_path.is_dir():
-            get_logger().info(
-                f"Cannot find CmdStan version {_CMDSTAN_VERSION}. "
-                "Installing now."
-            )
-            try:
-                install_cmdstan(
-                    version=_CMDSTAN_VERSION,
-                    dir=str(models_path),
-                    compiler=True,
-                )
-            except Exception as e:
-                get_logger().error(
-                    f"CmdStan installation failed with error '{e}'."
-                )
-                raise RuntimeError("CmdStan installation failed.") from e
-            else:
-                get_logger().info("CmdStan successfully installed.")
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
-        self.model = CmdStanModel(stan_file=self.stan_file)
+        self.model = CmdStanModel(
+            stan_file=self.stan_file,  # Keep explicit stan_file for dev
+            exe_file=self.stan_file.with_suffix(".exe"),
+        )
         # Silence cmdstanpy logger
         stan_logger = logging.getLogger("cmdstanpy")
         stan_logger.setLevel(logging.CRITICAL)
@@ -1879,11 +1862,15 @@ class BetaBinomial(ModelBackendBase):
             self.stan_data.capacity if capacity_vec is None else capacity_vec
         )
 
-        if capacity_vec is not None:
-            scale = (
-                4 * (capacity - 1) / (capacity * self.fit_params["kappa"] ** 2)
-                - 1
-            )
+        # Average kappa if laplace was used
+        if self.use_laplace:
+            kappa = self.fit_params["kappa"].mean()
+        else:
+            kappa = self.fit_params["kappa"]
+
+        # Do not use scale parameter from fit but calculate it based on
+        # capacity and kappa. This way, scale will have the correct shape.
+        scale = 4 * (capacity - 1) / (capacity * kappa**2) - 1
 
         # Calculate success probability
         p = yhat / capacity

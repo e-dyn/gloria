@@ -50,13 +50,14 @@
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/api/gloria.Gloria.fit';</script>
+    <link rel="icon" href="../../_static/gloria_favicon.ico"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="gloria.Gloria.from_dict" href="gloria.Gloria.from_dict.html" />
     <link rel="prev" title="gloria.Gloria.add_seasonality" href="gloria.Gloria.add_seasonality.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.1" />
+  <meta name="docsearch:version" content="0.1.2" />
   </head>
   
   
@@ -148,6 +149,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes/index.html">
+    Release notes
   </a>
 </li>
 
@@ -250,6 +258,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes/index.html">
+    Release notes
   </a>
 </li>
 
@@ -453,10 +468,12 @@ Note that <code class="docutils literal notranslate"><span class="pre">capacity<
 of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Specifying <code class="docutils literal notranslate"><span class="pre">capacity</span></code> is
 mutually exclusive with providing a  <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and
 <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pair.</p></li>
-<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Two modes are available:</p>
+<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Three modes are available:</p>
 <ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;constant&quot;</span></code>: The provided <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> equals the
+capacity.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;factor&quot;</span></code>: The capacity is the maximum of the response
-variable times <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code></p></li>
+variable times <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;scale&quot;</span></code>: The capacity is optimized such that the response
 variable is distributed around the expectation value
 <span class="math notranslate nohighlight">\(N \times p\)</span> with <span class="math notranslate nohighlight">\(N=\)</span> capacity and <span class="math notranslate nohighlight">\(p=\)</span>
@@ -466,9 +483,11 @@ variable is distributed around the expectation value
 </p></li>
 <li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:</p>
 <ul>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be
-<span class="math notranslate nohighlight">\(\ge\)</span> 1</p></li>
-<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode</span> <span class="pre">=</span> <span class="pre">&quot;scale&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be in
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;constant&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be an
+integer <span class="math notranslate nohighlight">\(\ge\)</span> the maximum of the response variable.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;factor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be
+<span class="math notranslate nohighlight">\(\ge\)</span> 1.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;scale&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be in
 <span class="math notranslate nohighlight">\([0,1]\)</span>.</p></li>
 </ul>
 </p></li>

@@ -55,6 +55,7 @@ napoleon_use_admonition_for_examples = False
 
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
+html_favicon = "_static/gloria_favicon.ico"
 
 html_theme_options = {
     "logo": {
