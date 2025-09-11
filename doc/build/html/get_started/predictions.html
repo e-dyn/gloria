@@ -470,10 +470,10 @@
 </section>
 <section id="trend-predictions">
 <h2>Trend Predictions<a class="headerlink" href="#trend-predictions" title="Link to this heading">#</a></h2>
-<p>While Gloria assumes stationary seasonality and event patterns, the trend component is less predictable. Neither the location nor the size of changepoint rate changes can be known in advance. What we can specify, however, are <em>changepoint density</em> and <em>mean rate change</em>, as they have been learned during training. Gloria uses these parameters to predict the trend and its uncertainty in the same fashion as <a class="reference external" href="https://facebook.github.io/prophet/docs/uncertainty_intervals.html#uncertainty-in-the-trend">Prophet</a>. The following figure shows the outcome of our example, when <code class="docutils literal notranslate"><span class="pre">n_changepoints=8</span></code>:</p>
+<p>While Gloria assumes stationary seasonality and event patterns, the trend component is less predictable. Neither the location nor the size of changepoint rate changes can be known in advance. What we can specify, however, are <em>changepoint density</em> and <em>mean rate change</em>, as they have been learned during training. Gloria uses these parameters to predict the trend and its uncertainty in the same fashion as <a class="reference external" href="https://facebook.github.io/prophet/docs/uncertainty_intervals.html#uncertainty-in-the-trend">Prophet</a>. The following figure shows the outcome of our example, when <code class="docutils literal notranslate"><span class="pre">n_changepoints=8</span></code> is set:</p>
 <a class="reference internal image-reference" href="../_images/prediction_trend_uncertainty.png"><img alt="Plot of the Gloria fit and forecast of the power consumption data set." class="align-center" src="../_images/prediction_trend_uncertainty.png" style="width: 700px;" />
 </a>
-<p>From the result we observe the following things:</p>
+<p>From the result we observe the following:</p>
 <ol class="arabic simple">
 <li><p>From the 8 changepoints in total, only 3 result in meaningful rate changes, due to the sparse prior on rate changes.</p></li>
 <li><p>It is not possible to assume specific changepoints or rate changes in the forecast period. Therefore, the trend forecast is simply an extrapolation of the latest trend in the training period.</p></li>

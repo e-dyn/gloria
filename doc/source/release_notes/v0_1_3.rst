@@ -1,0 +1,13 @@
+
+.. currentmodule:: gloria
+
+Version 0.1.3
+=============
+
+Documentation
+-------------
+- Added :ref:`Predictions <ref-predictions>` tutorial describing details on the :meth:`~Gloria.predict` output data frame (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).
+
+Contributors
+------------
+- Benjamin Kambs
