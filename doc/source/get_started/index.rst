@@ -14,6 +14,7 @@ On this page you find a series of basic tutorials that should get you up and run
    seasonalities
    modeling_trends
    events
+   predictions
    model_selection
    decomposition_types
    saturation

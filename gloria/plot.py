@@ -443,7 +443,7 @@ def plot_seasonality_component(
                 ax.set_xticklabels(rotated_weekdays)
             elif component == "daily":
                 ax.set_xticks(x_dates)
-                ax.set_xticklabels([f"{H}:00" for H in range(23)])
+                ax.set_xticklabels([f"{H}:00" for H in range(24)])
             else:
                 locator = AutoDateLocator()
                 formatter = AutoDateFormatter(locator)
