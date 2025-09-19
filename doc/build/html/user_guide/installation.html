@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Getting Started &#8212; Gloria 0.1.1 documentation</title>
+    <title>Installation &#8212; Gloria 0.1.1 documentation</title>
   
   
   
@@ -49,12 +49,12 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/installation';</script>
     <link rel="icon" href="../_static/gloria_favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="Gloria documentation" href="../index.html" />
+    <link rel="next" title="Basic Usage" href="basic_usage.html" />
+    <link rel="prev" title="User Guide" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.2" />
@@ -140,8 +140,8 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
-    Getting Started
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
   </a>
 </li>
 
@@ -155,7 +155,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../release_notes/index.html">
-    Release notes
+    Release Notes
   </a>
 </li>
 
@@ -218,6 +218,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -245,8 +249,8 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
-    Getting Started
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
   </a>
 </li>
 
@@ -260,7 +264,7 @@
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../release_notes/index.html">
-    Release notes
+    Release Notes
   </a>
 </li>
 
@@ -307,18 +311,28 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
-<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
-<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">In-Depth Topics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Auxiliaries</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
 </ul>
 </div>
 </nav></div>
@@ -359,7 +373,10 @@
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Getting Started</span></li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Installation</span></li>
   </ul>
 </nav>
 </div>
@@ -376,24 +393,44 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="getting-started">
-<span id="get-started"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
-<p>On this page you find a series of basic tutorials that should get you up and running for working with Gloria.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
-<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
-<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
-<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
-</ul>
+  <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+</tbody>
+</table>
 </div>
+<section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Gloria requires Python version <span class="math notranslate nohighlight">\(\ge\)</span> 3.9 and <span class="math notranslate nohighlight">\(&lt;\)</span> 3.13. If you do not have it installed, please refer to <a class="reference external" href="https://www.python.org/">python.org</a>.</p>
+</div>
+<section id="installing-gloria">
+<h2>Installing Gloria<a class="headerlink" href="#installing-gloria" title="Link to this heading">#</a></h2>
+<p>We recommend to install Gloria into a dedicated <a class="reference external" href="https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments">virtual environment</a>. Once the environment is created and activated use <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install gloria</span>
+</pre></div>
+</div>
+<p>to install the package. To verify it is correctly installed, start a Python REPL session by simply entering <code class="docutils literal notranslate"><span class="pre">python</span></code> into your shell and run the following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; from gloria import Gloria</span>
+<span class="go">&gt;&gt;&gt; Gloria()</span>
+</pre></div>
+</div>
+<p>This will output a newly instantiated Gloria object similar to the following</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt; Gloria(model=&#39;normal&#39;, sampling_period=Timedelta(&#39;1 days 00:00:00&#39;), timestamp_name=&#39;ds&#39;, metric_name=&#39;y&#39;, capacity_name=&#39;&#39;, changepoints=None, n_changepoints=25, changepoint_range=0.8, seasonality_prior_scale=3, event_prior_scale=3, changepoint_prior_scale=3, dispersion_prior_scale=3, interval_width=0.8, trend_samples=1000, model_backend=&lt;gloria.models.Normal object at 0x0000015509551CD0&gt;, vectorized=False, external_regressors={}, seasonalities={}, events={}, prior_scales={}, protocols=[], history=Empty DataFrame</span>
+<span class="go">Columns: []</span>
+<span class="go">Index: [], first_timestamp=Timestamp(&#39;1970-01-01 00:00:00&#39;), X=Empty DataFrame</span>
+<span class="go">Columns: []</span>
+<span class="go">Index: [], fit_kwargs={})</span>
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>The package installer <em>pip</em> is typically installed along with Python, in particular if it was installed via <a class="reference external" href="https://www.python.org/">python.org</a>. If pip is not installed, you can follow the instructions found <a class="reference external" href="https://pip.pypa.io/en/stable/installation/">here</a>.</p>
+</aside>
+</aside>
+</section>
 </section>
 
 
@@ -407,20 +444,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../index.html"
+       href="index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Gloria documentation</p>
+        <p class="prev-next-title">User Guide</p>
       </div>
     </a>
     <a class="right-next"
-       href="installation.html"
+       href="basic_usage.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Installation</p>
+        <p class="prev-next-title">Basic Usage</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -430,6 +467,24 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-gloria">Installing Gloria</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

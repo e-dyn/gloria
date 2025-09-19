@@ -123,5 +123,5 @@ From the result we observe the following:
 
 .. rubric:: Footnotes
 
-.. [#f1] Gloria uses scipy's percent point function :meth:`scipy.stats.rv_continuous.ppf` for respective distribution, e.g. :obj:`scipy.stats.gamma`.
+.. [#f1] Gloria uses scipy's percent point function :meth:`scipy.stats.rv_continuous.ppf` for the respective distribution, e.g. :obj:`scipy.stats.gamma`.
 .. [#f2] Note that Gloria's plot method has been modified for the sake of this figure. By default, the confidence band defined by ``yhat_upper`` and ``yhat_lower`` cannot be plotted.

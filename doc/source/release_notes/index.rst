@@ -1,6 +1,6 @@
 .. _release_notes:
 
-Release notes
+Release Notes
 =============
 
 This list is an archive of all release notes since Version 0.1.2. The full history of commits can be found `here <https://github.com/e-dyn/gloria/commits/main/>`_.
