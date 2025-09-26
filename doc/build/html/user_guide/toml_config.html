@@ -1,0 +1,607 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuration Files &#8212; Gloria 0.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=c7fef49e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/toml_config';</script>
+    <link rel="icon" href="../_static/gloria_favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="prev" title="Predictions" href="predictions.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.2" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.1 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">In-Depth Topics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Auxiliaries</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration Files</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Configuration Files</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="configuration-files">
+<span id="ref-toml-config"></span><h1>Configuration Files<a class="headerlink" href="#configuration-files" title="Link to this heading">#</a></h1>
+<p>Working with Gloria often means adjusting many parameters to control how models behave. When experiments span multiple scripts or environments, keeping these settings consistent can quickly become an error-prone chore. To make this easier, Gloria supports configuration files in the <a class="reference external" href="https://toml.io/en/">TOML</a> format. In the following we show how to use these files and explain how Gloria resolves conflicts between multiply defined parameters.</p>
+<section id="configuring-models-with-toml">
+<h2>Configuring Models with TOML<a class="headerlink" href="#configuring-models-with-toml" title="Link to this heading">#</a></h2>
+<p>Consider the following example, which uses the common Gloria building blocks and workflow.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">CalendricData</span><span class="p">,</span> <span class="n">Gaussian</span>
+
+<span class="c1"># Construct Gloria model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;poisson&quot;</span><span class="p">,</span>
+    <span class="n">sampling_period</span><span class="o">=</span><span class="s2">&quot;1d&quot;</span><span class="p">,</span>
+    <span class="n">timestamp_name</span><span class="o">=</span><span class="s2">&quot;ds&quot;</span><span class="p">,</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span>
+    <span class="n">n_changepoints</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="c1"># Create protocol for calendric data and add to model</span>
+<span class="n">protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
+    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>
+    <span class="n">subdiv</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">monthly_seasonality</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">holiday_profile</span><span class="o">=</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;5d&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+
+<span class="c1"># Load and prepare data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/refs/heads/main/scripts/data/simulated/2025-02-19_binomial_test_n02.csv&quot;</span><span class="p">,</span>
+    <span class="n">dtype_kind</span><span class="o">=</span><span class="s2">&quot;u&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Fit</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">optimize_mode</span><span class="o">=</span><span class="s2">&quot;MAP&quot;</span><span class="p">,</span> <span class="n">use_laplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Predict</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="c1"># Plot results</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, we customize the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> model instantiation along with the <a class="reference internal" href="../api/api/gloria.Gloria.load_data.html#gloria.Gloria.load_data" title="gloria.Gloria.load_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_data()</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Gloria.predict.html#gloria.Gloria.predict" title="gloria.Gloria.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a> methods by passing several keyword arguments. Also, we add a <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol to include holiday events as well as some default seasonalities. All of this boilerplate can be factored out into a configuration file. Using such a file, the code simplifies considerably: <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
+
+<span class="c1"># Get path of config file</span>
+<span class="n">toml_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;run_configs/run_config.toml&quot;</span>
+
+<span class="c1"># Construct Gloria model from TOML file</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">from_toml</span><span class="p">(</span><span class="n">toml_path</span><span class="o">=</span><span class="n">toml_path</span><span class="p">)</span>
+
+<span class="c1"># Load data using TOML options saved in model._config</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+<span class="c1"># Fit model using TOML options saved in model._config</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="c1"># Make prediction using TOML options saved in model._config</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+
+<span class="c1"># Plot results</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To create a Gloria model from a configuration file, simply call <a class="reference internal" href="../api/api/gloria.Gloria.from_toml.html#gloria.Gloria.from_toml" title="gloria.Gloria.from_toml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_toml()</span></code></a> with the <code class="docutils literal notranslate"><span class="pre">toml_path</span></code>. All keyword arguments and the calendric data protocol are now handled through the configuration file, while model and its methods behave exactly as before. The contents of the file are shown below</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[model]</span>
+<span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;poisson&quot;</span>
+<span class="n">sampling_period</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1d&quot;</span>
+<span class="n">timestamp_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ds&quot;</span>
+<span class="n">metric_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;y&quot;</span>
+<span class="n">n_changepoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+
+<span class="k">[load_data]</span>
+<span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/refs/heads/main/scripts/data/simulated/2025-02-19_binomial_test_n02.csv&quot;</span>
+<span class="n">dtype_kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;u&quot;</span>
+
+<span class="k">[fit]</span>
+<span class="n">optimize_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MAP&quot;</span>
+<span class="n">use_laplace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="k">[predict]</span>
+<span class="n">periods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+
+<span class="k">[[protocols]]</span>
+<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;CalendricData&quot;</span>
+<span class="n">country</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;US&quot;</span>
+<span class="n">subdiv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="n">monthly_seasonality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span>
+<span class="n">yearly_seasonality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="w">  </span><span class="k">[protocols.holiday_profile]</span>
+<span class="w">  </span><span class="n">profile_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Gaussian&quot;</span>
+<span class="w">  </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;5d&quot;</span>
+</pre></div>
+</div>
+<p>Details on valid TOML syntax can be found in the <a class="reference external" href="https://toml.io/en/">official documentation</a>, but the most important feature is that TOML files are organized in <em>tables</em>, which are collections of key/value pairs and defined by headers with square brackets. Each table in the configuration file maps to a specific step in the Gloria workflow. For example, the <code class="docutils literal notranslate"><span class="pre">[model]</span></code> table provides the arguments to the <a class="reference internal" href="../api/api/gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a> constructor, while <code class="docutils literal notranslate"><span class="pre">[load_data]</span></code> supplies the options passed to <a class="reference internal" href="../api/api/gloria.Gloria.load_data.html#gloria.Gloria.load_data" title="gloria.Gloria.load_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_data()</span></code></a>.</p>
+<p>Some methods, such as <a class="reference internal" href="../api/api/gloria.Gloria.add_seasonality.html#gloria.Gloria.add_seasonality" title="gloria.Gloria.add_seasonality"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_seasonality()</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gloria.add_external_regressor.html#gloria.Gloria.add_external_regressor" title="gloria.Gloria.add_external_regressor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_external_regressor()</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Gloria.add_protocol.html#gloria.Gloria.add_protocol" title="gloria.Gloria.add_protocol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_protocol()</span></code></a>, can be called multiple times on a model. Their configuration is therefore expressed as arrays of tables, where each item corresponds to a single call of the respective method. In our example, this is used to add a <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol.</p>
+</section>
+<section id="parameter-precedence">
+<h2>Parameter Precedence<a class="headerlink" href="#parameter-precedence" title="Link to this heading">#</a></h2>
+<p><strong>Model Instantiation</strong></p>
+<p>When a Gloria model is created using <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">=</span> <span class="pre">Gloria()</span></code>, it is initialized using sensible defaults. These defaults can be overwritten by passing keyword arguments, for example <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">=</span> <span class="pre">Gloria(model=&quot;poisson&quot;)</span></code>. Creating a model from a TOML file takes effect in between: parameters defined in the <code class="docutils literal notranslate"><span class="pre">[model]</span></code> table take precedence over built-in defaults, but you can still provide additional keyword arguments to overwrite the options from the configuration file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">from_toml</span><span class="p">(</span>
+    <span class="n">toml_path</span><span class="o">=</span><span class="n">toml_path</span><span class="p">,</span>
+    <span class="n">n_changepoints</span><span class="o">=</span><span class="mi">5</span>       <span class="c1"># &lt;-- overwrites n_changepoints in TOML file</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Gloria Methods</strong></p>
+<p>For methods, the situation is slightly more involved. Method settings are stored within the model rather than in the method itself. You can inspect the values via the <code class="docutils literal notranslate"><span class="pre">Gloria()._config</span></code> field and observe how they are being overwritten by the settings in the corresponding method table of the configuration file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Default Gloria model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;fit&quot;</span><span class="p">][</span><span class="s2">&quot;use_laplace&quot;</span><span class="p">])</span> <span class="c1"># out: False; Laplace sampling off by default</span>
+
+<span class="c1"># TOML-configured Gloria model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">from_toml</span><span class="p">(</span><span class="n">toml_path</span><span class="o">=</span><span class="n">toml_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;fit&quot;</span><span class="p">][</span><span class="s2">&quot;use_laplace&quot;</span><span class="p">])</span> <span class="c1"># out: True; default setting overwritten</span>
+</pre></div>
+</div>
+<p>When calling a method, you can combine both a TOML file and keyword arguments for local overwrites:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Overwrite fit defaults with TOML settings</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">from_toml</span><span class="p">(</span><span class="n">toml_path</span><span class="o">=</span><span class="n">model_toml</span><span class="p">)</span>
+
+<span class="c1"># Overwrite fit configurations with another TOML file and keyword arguments</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">toml_path</span><span class="o">=</span><span class="n">method_toml</span><span class="p">,</span> <span class="n">use_laplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The overall precedence order for methods is <strong>keyword arguments &gt; local TOML &gt; global TOML &gt; defaults</strong>.</p>
+<p class="rubric">Footnotes</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Note that the configuration file needs to be located at <code class="docutils literal notranslate"><span class="pre">./run_configs/run_config.toml</span></code> relative to the path of this script. The contents of the TOML file can be found in the <a class="reference external" href="https://raw.githubusercontent.com/e-dyn/gloria/refs/heads/main/scripts/run_configs/run_config.toml">GitHub</a> repository, but is also given in this tutorial.</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="predictions.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Predictions</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuring-models-with-toml">Configuring Models with TOML</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-precedence">Parameter Precedence</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

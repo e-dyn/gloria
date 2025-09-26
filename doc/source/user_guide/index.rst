@@ -37,3 +37,4 @@ On this page you find a series of basic tutorials that should get you up and run
    :maxdepth: 1
    
    predictions
+   toml_config

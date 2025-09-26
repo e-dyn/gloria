@@ -4,22 +4,14 @@ sampling_period = "1d"
 timestamp_name = "ds"
 metric_name = "y"
 n_changepoints = 2
-changepoint_range = 0.8
-seasonality_prior_scale = 3
-event_prior_scale = 100
-changepoint_prior_scale = 3
-interval_width = 0.8
-uncertainty_samples = 100
 
 [load_data]
-source = "data/simulated/2025-02-19_binomial_test_n02.csv"
+source = "https://raw.githubusercontent.com/e-dyn/gloria/refs/heads/main/scripts/data/simulated/2025-02-19_binomial_test_n02.csv"
 dtype_kind = "u"
 
 [fit]
 optimize_mode = "MAP"
 use_laplace = true
-capacity_mode = "scale"
-capacity_value = 0.5
 
 [predict]
 periods = 30
