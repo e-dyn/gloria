@@ -9,7 +9,7 @@ Modeling Trends
 
 The *trend* is the component of your data that desribes its local mean value, around which the seasonalities oscillate. Typically, trends are not constant, but evolve upwards or downwards and are subject to sudden changes. Gloria assumes a continuous linear trend model, that is, it models a piecewise-linear trend function whose rate is allowed to change at specified *changepoints* without introducing discontinuities.
 
-In our introductory example :ref:`basic usage <ref-basic-usage>`, we deliberately chose a section of the power-consumption data set, which does not exhibit trend changes. By setting ``n_changepoints=0`` we forced the Gloria model to fit a simple linear trend. Now let's look at a different part of the same data set, several days further back in time.
+In our introductory example :ref:`Basic Usage <ref-basic-usage>`, we deliberately chose a section of the power-consumption data set, which does not exhibit trend changes. By setting ``n_changepoints=0`` we forced the Gloria model to fit a simple linear trend. Now let's look at a different part of the same data set, several days further back in time.
 
 .. code-block:: python
 
@@ -45,7 +45,7 @@ We quickly realize that the overall patterns are the same, but there is a three-
   :width: 700
   :alt: Power consumption with dip in the data
   
-We now try to model this drop by allowing Gloria to include trend changes. Note that the only change compared with the code in :ref:`basic usage <ref-basic-usage>` is to omit ``n_changepoints=0``:
+We now try to model this drop by allowing Gloria to include trend changes. Note that the only change compared with the code in :ref:`Basic Usage <ref-basic-usage>` is to omit ``n_changepoints=0``:
 
 .. code-block:: python
 
@@ -78,7 +78,7 @@ We now try to model this drop by allowing Gloria to include trend changes. Note 
   :width: 700
   :alt: Fit of power consumption data with strong trend changes.
 
-Examining the plot, we see that the data are fitted nicely, but the trend changes are too frequently and too noisy. Most likely, Gloria was too flexible and over-fitted the data as affirmed by the narrow confidence band. There are overall three main strategies to customise the trend fit and make it more robust:
+Examining the plot, we see that the data are fitted nicely, but the trend changes are too frequently and too noisy. Most likely, Gloria was too flexible and over-fitted the data as affirmed by the narrow confidence band. There are overall three main strategies to customize the trend and make it more robust:
 
 Number of Changepoints
 ----------------------
@@ -122,7 +122,7 @@ While the last result is already more well-behaved, we see that one of the autom
 Adjust the Prior Scale
 ----------------------
 
-Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale = 2.5e-3``, which is much stricter than the default value of ``0.05``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
+Specifying changepoints or restricting their number works well if you have some prior knowledge. If you prefer to let the model decide where a changepoint is worthwhile, you can instead tighten ``changepoint_prior_scale``. This parameter controls the allowed magnitude of rate changes at changepoints. If you reduce the prior scale, large rate changes are permitted only when they significantly improve the model fit. Internally, Gloria realizes this by putting a sparse L1 prior on the size of each possible rate change. Here we use ``changepoint_prior_scale=5e-3``, which is much stricter than the default value of ``3``. Conversely, increasing changepoint_prior_scale above 0.05 makes the trend more agile, which can be useful if you suspect multiple genuine shifts. The result is similar to supplying an explicit list of changepoints.
 
 .. image:: pics/02_changepoints_fig05.png
   :align: center

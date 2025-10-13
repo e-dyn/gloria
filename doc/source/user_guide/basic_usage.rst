@@ -10,9 +10,9 @@ Basic Usage
 
 Gloria is designed for one core task: modeling and forecasting time-series data. The standard workflow has three steps:
 
-1. **Load and preprocess** your time-series data.
-2. **Create and configure** a Gloria model.
-3. **Fit and forecast** by applying the model to the data
+1. **Load and preprocess** your time-series data,
+2. **Create and configure** a Gloria model, and
+3. **Fit and forecast** by applying the model to the data.
 
 The example below walks through these steps with a minimal dataset. Even as your time-series become more complex, the overall pattern stays the same - only the model-configuration details grow in depth. We'll cover those advanced options in the next sections.
 
@@ -49,6 +49,10 @@ From the plot we can see daily oscillations with maxima around afternoon and min
   :align: center
   :width: 700
   :alt: Plot of the last 2 weeks of energy consumption data
+  
+  
+.. hint::
+    Some of the load and preprocess tasks can be automated using the :meth:`~Gloria.load_data` method.
 
 Create and Configure
 --------------------
@@ -86,7 +90,7 @@ The :class:`~gloria.Gloria` constructor has some sensible defaults but often we 
     m.add_seasonality(name="weekly", period="7 d", fourier_order=2)
     
     
-In the two last lines of code, we equipped the model with daily and weekly seasonalities using :meth:`~gloria.Gloria.add_seasonality`. For both seasonalities we chose a maximum Fourier order of 2 (cf. :ref:`seasonalities <ref-seasonalities>`).
+In the two last lines of code, we equipped the model with daily and weekly seasonalities using :meth:`~gloria.Gloria.add_seasonality`. For both seasonalities we chose a maximum Fourier order of 2. Details can be found in the :ref:`Seasonalities <ref-seasonalities>` tutorial.
 
 Fit and Forecast
 ----------------

@@ -11,9 +11,9 @@ The seasonal component of a time-series :math:`f_\text{seas}(t)` isolates the po
     f_\text{seas}(t) \approx \sum_{n=1}^{N}{a_n\sin\left(\frac{2\pi n}{T} t\right)
                     + b_n\cos\left(\frac{2\pi n}{T} t\right)}.
                     
-Here :math:`T` is the fundamental period of the Fourier series, e.g. :math:`T` = 7 days for patterns that repeat on a weekly basis. The upper limit :math:`N` of the Fourier sum is known as its *order*, where higher orders are able to describe faster oscillations. Eventually, the parameters :math:`a_n` and :math:`b_n` are weighting factors that are specific to the seasonal component at hand and will be estimated by Gloria's fitting procedure.
+Here :math:`T` is the fundamental period of the Fourier series, e.g. :math:`T` = 7 days for patterns that repeat on a weekly basis. The upper limit :math:`N` of the Fourier sum is known as its *order*, where higher orders are able to describe quicker changes in the overall pattern. Eventually, the parameters :math:`a_n` and :math:`b_n` are weighting factors that are specific to the seasonal component at hand and will be estimated by Gloria's fitting procedure.
 
-To illustrate how the Fourier order shapes the seasonal fit, we use the power consumption data already seen in the :ref:`basic usage <ref-basic-usage>` tutorial. First, we condense the hourly power consumption data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.
+To illustrate how the Fourier order shapes the seasonal fit, we use the power consumption data already seen in the :ref:`Basic Usage <ref-basic-usage>` tutorial. First, we condense the hourly power consumption data into weekly totals. This aggregation smooths out daily and intra-week fluctuations, leaving only the longer-term signal.
 
 .. code-block:: python
     
@@ -83,9 +83,9 @@ Configuring Seasonalities
 
 When considering possible seasonalities and Fourier orders for your model, you can follow these guidelines
 
-* **Minimum data span**: include a seasonal component only if your data cover at least two complete periods. One period for learning the pattern, one more for confirming its stability. For instance, a weekly seasonality requires at least 2 weeks of data.
+* **Minimum data span**: include a seasonal component only if your data cover at least two complete cycles. One period for learning the pattern, one more for confirming its stability. For instance, a weekly seasonality requires at least 2 weeks of data.
 * **Maximum Fourier order**: the maximum order that can be estimated from data with sampling period :math:`\Delta t` is :math:`\lfloor T / (2 \Delta t) \rfloor` following the `Nyquist theorem <https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem>`_. For a weekly seasonality (:math:`T` = 7 days) on daily data (:math:`\Delta t` = 1 day), the order is capped at 3.
    
 .. tip::
 
-  When using the :class:`~gloria.CalendricData` protocol, these rules are automatically applied setting ``yearly_seasonality``, ``weekly_seasonality`` etc. to ``"auto"``. For more information, see the :ref:`calendric data <ref-calendric-data>` tutorial.
+  When using the :class:`~gloria.CalendricData` protocol, these rules are automatically applied setting ``yearly_seasonality``, ``weekly_seasonality`` etc. to ``"auto"``. For more information, see the :ref:`Calendric Data <ref-calendric-data>` tutorial.

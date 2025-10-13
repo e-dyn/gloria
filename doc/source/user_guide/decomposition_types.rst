@@ -12,7 +12,7 @@ Gloria models are based on the well-known decomposition of time-series :math:`Y(
 - **Additive decomposition**: :math:`Y(t) = T(t) + S(t) + E(t)`
 - **Multiplicative decomposition**: :math:`Y(t) = T(t) \times S(t) \times E(t)`
 
-Additive models assume *independent components*, i.e. they simply add up. Multiplicative models on the other hand can be used to introduce interactions, eg. when seasonalities grow with the trend.
+Additive models assume *independent components*, meaning they simply add up. Multiplicative models on the other hand can be used to introduce interactions. A common use case for multiplicative models is when seasonalities grow with the trend.
 
 In the last section on :ref:`model selection <ref-model-selection>`, we saw how different distribution models support various data types and bounds. In this tutorial, we explore how models inherently support different decomposition types, making an explicit selection between *additive* and *multiplicative* modes unnecessary.
 

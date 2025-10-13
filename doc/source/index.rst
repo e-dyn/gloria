@@ -55,7 +55,7 @@ Built for Professionals
       :text-align: center
       :columns: 4
 
-      Gloria handles arbitrary sampling intervals (not just daily)
+      Gloria handles arbitrary sampling intervals beyond daily
 
    .. grid-item-card:: Rich Event Modeling
       :text-align: center
@@ -84,7 +84,7 @@ Built for Professionals
       :columns: 4
 
       Type hints, pydantic for validation, and a clean API design reminiscent 
-      of `Prophet <https://facebook.github.io/prophet/>`_. but with a much more
+      of `Prophet <https://facebook.github.io/prophet/>`_, but with a much more
       maintainable and extensible codebase.    
 
 Get Involved
