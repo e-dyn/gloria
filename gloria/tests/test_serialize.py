@@ -44,5 +44,24 @@ def test_gloria_attribute_equivalence(fitted_model):
     assert serialize_attributes == model_attributes
 
 
+def test_backend_attribute_equivalence(fitted_model):
+    """
+    Tests whether all attributes of a Gloria model are included in the
+    serialize.GLORIA_ATTRIBUTES dictionary
+    """
+    # Gloria
+    from gloria.utilities.serialize import BACKEND_ATTRIBUTES
+
+    serialize_attributes = set(BACKEND_ATTRIBUTES.keys())
+    # The ignore_attributes are cmdstanpy object that are difficult to
+    # serialize and not necessary for prediction. Therefore they are not
+    # serialized
+    ignore_attributes = {"stan_fit", "model"}
+    backend_attributes = (
+        set(fitted_model.model_backend.__dict__.keys()) - ignore_attributes
+    )
+    assert serialize_attributes == backend_attributes
+
+
 if __name__ == "__main__":
     pytest.main()
