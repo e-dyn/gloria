@@ -654,7 +654,7 @@ class ModelBackendBase(ABC):
 
         # 1. Argument of the GLM
         trend_arg, _ = self.predict_regression(
-            stan_data.t, stan_data.X, trend_params.dict()
+            stan_data.t, stan_data.X, trend_params.model_dump()
         )
 
         # 2. Apply the inverse link
@@ -755,15 +755,15 @@ class ModelBackendBase(ABC):
         # Make local copy of stan data and vectorize capacity. Only the Stan-
         # files need the vectorized form even though the capacity is a single
         # value. Therefore, it can be discarded after the fit.
-        stan_data_opt = self.stan_data.copy()
+        stan_data_opt = self.stan_data.model_copy()
         if hasattr(stan_data_opt, "capacity") and not vectorized:
             stan_data_opt.capacity = (
                 np.ones(stan_data_opt.T, dtype=int) * stan_data_opt.capacity
             )
 
         optimize_args = dict(
-            data=stan_data_opt.dict(),
-            inits=self.stan_inits.dict(),
+            data=stan_data_opt.model_dump(),
+            inits=self.stan_inits.model_dump(),
             algorithm="BFGS",
             iter=int(1e4),
             jacobian=jacobian,
