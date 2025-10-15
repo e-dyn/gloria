@@ -1,0 +1,27 @@
+[model]
+model = "poisson"
+sampling_period = "1d"
+timestamp_name = "ds"
+metric_name = "y"
+n_changepoints = 2
+
+[load_data]
+dtype_kind = "u"
+
+[fit]
+optimize_mode = "MAP"
+use_laplace = false
+
+[predict]
+periods = 30
+
+[[protocols]]
+type = "CalendricData"
+country = "US"
+subdiv = ""
+monthly_seasonality = "auto"
+yearly_seasonality = false
+
+  [protocols.holiday_profile]
+  profile_type = "Gaussian"
+  width = "5d"
