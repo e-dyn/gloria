@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union
 # Third Party
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel
 
 # Inhouse Packages
 
@@ -334,6 +335,12 @@ def get_dict(data_in: dict[str, Any]) -> dict[str, Any]:
     serializable data types. On that account numpy arrays are converted to
     simple lists.
 
+    IMPORTANT: the get_dict/set_dict assumes the following things
+    - The only non-default data type are numpy arrays
+    - Numpy arrays only occur in the dictionaries top-level
+    - The top-level of the dictionary has no lists, as these would be confused
+      with numpy arrays during the set_dict reconstruction step.
+
     Parameters
     ----------
     data_in : dict[str, Any]
@@ -362,11 +369,9 @@ def get_dict(data_in: dict[str, Any]) -> dict[str, Any]:
             dim = len(x.shape)
             return empty_nested_list(dim)
 
-    # If a value in the input dictionary has the __iter__-method, we assume
-    # it must be a numpy array so we convert it using .tolist(). All other
-    # objects leave as is.
+    # Convert numpy arrays using dump_nparray. All other objects leave as is.
     dict_out = {
-        k: dump_nparray(v) if hasattr(v, "__iter__") else v
+        k: dump_nparray(v) if isinstance(v, np.ndarray) else v
         for k, v in data_in.items()
     }
     return dict_out
@@ -394,6 +399,44 @@ def set_dict(dict_in: dict[str, Any]) -> dict[str, Any]:
         for k, v in dict_in.items()
     }
     return data_out
+
+
+def get_pydantic(data_in: BaseModel) -> dict[str, Any]:
+    """
+    Converts a pydantic model to a dictionary of json-serializable data types.
+
+    Parameters
+    ----------
+    data_in : BaseModel
+        Input pydantic model to be converted.
+
+    Returns
+    -------
+    dict[str, Any]
+        JSON serializable dictionary containing data of original pydantic
+        model.
+    """
+    return get_dict(data_in.model_dump())
+
+
+def set_pydantic(
+    dict_in: dict[str, Any], model_class: type[BaseModel]
+) -> BaseModel:
+    """
+    Takes a dictionary as returned by get_pydantic() and restores the original
+    pydantic model.
+
+    Parameters
+    ----------
+    dict_in : dict[str, Any]
+        Input dictionary to be restored.
+
+    Returns
+    -------
+    dict[str, Any]
+        Restored pydantic model.
+    """
+    return model_class(**set_dict(dict_in))
 
 
 def model_to_dict(model: "Gloria") -> dict[str, Any]:
@@ -636,7 +679,7 @@ def model_from_json(
 
 # Simple attributes are those that are built-in data types of the Glora object
 # ie. they are json-serializable without further processing
-SIMPLE_ATTRIBUTES = [
+SIMPLE_GLORIA_ATTRIBUTES = [
     "model",
     "timestamp_name",
     "metric_name",
@@ -650,13 +693,15 @@ SIMPLE_ATTRIBUTES = [
     "interval_width",
     "trend_samples",
     "prior_scales",
+    "fit_kwargs",
+    "vectorized",
 ]
 
 # All Gloria attributes we wish to serialize. The dictionary maps attribute
 # name to a tuple of two functions. The first function is the serializer, the
 # second one the deserializer
 GLORIA_ATTRIBUTES: dict[str, tuple[Callable[..., Any], Callable[..., Any]]] = {
-    **{attribute: (ident, ident) for attribute in SIMPLE_ATTRIBUTES},
+    **{attribute: (ident, ident) for attribute in SIMPLE_GLORIA_ATTRIBUTES},
     "changepoints": (get_pdseries, set_pdseries),
     "changepoints_int": (get_pdseries, set_pdseries),
     "first_timestamp": (str, pd.Timestamp),
@@ -669,18 +714,21 @@ GLORIA_ATTRIBUTES: dict[str, tuple[Callable[..., Any], Callable[..., Any]]] = {
     "model_backend": (get_backend, set_backend),
     "external_regressors": (get_regressors, set_regressors),
     "events": (get_events, set_events),
+    "_config": (get_dict, set_dict),
 }
 
 # Same as Gloria attributes, only for the nested model_backend object
+SIMPLE_BACKEND_ATTRIBUTES = [
+    "model_name",
+    "linked_scale",
+    "linked_offset",
+    "use_laplace",
+]
+
+
 BACKEND_ATTRIBUTES = {
-    "stan_data": (
-        lambda x: get_dict(x.model_dump()),
-        lambda x: ModelInputData(**set_dict(x)),
-    ),
-    "stan_inits": (
-        lambda x: get_dict(x.model_dump()),
-        lambda x: ModelParams(**set_dict(x)),
-    ),
+    **{attribute: (ident, ident) for attribute in SIMPLE_BACKEND_ATTRIBUTES},
+    "stan_data": (get_pydantic, lambda x: set_pydantic(x, ModelInputData)),
+    "stan_inits": (get_pydantic, lambda x: set_pydantic(x, ModelParams)),
     "fit_params": (get_dict, set_dict),
-    "sample": (ident, ident),
 }

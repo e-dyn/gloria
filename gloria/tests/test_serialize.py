@@ -44,4 +44,5 @@ def test_gloria_attribute_equivalence(fitted_model):
     assert serialize_attributes == model_attributes
 
 
-pytest.main()
+if __name__ == "__main__":
+    pytest.main()
