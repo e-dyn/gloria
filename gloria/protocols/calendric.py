@@ -243,8 +243,6 @@ class Holiday(IntermittentEvent):
         """
         # Parent class converts basic fields and base event
         regressor_dict = super().to_dict()
-        # Remove t_list as it is reevaluated for ever make_feature execution
-        regressor_dict.pop("t_list")
         # Convert additional fields
         regressor_dict["country"] = self.country
         regressor_dict["subdiv"] = self.subdiv
