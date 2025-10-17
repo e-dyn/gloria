@@ -455,20 +455,20 @@ calls the model backend for the actual fitting.</p>
 according to <code class="docutils literal notranslate"><span class="pre">self.timestamp_name</span></code> and <code class="docutils literal notranslate"><span class="pre">self.metric_name</span></code>,
 respectively. If <em>external regressors</em> were added to the model, the
 respective columns must be present as well.</p></li>
-<li><p><strong>toml_path</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Path</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Path to an optional configuration TOML file that contains a section
+<li><p><strong>toml_path</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Path</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Path to an optional configuration TOML file that contains a section
 keyed by <code class="docutils literal notranslate"><span class="pre">[fit]</span></code>. If <em>None</em> (default), TOML configuration is
 skipped. TOML configuration precedes model settings saved in
 <code class="docutils literal notranslate"><span class="pre">self._config</span></code> as well as default settings.</p></li>
-<li><p><strong>optimize_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code> (default), the optimization step yields the Maximum A
+<li><p><strong>optimize_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">&quot;MAP&quot;</span></code> (default), the optimization step yields the Maximum A
 Posteriori estimation, if <code class="docutils literal notranslate"><span class="pre">&quot;MLE&quot;</span></code> a Maximum likehood estimation.</p></li>
-<li><p><strong>use_laplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the optimization is followed by a sampling
+<li><p><strong>use_laplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the optimization is followed by a sampling
 over the Laplace approximation around the posterior mode.</p></li>
-<li><p><strong>capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – An upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models.
+<li><p><strong>capacity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – An upper bound used for <code class="docutils literal notranslate"><span class="pre">binomial</span></code> and <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code> models.
 Note that <code class="docutils literal notranslate"><span class="pre">capacity</span></code> must be &gt;= all values in the metric column
 of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. Specifying <code class="docutils literal notranslate"><span class="pre">capacity</span></code> is
 mutually exclusive with providing a  <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code> and
 <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> pair.</p></li>
-<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Three modes are available:</p>
+<li><p><strong>capacity_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – <p>A method used to estimate the capacity. Three modes are available:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;constant&quot;</span></code>: The provided <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> equals the
 capacity.</p></li>
@@ -481,7 +481,7 @@ variable is distributed around the expectation value
 <code class="docutils literal notranslate"><span class="pre">capacity_value=0.5</span></code>.</p></li>
 </ul>
 </p></li>
-<li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:</p>
+<li><p><strong>capacity_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – <p>A value associated with the selected <code class="docutils literal notranslate"><span class="pre">capacity_mode</span></code>:</p>
 <ul>
 <li><p>If <code class="docutils literal notranslate"><span class="pre">capacity_mode=&quot;constant&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">capacity_value</span></code> must be an
 integer <span class="math notranslate nohighlight">\(\ge\)</span> the maximum of the response variable.</p></li>
@@ -492,7 +492,7 @@ integer <span class="math notranslate nohighlight">\(\ge\)</span> the maximum of
 </ul>
 </p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
-<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>

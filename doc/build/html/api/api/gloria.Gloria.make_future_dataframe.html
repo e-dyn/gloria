@@ -458,10 +458,10 @@ up to the requested forecast horizon.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>periods</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of future steps to generate. Must be a positive integer.
+<li><p><strong>periods</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of future steps to generate. Must be a positive integer.
 Measured in units of <code class="docutils literal notranslate"><span class="pre">self.sampling_period</span></code>. The default is
 <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p><strong>include_history</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the returned frame includes the historical
+<li><p><strong>include_history</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), the returned frame includes the historical
 dates that wereseen during fitting; if <code class="docutils literal notranslate"><span class="pre">False</span></code> it contains only
 the future portion.</p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
@@ -470,8 +470,8 @@ the future portion.</p></li>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>NotFittedError</strong> – The model has not been fitted yet.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">preriods</span></code> is not an integer.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">periods</span></code> is &lt; 1.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">preriods</span></code> is not an integer.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">periods</span></code> is &lt; 1.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

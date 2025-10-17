@@ -11,6 +11,7 @@ Bugfixes
 Documentation
 -------------
 - Added :ref:`Predictions <ref-predictions>` tutorial describing details on the :meth:`~Gloria.predict` output data frame (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).
+- Added :ref:`Model Serialization <ref-serialization>` tutorial showcasing how to serialize fitted Gloria models for later use (`#50 <https://github.com/e-dyn/gloria/issues/50>`_).
 - Added :ref:`Configuration Files <ref-toml-config>` tutorial on using TOML configuration files to set up Gloria models and its methods (`#51 <https://github.com/e-dyn/gloria/issues/51>`_).
 
 Contributors

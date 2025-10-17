@@ -1,0 +1,529 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Model Serialization &#8212; Gloria 0.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=c7fef49e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/serialization';</script>
+    <link rel="icon" href="../_static/gloria_favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="prev" title="Configuration Files" href="toml_config.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.2" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.1 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">In-Depth Topics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Auxiliaries</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toml_config.html">Configuration Files</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Model Serialization</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Model Serialization</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="model-serialization">
+<span id="ref-serialization"></span><h1>Model Serialization<a class="headerlink" href="#model-serialization" title="Link to this heading">#</a></h1>
+<p>While unfitted models can be created from <a class="reference internal" href="toml_config.html#ref-toml-config"><span class="std std-ref">TOML configuration files</span></a>, Gloria also provides built-in helper methods to serialize and deserialize fitted models. A deserialized model retains all the information needed to generate forecasts based on its previous fit. This is useful in various scenarios, such as resuming work in a later session, transferring a model between machines, or passing it between stages of a processing pipeline.</p>
+<section id="serialize-to-json">
+<h2>Serialize to JSON<a class="headerlink" href="#serialize-to-json" title="Link to this heading">#</a></h2>
+<p>The main method for serializing a model is <a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a>, which converts a fitted model into a JSON-formatted string:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria model must be fitted</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="c1"># Serialize the model to a JSON string</span>
+<span class="n">serialized</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Print the string</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">serialized</span><span class="p">[:</span><span class="mi">290</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will print output similar to the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">{</span>
+<span class="go">  &quot;model&quot;: &quot;poisson&quot;,</span>
+<span class="go">  &quot;timestamp_name&quot;: &quot;ds&quot;,</span>
+<span class="go">  &quot;metric_name&quot;: &quot;y&quot;,</span>
+<span class="go">  &quot;capacity_name&quot;: &quot;&quot;,</span>
+<span class="go">  &quot;n_changepoints&quot;: 2,</span>
+<span class="go">  &quot;changepoint_range&quot;: 0.8,</span>
+<span class="go">  &quot;seasonality_prior_scale&quot;: 3,</span>
+<span class="go">  &quot;event_prior_scale&quot;: 3,</span>
+<span class="go">  &quot;changepoint_prior_scale&quot;: 3,</span>
+<span class="go">  &quot;dispersion_prior_scale&quot;: 3,</span>
+<span class="go">  &quot;interval_width&quot;: 0.8</span>
+<span class="go">...</span>
+</pre></div>
+</div>
+<p>The serialized model can then be loaded back using <a class="reference internal" href="../api/api/gloria.Gloria.from_json.html#gloria.Gloria.from_json" title="gloria.Gloria.from_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_json()</span></code></a>, which reconstructs the original model. The restored model can be used for prediction:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Deserialize the model</span>
+<span class="n">model_copy</span> <span class="o">=</span> <span class="n">Gloria</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+
+<span class="c1"># Make prediction using the deserialized model</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">model_copy</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+
+<span class="c1"># Plot results</span>
+<span class="n">model_copy</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Both <a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a> and <a class="reference internal" href="../api/api/gloria.Gloria.from_json.html#gloria.Gloria.from_json" title="gloria.Gloria.from_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_json()</span></code></a> accept an optional <code class="docutils literal notranslate"><span class="pre">filepath</span></code> argument. If provided, the methods will write to or read from the specified file path instead of working with strings directly.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a> internally uses <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a> to generate the JSON string from a dictionary. Therefore, any keyword arguments accepted by <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a> can also be passed to <a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a>.</p></li>
+</ul>
+</div>
+</section>
+<section id="serialize-to-a-dictionary">
+<h2>Serialize to a Dictionary<a class="headerlink" href="#serialize-to-a-dictionary" title="Link to this heading">#</a></h2>
+<p>Gloria models can also be serialized to and restored from Python dictionaries using <a class="reference internal" href="../api/api/gloria.Gloria.to_dict.html#gloria.Gloria.to_dict" title="gloria.Gloria.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_dict()</span></code></a> and <a class="reference internal" href="../api/api/gloria.Gloria.from_dict.html#gloria.Gloria.from_dict" title="gloria.Gloria.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_dict()</span></code></a>. The workflow is identical to working with JSON-serialized models.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although <a class="reference internal" href="../api/api/gloria.Gloria.to_dict.html#gloria.Gloria.to_dict" title="gloria.Gloria.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_dict()</span></code></a> and <a class="reference internal" href="../api/api/gloria.Gloria.from_dict.html#gloria.Gloria.from_dict" title="gloria.Gloria.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_dict()</span></code></a> are exposed to users, they primarily serve as helper methods for their JSON counterparts. Consequently, non–JSON-serializable objects (such as NumPy arrays or pandas DataFrames) are not preserved in their original types within the dictionary. Instead, they are converted to serializable representations.</p>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="toml_config.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Configuration Files</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serialize-to-json">Serialize to JSON</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serialize-to-a-dictionary">Serialize to a Dictionary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

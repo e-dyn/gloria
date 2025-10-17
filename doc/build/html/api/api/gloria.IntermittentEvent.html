@@ -450,13 +450,13 @@ directly by the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – A descriptive, unique name to identify the regressor.</p></li>
-<li><p><strong>prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Parameter modulating the strength of the regressors. Larger values
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – A descriptive, unique name to identify the regressor.</p></li>
+<li><p><strong>prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Parameter modulating the strength of the regressors. Larger values
 allow the model to fit a larger impact of the event, smaller
 values dampen the impact. Must be larger than zero.</p></li>
 <li><p><strong>profile</strong> (<em>Profile</em>) – The profile that occurs at <code class="docutils literal notranslate"><span class="pre">t_anchor</span></code>. Allowed profile types are
 described in the <a class="reference internal" href="../profiles.html#ref-profiles"><span class="std std-ref">Profiles</span></a> section.</p></li>
-<li><p><strong>t_list</strong> (list[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>] | list[str]) – A list of timestamps at which <code class="docutils literal notranslate"><span class="pre">profile</span></code> occurs. The exact meaning of
+<li><p><strong>t_list</strong> (list[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>] | list[str]) – A list of timestamps at which <code class="docutils literal notranslate"><span class="pre">profile</span></code> occurs. The exact meaning of
 each timestamp in the list depends on implementation details of the
 underlying <code class="docutils literal notranslate"><span class="pre">profile</span></code>, but typically refers to its mode.</p></li>
 </ul>
@@ -471,7 +471,7 @@ underlying <code class="docutils literal notranslate"><span class="pre">profile<
 constructor arguments of the regressor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>regressor_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all regressor fields</p>
+<dd class="field-odd"><p><strong>regressor_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all regressor fields</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>IntermittentEvent regressor instance with fields from
@@ -490,7 +490,7 @@ constructor arguments of the regressor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>.</p></li>
+<li><p><strong>t</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>.</p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
@@ -499,7 +499,7 @@ constructor arguments of the regressor.</p>
 date of <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -511,9 +511,9 @@ date of <code class="docutils literal notranslate"><span class="pre">t</span></c
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> at which the regressor has to
+<li><p><strong>t</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> at which the regressor has to
 be evaluated</p></li>
-<li><p><strong>regressor</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – Contains the values for the regressor that will be added to the
+<li><p><strong>regressor</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – Contains the values for the regressor that will be added to the
 feature matrix unchanged. Only has effect for
 <a class="reference internal" href="gloria.ExternalRegressor.html#gloria.ExternalRegressor" title="gloria.ExternalRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExternalRegressor</span></code></a>. Any input will be ignored for
 <a class="reference internal" href="#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a>.</p></li>
@@ -522,13 +522,13 @@ feature matrix unchanged. Only has effect for
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>X</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – The feature matrix containing the data of the regressor.</p></li>
+<li><p><strong>X</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – The feature matrix containing the data of the regressor.</p></li>
 <li><p><strong>prior_scales</strong> (<em>dict</em>) – A map for <code class="docutils literal notranslate"><span class="pre">feature</span> <span class="pre">matrix</span> <span class="pre">column</span> <span class="pre">name</span></code> → <code class="docutils literal notranslate"><span class="pre">prior_scale</span></code>.</p></li>
 </ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.2)"><em>DataFrame</em></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><em>DataFrame</em></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -544,7 +544,7 @@ dictionary.</p>
 <code class="docutils literal notranslate"><span class="pre">regressor_type</span> <span class="pre">=</span> <span class="pre">&quot;IntermittentEvent&quot;</span></code> item.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
