@@ -4,6 +4,10 @@
 Version 0.1.3
 =============
 
+Bugfixes
+--------
+- Some missing attributes were added to Gloria's serialization module that caused :meth:`Gloria.to_dict`, :meth:`Gloria.from_dict`, :meth:`Gloria.to_json`, and :meth:`Gloria.from_json` to fail (`#88 <https://github.com/e-dyn/gloria/issues/88>`_).
+
 Documentation
 -------------
 - Added :ref:`Predictions <ref-predictions>` tutorial describing details on the :meth:`~Gloria.predict` output data frame (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).

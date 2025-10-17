@@ -454,33 +454,33 @@ holiday in <code class="docutils literal notranslate"><span class="pre">country<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>country</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – Two-letter ISO
+<li><p><strong>country</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – Two-letter ISO
 <a class="reference external" href="https://tinyurl.com/msw8fajk">ISO 3166-1 alpha-2 code</a> of the
 country (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;US&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;DE&quot;</span></code>). If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), no holiday
 regressors are created.</p></li>
-<li><p><strong>subdiv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – An optional <a class="reference external" href="https://tinyurl.com/2b432nrx">ISO 3166-2 subdivion code</a>
+<li><p><strong>subdiv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em>) – An optional <a class="reference external" href="https://tinyurl.com/2b432nrx">ISO 3166-2 subdivion code</a>
 (e.g. state, province etc.). If <code class="docutils literal notranslate"><span class="pre">None</span></code>, only nationwide holidays are
 considered.</p></li>
-<li><p><strong>holiday_prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Parameter modulating the strength of all holiday regressors. Larger
+<li><p><strong>holiday_prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>) – Parameter modulating the strength of all holiday regressors. Larger
 values allow the model to fit larger holiday impact, smaller values
 dampen the impact. Must be larger than 0. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default),
 the forecaster’s <code class="docutils literal notranslate"><span class="pre">event_prior_scale</span></code> is used.</p></li>
 <li><p><strong>holiday_profile</strong> (<a class="reference internal" href="../profiles.html#ref-profiles"><span class="std std-ref">Profile</span></a>) – Profile object that defines the temporal shape of each holiday
 regressor. The default is a one-day <a class="reference internal" href="gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a> profile replicating
 Prophet-style holiday regressors.</p></li>
-<li><p><strong>seasonality_prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Global strength parameter for every seasonality added by the protocol.
+<li><p><strong>seasonality_prior_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>) – Global strength parameter for every seasonality added by the protocol.
 Larger values permit stronger seasonal variation, smaller values dampen
 it. Must be larger than 0.If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the forecaster’s
 <code class="docutils literal notranslate"><span class="pre">seasonality_prior_scale</span></code> is used.</p></li>
-<li><p><strong>yearly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
+<li><p><strong>yearly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
 see below.</p></li>
-<li><p><strong>quarterly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
+<li><p><strong>quarterly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
 see below.</p></li>
-<li><p><strong>monthly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
+<li><p><strong>monthly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
 see below.</p></li>
-<li><p><strong>weekly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
+<li><p><strong>weekly_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
 see below.</p></li>
-<li><p><strong>daily_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
+<li><p><strong>daily_seasonality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><em>&quot;auto&quot;</em>) – Configures how to add the respective seasonality to the model. Details
 see below.</p></li>
 </ul>
 </dd>
@@ -548,7 +548,7 @@ enabled, overriding the setting of <code class="docutils literal notranslate"><s
 constructor arguments of the protocol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>protocol_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all protocol fields</p>
+<dd class="field-odd"><p><strong>protocol_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing all protocol fields</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>CalendricData protocol object with fields from <code class="docutils literal notranslate"><span class="pre">protocol_dict</span></code></p>
@@ -577,7 +577,7 @@ however, it is invoked automatically during
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<a class="reference internal" href="gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a>) – The Gloria model to be updated</p></li>
-<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A Series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>. Only holidays within the
+<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A Series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>. Only holidays within the
 range set by <code class="docutils literal notranslate"><span class="pre">timestamps</span></code> will be added to the model.</p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
@@ -609,7 +609,7 @@ however, it is invoked automatically during
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<a class="reference internal" href="gloria.Gloria.html#gloria.Gloria" title="gloria.Gloria"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gloria</span></code></a>) – The Gloria model to be updated</p></li>
-<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A Series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>.</p></li>
+<li><p><strong>timestamps</strong> (<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>) – A Series of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a>.</p></li>
 <li><p><strong>self</strong> (<em>Self</em>)</p></li>
 </ul>
 </dd>
@@ -631,7 +631,7 @@ however, it is invoked automatically during
 <dd class="field-odd"><p>Dictionary containing all protocol fields.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>self</strong> (<em>Self</em>)</p>
@@ -646,7 +646,7 @@ however, it is invoked automatically during
 before-validator attempts to convert it to an Profile.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>holiday_profile</strong> (<em>Profile</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p>
+<dd class="field-odd"><p><strong>holiday_profile</strong> (<em>Profile</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><em>Profile</em></p>

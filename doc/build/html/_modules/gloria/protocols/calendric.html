@@ -611,8 +611,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Parent class converts basic fields and base event</span>
         <span class="n">regressor_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="c1"># Remove t_list as it is reevaluated for ever make_feature execution</span>
-        <span class="n">regressor_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;t_list&quot;</span><span class="p">)</span>
         <span class="c1"># Convert additional fields</span>
         <span class="n">regressor_dict</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">country</span>
         <span class="n">regressor_dict</span><span class="p">[</span><span class="s2">&quot;subdiv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdiv</span>

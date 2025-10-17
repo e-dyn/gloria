@@ -375,6 +375,7 @@
 <span class="c1"># Third Party</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 
 <span class="c1"># Inhouse Packages</span>
 
@@ -692,6 +693,12 @@
 <span class="sd">    serializable data types. On that account numpy arrays are converted to</span>
 <span class="sd">    simple lists.</span>
 
+<span class="sd">    IMPORTANT: the get_dict/set_dict assumes the following things</span>
+<span class="sd">    - The only non-default data type are numpy arrays</span>
+<span class="sd">    - Numpy arrays only occur in the dictionaries top-level</span>
+<span class="sd">    - The top-level of the dictionary has no lists, as these would be confused</span>
+<span class="sd">      with numpy arrays during the set_dict reconstruction step.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data_in : dict[str, Any]</span>
@@ -720,11 +727,9 @@
             <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">empty_nested_list</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
 
-    <span class="c1"># If a value in the input dictionary has the __iter__-method, we assume</span>
-    <span class="c1"># it must be a numpy array so we convert it using .tolist(). All other</span>
-    <span class="c1"># objects leave as is.</span>
+    <span class="c1"># Convert numpy arrays using dump_nparray. All other objects leave as is.</span>
     <span class="n">dict_out</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">dump_nparray</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">dump_nparray</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data_in</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">dict_out</span>
@@ -752,6 +757,44 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dict_in</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">data_out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pydantic</span><span class="p">(</span><span class="n">data_in</span><span class="p">:</span> <span class="n">BaseModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a pydantic model to a dictionary of json-serializable data types.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_in : BaseModel</span>
+<span class="sd">        Input pydantic model to be converted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, Any]</span>
+<span class="sd">        JSON serializable dictionary containing data of original pydantic</span>
+<span class="sd">        model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_dict</span><span class="p">(</span><span class="n">data_in</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">set_pydantic</span><span class="p">(</span>
+    <span class="n">dict_in</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">model_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a dictionary as returned by get_pydantic() and restores the original</span>
+<span class="sd">    pydantic model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_in : dict[str, Any]</span>
+<span class="sd">        Input dictionary to be restored.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, Any]</span>
+<span class="sd">        Restored pydantic model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">model_class</span><span class="p">(</span><span class="o">**</span><span class="n">set_dict</span><span class="p">(</span><span class="n">dict_in</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="model_to_dict">
@@ -1006,7 +1049,7 @@
 
 <span class="c1"># Simple attributes are those that are built-in data types of the Glora object</span>
 <span class="c1"># ie. they are json-serializable without further processing</span>
-<span class="n">SIMPLE_ATTRIBUTES</span> <span class="o">=</span> <span class="p">[</span>
+<span class="n">SIMPLE_GLORIA_ATTRIBUTES</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;model&quot;</span><span class="p">,</span>
     <span class="s2">&quot;timestamp_name&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metric_name&quot;</span><span class="p">,</span>
@@ -1020,13 +1063,15 @@
     <span class="s2">&quot;interval_width&quot;</span><span class="p">,</span>
     <span class="s2">&quot;trend_samples&quot;</span><span class="p">,</span>
     <span class="s2">&quot;prior_scales&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;fit_kwargs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vectorized&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="c1"># All Gloria attributes we wish to serialize. The dictionary maps attribute</span>
 <span class="c1"># name to a tuple of two functions. The first function is the serializer, the</span>
 <span class="c1"># second one the deserializer</span>
 <span class="n">GLORIA_ATTRIBUTES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="o">**</span><span class="p">{</span><span class="n">attribute</span><span class="p">:</span> <span class="p">(</span><span class="n">ident</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">SIMPLE_ATTRIBUTES</span><span class="p">},</span>
+    <span class="o">**</span><span class="p">{</span><span class="n">attribute</span><span class="p">:</span> <span class="p">(</span><span class="n">ident</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">SIMPLE_GLORIA_ATTRIBUTES</span><span class="p">},</span>
     <span class="s2">&quot;changepoints&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_pdseries</span><span class="p">,</span> <span class="n">set_pdseries</span><span class="p">),</span>
     <span class="s2">&quot;changepoints_int&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_pdseries</span><span class="p">,</span> <span class="n">set_pdseries</span><span class="p">),</span>
     <span class="s2">&quot;first_timestamp&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">),</span>
@@ -1039,20 +1084,23 @@
     <span class="s2">&quot;model_backend&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_backend</span><span class="p">,</span> <span class="n">set_backend</span><span class="p">),</span>
     <span class="s2">&quot;external_regressors&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_regressors</span><span class="p">,</span> <span class="n">set_regressors</span><span class="p">),</span>
     <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_events</span><span class="p">,</span> <span class="n">set_events</span><span class="p">),</span>
+    <span class="s2">&quot;_config&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_dict</span><span class="p">,</span> <span class="n">set_dict</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="c1"># Same as Gloria attributes, only for the nested model_backend object</span>
+<span class="n">SIMPLE_BACKEND_ATTRIBUTES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;model_name&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;linked_scale&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;linked_offset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;use_laplace&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
 <span class="n">BACKEND_ATTRIBUTES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;stan_data&quot;</span><span class="p">:</span> <span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">get_dict</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()),</span>
-        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">ModelInputData</span><span class="p">(</span><span class="o">**</span><span class="n">set_dict</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span>
-    <span class="p">),</span>
-    <span class="s2">&quot;stan_inits&quot;</span><span class="p">:</span> <span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">get_dict</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()),</span>
-        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">ModelParams</span><span class="p">(</span><span class="o">**</span><span class="n">set_dict</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span>
-    <span class="p">),</span>
+    <span class="o">**</span><span class="p">{</span><span class="n">attribute</span><span class="p">:</span> <span class="p">(</span><span class="n">ident</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">SIMPLE_BACKEND_ATTRIBUTES</span><span class="p">},</span>
+    <span class="s2">&quot;stan_data&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_pydantic</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">set_pydantic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ModelInputData</span><span class="p">)),</span>
+    <span class="s2">&quot;stan_inits&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_pydantic</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">set_pydantic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ModelParams</span><span class="p">)),</span>
     <span class="s2">&quot;fit_params&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">get_dict</span><span class="p">,</span> <span class="n">set_dict</span><span class="p">),</span>
-    <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">ident</span><span class="p">,</span> <span class="n">ident</span><span class="p">),</span>
 <span class="p">}</span>
 </pre></div>
 
