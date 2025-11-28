@@ -10,7 +10,7 @@ Bugfixes
 
 Documentation
 -------------
-- Added :ref:`Migrate from Prophet <prophet-migration>` tutorial highlighting differences and similarities between `Prophet <https://facebook.github.io/prophet/>`_ and Gloria (`#46 <https://github.com/e-dyn/gloria/issues/46>`_)
+- Added :ref:`Migrate from Prophet <ref-prophet-migration>` tutorial highlighting differences and similarities between `Prophet <https://facebook.github.io/prophet/>`_ and Gloria (`#46 <https://github.com/e-dyn/gloria/issues/46>`_)
 - Added :ref:`Predictions <ref-predictions>` tutorial describing details on the :meth:`~Gloria.predict` output data frame (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).
 - Added :ref:`Model Serialization <ref-serialization>` tutorial showcasing how to serialize fitted Gloria models for later use (`#50 <https://github.com/e-dyn/gloria/issues/50>`_).
 - Added :ref:`Configuration Files <ref-toml-config>` tutorial on using TOML configuration files to set up Gloria models and its methods (`#51 <https://github.com/e-dyn/gloria/issues/51>`_).
