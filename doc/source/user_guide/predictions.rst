@@ -1,7 +1,6 @@
 .. _ref-predictions:
 .. currentmodule:: gloria
 
-
 Predictions
 ===========
 
@@ -76,6 +75,8 @@ The plot elements forecast, trend, and confidence intervals are all stored in th
 * ``*_linked_*``: The respective quantities on the scale of the underlying generalized linear model, transformed by the *link-function*. See :ref:`Decomposition Types <ref-decomposition_types>` tutorial for details.
 
 Some of these columns need further explanation, which is given in the following.
+
+.. _ref-data-variability:
 
 Confidence Bands vs Data Variability
 ------------------------------------

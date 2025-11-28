@@ -1,7 +1,6 @@
 .. _ref-toml-config:
 .. currentmodule:: gloria
 
-
 Configuration Files
 ===================
 

@@ -1,0 +1,856 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Migrate from Prophet &#8212; Gloria 0.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=4c969af8" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=c7fef49e"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/tabs.js?v=3ee01567"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/prophet_migration';</script>
+    <link rel="icon" href="../_static/gloria_favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Seasonalities" href="seasonalities.html" />
+    <link rel="prev" title="Basic Usage" href="basic_usage.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.2" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.1 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../release_notes/index.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/e-dyn/gloria" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Migrate from Prophet</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="seasonalities.html">Seasonalities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling_trends.html">Modeling Trends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_selection.html">Model Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calendric_data.html">Calendric Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_regressors.html">External Regressors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">In-Depth Topics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="decomposition_types.html">Decomposition Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saturation.html">Saturation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Auxiliaries</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="predictions.html">Predictions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toml_config.html">Configuration Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serialization.html">Model Serialization</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Migrate from Prophet</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="migrate-from-prophet">
+<span id="ref-prophet-migration"></span><h1>Migrate from Prophet<a class="headerlink" href="#migrate-from-prophet" title="Link to this heading">#</a></h1>
+<p>Gloria was inspired by <a class="reference external" href="https://facebook.github.io/prophet/">Prophet</a>, yet it is an independent framework with substantial improvements in modeling flexibility. Gloria honors its heritage by retaining much of Prophet’s interface, parameters, workflow and even internal mechanisms. This tutorial is intended for Prophet users who wish to explore Gloria. It highlights the key similarities and differences between the two libraries and points out common pitfalls along the way.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The migration guide borrows most examples from the Prophet documentation and modifies them to work with Gloria in the same fashion.</p>
+</div>
+<section id="basic-workflow">
+<h2>Basic Workflow<a class="headerlink" href="#basic-workflow" title="Link to this heading">#</a></h2>
+<p>Prophet’s go-to example is the self-scraped <a class="reference external" href="https://raw.githubusercontent.com/facebook/prophet/main/examples/example_wp_log_peyton_manning.csv">Peyton Manning data set</a>. Using these data, Prophet presents its workflow as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prophet</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/main/examples/example_wp_log_peyton_manning.csv&quot;</span>
+<span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Following Gloria’s <a class="reference internal" href="basic_usage.html#ref-basic-usage"><span class="std std-ref">Basic Usage</span></a> tutorial, the same example can be expressed as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/main/examples/example_wp_log_peyton_manning.csv&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Convert to timestamps</span>
+<span class="hll"><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">])</span>
+</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">()</span>
+
+<span class="c1"># Add observed seasonalities</span>
+<span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;weekly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;7 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span class="hll"><span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;yearly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;365.25 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are three key differences to note, each stemming from Gloria’s guiding principle: to provide greater flexibility by imposing fewer assumptions about the data and model structure, while transferring more ownership and responsibility to the user:</p>
+<ol class="arabic simple">
+<li><p>The datetime column <code class="docutils literal notranslate"><span class="pre">df[&quot;ds&quot;]</span></code> must be explicitly converted to a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of datetimes.</p></li>
+<li><p>Gloria models are initialized without predefined features. All seasonalities, including <em>weekly</em> and <em>yearly</em>, need to be added manually using <a class="reference internal" href="../api/api/gloria.Gloria.add_seasonality.html#gloria.Gloria.add_seasonality" title="gloria.Gloria.add_seasonality"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.add_seasonality()</span></code></a>.</p></li>
+<li><p>Prophet’s <code class="docutils literal notranslate"><span class="pre">add_seasonality()</span></code> method expects the <code class="docutils literal notranslate"><span class="pre">period</span></code> argument as a numeric value, silently assuming <em>days</em> as unit, whereas Gloria accepts timedelta-like strings as parsed by <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a>, making the intended period more explicit.</p></li>
+</ol>
+</section>
+<section id="events">
+<h2>Events<a class="headerlink" href="#events" title="Link to this heading">#</a></h2>
+<p>Prophet allows you to add custom events to your model by providing an additional data frame to the constructor. Each row of this data frame represents a single event instance, where the columns <code class="docutils literal notranslate"><span class="pre">holiday</span></code> and <code class="docutils literal notranslate"><span class="pre">ds</span></code> specify the event name and timestamp, respectively. Two optional columns <code class="docutils literal notranslate"><span class="pre">lower_window</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_window</span></code> define how many days before and after the event its impact extends. The resulting data frame is then passed to the <code class="docutils literal notranslate"><span class="pre">holidays</span></code> argument of the <code class="docutils literal notranslate"><span class="pre">Prophet</span></code> constructor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="n">superbowls</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;holiday&quot;</span><span class="p">:</span> <span class="s2">&quot;superbowl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ds&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2010-02-07&quot;</span><span class="p">,</span> <span class="s2">&quot;2014-02-02&quot;</span><span class="p">,</span> <span class="s2">&quot;2016-02-07&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;lower_window&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;upper_window&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">(</span><span class="n">holidays</span><span class="o">=</span><span class="n">superbowls</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Gloria uses <a class="reference internal" href="events.html#ref-events-tutorial"><span class="std std-ref">Events</span></a> for the same purpose. Events are added to the model via the <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoxCar</span>
+
+<span class="n">superbowls</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s2">&quot;2010-02-07&quot;</span><span class="p">,</span> <span class="s2">&quot;2014-02-02&quot;</span><span class="p">,</span> <span class="s2">&quot;2016-02-07&quot;</span><span class="p">])</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;superbowl&quot;</span><span class="p">,</span>
+    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;IntermittentEvent&quot;</span><span class="p">,</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;1d&quot;</span><span class="p">),</span>
+    <span class="n">t_list</span><span class="o">=</span><span class="n">superbowls</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>An event in Gloria consists of a temporal <code class="docutils literal notranslate"><span class="pre">profile</span></code> and one or more anchor times at which the profile is applied. In our example, the anchor times are the list of superbowl dates. The chosen <code class="docutils literal notranslate"><span class="pre">regressor_type</span></code> <a class="reference internal" href="../api/api/gloria.IntermittentEvent.html#gloria.IntermittentEvent" title="gloria.IntermittentEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntermittentEvent</span></code></a> is designed for such lists of discrete occurences. The <em>1-day-width</em> <a class="reference internal" href="../api/api/gloria.BoxCar.html#gloria.BoxCar" title="gloria.BoxCar"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoxCar</span></code></a> function used as the event profile is equivalent to Prophet’s event effect, which applies only on the day of the event. Further explanations about the different event and profile types can be found in the <a class="reference internal" href="events.html#ref-events-tutorial"><span class="std std-ref">Events</span></a> tutorial.</p>
+<p>It is important to note that Gloria’s events do not support <code class="docutils literal notranslate"><span class="pre">lower_window</span></code> and <code class="docutils literal notranslate"><span class="pre">upper_window</span></code> directly. In Prophet, each day within the event window receives its own regressor parameter. To reproduce this behavior in Gloria, you would need to add one event per day, for instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;superbowl_+1&quot;</span><span class="p">,</span>
+    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;IntermittentEvent&quot;</span><span class="p">,</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;1d&quot;</span><span class="p">),</span>
+    <span class="n">t_list</span><span class="o">=</span><span class="n">superbowls</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s2">&quot;1d&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, if a single regressor parameter for all days in the window is sufficient, you can achieve the same effect by shifting and widening the event profile to cover the desired duration.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The impact of many events peaks on a specific day and decays with increasing distance from it. Profiles such as <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a> or <a class="reference internal" href="../api/api/gloria.Gaussian.html#gloria.Gaussian" title="gloria.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a> are natural choices for these cases and eliminate the need to add multiple event instances. More specifically, the parameters <code class="docutils literal notranslate"><span class="pre">lead_width</span></code> and <code class="docutils literal notranslate"><span class="pre">lag_width</span></code> of the <a class="reference internal" href="../api/api/gloria.Exponential.html#gloria.Exponential" title="gloria.Exponential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exponential</span></code></a> profile follow a similar idea like lower and upper windows in Prophet without introducing an excessive amount of fit parameters.</p>
+</div>
+</section>
+<section id="country-holidays">
+<h2>Country Holidays<a class="headerlink" href="#country-holidays" title="Link to this heading">#</a></h2>
+<p>An important group of events are country-specific holidays. Prophet provides the convenience method <code class="docutils literal notranslate"><span class="pre">add_country_holidays()</span></code> to add all holidays for a given country at once:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_country_holidays</span><span class="p">(</span><span class="n">country_name</span><span class="o">=</span><span class="s1">&#39;US&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To retrieve holidays for a specific subdivision, it is possible to use the <code class="docutils literal notranslate"><span class="pre">make_holiday_df</span></code> helper function and construct a holidays data frame manually:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prophet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet.make_holidays</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_holidays_df</span>
+
+<span class="n">nsw_holidays</span> <span class="o">=</span> <span class="n">make_holidays_df</span><span class="p">(</span>
+    <span class="n">year_list</span><span class="o">=</span><span class="p">[</span><span class="mi">2019</span> <span class="o">+</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span> <span class="n">country</span><span class="o">=</span><span class="s1">&#39;AU&#39;</span><span class="p">,</span> <span class="n">province</span><span class="o">=</span><span class="s1">&#39;NSW&#39;</span>
+<span class="p">)</span>
+
+<span class="n">m_nsw</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">(</span><span class="n">holidays</span><span class="o">=</span><span class="n">nsw_holidays</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In Gloria, you can use the <a class="reference internal" href="../api/api/gloria.Holiday.html#gloria.Holiday" title="gloria.Holiday"><code class="xref py py-class docutils literal notranslate"><span class="pre">Holiday</span></code></a> regressor to add a single country holiday via the <a class="reference internal" href="../api/api/gloria.Gloria.add_event.html#gloria.Gloria.add_event" title="gloria.Gloria.add_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_event()</span></code></a> method. Its <code class="docutils literal notranslate"><span class="pre">name</span></code> argument must match the desired holiday. To explore which holidays are available for a given country, use the <a class="reference internal" href="../api/api/gloria.get_holidays.html#gloria.get_holidays" title="gloria.get_holidays"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_holidays()</span></code></a> function and inspect its <code class="docutils literal notranslate"><span class="pre">all_holiday_names</span></code> output. Note that provinces can be directly passed as argument and no manual construction of a holiday data frame is necessary:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoxCar</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Australia Day&quot;</span><span class="p">,</span>
+    <span class="n">regressor_type</span><span class="o">=</span><span class="s2">&quot;Holiday&quot;</span><span class="p">,</span>
+    <span class="n">profile</span><span class="o">=</span><span class="n">BoxCar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;1d&quot;</span><span class="p">),</span>
+    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;AU&quot;</span><span class="p">,</span>
+    <span class="n">subdiv</span><span class="o">=</span><span class="s2">&quot;NSW&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Adding all available country holidays at once is also supported in Gloria and will be explained in the following <a class="reference internal" href="#ref-prophet-migration-protocols"><span class="std std-ref">Protocols</span></a> section.</p>
+</section>
+<section id="protocols">
+<span id="ref-prophet-migration-protocols"></span><h2>Protocols<a class="headerlink" href="#protocols" title="Link to this heading">#</a></h2>
+<p>Even though Gloria does not assume calendric data as its default input, it acknowledges their relevance by introducing the <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol along with the <a class="reference internal" href="../api/api/gloria.Gloria.add_protocol.html#gloria.Gloria.add_protocol" title="gloria.Gloria.add_protocol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_protocol()</span></code></a> method. From a general perspective, protocols bundle seasonalities and events that are common for a certain group of problems. The <a class="reference internal" href="../api/api/gloria.CalendricData.html#gloria.CalendricData" title="gloria.CalendricData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalendricData</span></code></a> protocol in particular, adds the seasonalities <em>daily</em>, <em>weekly</em>, <em>monthly</em>, <em>quarterly</em>, and <em>yearly</em> to a Gloria model. Additionally, country- and subdivision-specific holidays will be added, if their names are provided. The following Prophet-code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">(</span><span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;quarterly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mf">365.25</span> <span class="o">/</span> <span class="mi">4</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_country_holidays</span><span class="p">(</span><span class="n">country_name</span><span class="o">=</span><span class="s1">&#39;US&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">CalendricData</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">()</span>
+
+<span class="c1"># Create the protocol</span>
+<span class="n">calendric_protocol</span> <span class="o">=</span> <span class="n">CalendricData</span><span class="p">(</span>
+    <span class="n">yearly_seasonality</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">quarterly_seasonality</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;US&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Add the protocol</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">calendric_protocol</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Further information on both country holidays and protocols can be found in the <a class="reference internal" href="calendric_data.html#ref-calendric-data"><span class="std std-ref">Calendric Data</span></a> tutorial.</p>
+</div>
+</section>
+<section id="model-selection">
+<h2>Model Selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h2>
+<p>All Prophet models assume normally distributed errors. Gloria, on the other hand, lets you choose from several distribution types, depending on the nature of your data. A common example involves count values, which are non-negative integers. In fact, the Peyton Manning dataset consists of count values in disguise, as they are simply log-transformed daily page-visits. The snippet below reverses this transformation and refits the model using Prophet:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prophet</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/main/examples/example_wp_log_peyton_manning.csv&quot;</span>
+<span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/prophet_migration_peyton_manning_untransformed.png"><img alt="Peyton Manning data set fit with Prophet after reversing the log-transformation" class="align-center" src="../_images/prophet_migration_peyton_manning_untransformed.png" style="width: 700px;" />
+</a>
+<p>In the result plot above you can see that Prophet struggles to capture the pattern (as well as Gloria for that matter), mainly because most page-visit counts cluster around 3,000 per day, while a few surge to values up to two orders of magnitude higher, which justifies the log transformation.</p>
+<p>However, we like to focus on a different issue: negative page-visits do not make sense. And yet, Prophet’s normal distribution allows them, which you will immediatly recognize zooming into the low-count region of the plot, as shown below: both prediction and confidence intervals drop below zero.</p>
+<a class="reference internal image-reference" href="../_images/prophet_migration_peyton_manning_untransformed_zoom.png"><img alt="Peyton Manning data set fit with Prophet after reversing the log-transformation, zoom into the low count-region showing negative predictions, which are impossible for count data." class="align-center" src="../_images/prophet_migration_peyton_manning_untransformed_zoom.png" style="width: 700px;" />
+</a>
+<p>To treat count data properly, Gloria offers the models <code class="docutils literal notranslate"><span class="pre">binomial</span></code>, <code class="docutils literal notranslate"><span class="pre">beta-binomial</span></code>, <code class="docutils literal notranslate"><span class="pre">poisson</span></code>, and <code class="docutils literal notranslate"><span class="pre">negative</span> <span class="pre">binomial</span></code>, of which the latter is the generalist, as it does not have an upper bound and offers a flexible variance. Using Gloria, our code becomes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/main/examples/example_wp_log_peyton_manning.csv&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Convert to timestamps</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">])</span>
+<span class="hll"><span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+</span>
+<span class="hll"><span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;negative binomial&quot;</span><span class="p">)</span>
+</span>
+<span class="c1"># Add observed seasonalities</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;weekly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;7 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;yearly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;365.25 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Two things are to be highlighted here:</p>
+<ul class="simple">
+<li><p>The desired model is passed as parameter into the Gloria constructor. A full list of available models can be found in the <a class="reference internal" href="model_selection.html#ref-model-selection"><span class="std std-ref">Model Selection</span></a> guide.</p></li>
+<li><p>Gloria strictly respects the data-type of the underlying model. Consequently, input count data must be unsigned integers. Gloria provides the helper function <a class="reference internal" href="../api/api/gloria.cast_series_to_kind.html#gloria.cast_series_to_kind" title="gloria.cast_series_to_kind"><code class="xref py py-func docutils literal notranslate"><span class="pre">cast_series_to_kind()</span></code></a> to perform the conversion.</p></li>
+</ul>
+<p>Zooming into the plot, we see that the Gloria results now adhere to the lower bound of zero.</p>
+<a class="reference internal image-reference" href="../_images/prophet_migration_peyton_manning_untransformed_gloria_zoom.png"><img alt="Peyton Manning data set fit with Gloria after reversing the log-transformation, zoom into the low count-region." class="align-center" src="../_images/prophet_migration_peyton_manning_untransformed_gloria_zoom.png" style="width: 700px;" />
+</a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Besides allowing negative predictions, a normally distributed model also produces floats instead of integers, which is not visible in the plots, but an issue nonetheless. In contrast, Gloria’s count models output only integers.</p>
+</div>
+</section>
+<section id="multiplicative-seasonality">
+<h2>Multiplicative Seasonality<a class="headerlink" href="#multiplicative-seasonality" title="Link to this heading">#</a></h2>
+<p>Prophet lets you choose between additive and multiplicative decomposition. In the additive model, trend and seasonal components simply sum up, whereas in the multiplicative model the seasonal amplitude scales with the trend. Prophet’s documentation illustrates this using the classic air-passenger dataset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prophet</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_changepoints_to_plot</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;https://raw.githubusercontent.com/facebook/prophet/main/examples/example_air_passengers.csv&#39;</span><span class="p">)</span>
+<span class="hll"><span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">(</span><span class="n">seasonality_mode</span><span class="o">=</span><span class="s1">&#39;multiplicative&#39;</span><span class="p">,</span> <span class="n">n_changepoints</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+</span><span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;MS&#39;</span><span class="p">)</span>
+<span class="n">forecast</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">forecast</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">add_changepoints_to_plot</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">m</span><span class="p">,</span> <span class="n">forecast</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Gloria intentionally does not to offer an explicit switch between the two decomposition types. Instead, these behaviors emerge naturally from the choice of likelihood model. The tutorial on <a class="reference internal" href="decomposition_types.html#ref-decomposition-types"><span class="std std-ref">Decompostion Types</span></a> discusses this in detail, but in short:</p>
+<ul class="simple">
+<li><p>Use the <strong>normal</strong> model for <strong>additive decomposition</strong>.</p></li>
+<li><p>Use <strong>poisson</strong>, <strong>negative binomial</strong>, or <strong>gamma</strong> for <strong>multiplicative decomposition</strong>.</p></li>
+</ul>
+<p>The remaining <strong>binomial</strong>, <strong>beta</strong>, and <strong>beta-binomial</strong> models behave somewhere in between: their seasonality becomes multiplicative near the distribution’s boundaries and approximately additive in the mid-range.</p>
+<p>The following code block demonstrates how to obtain a multiplicative fit for the air-passenger dataset using Gloria’s Poisson model with the result plot shown below. Note:</p>
+<ul class="simple">
+<li><p>Although not immediately obvious in the figure, the variance increases with the mean as expected for a truly multiplicative process. This behaviour is absent in Prophet because it relies on a normal likelihood.</p></li>
+<li><p>As a side effect of the Poisson model, the trend exhibits exponential growth even though changepoints were completely disabled. We will explore this phenomenon in the next section.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span><span class="p">,</span> <span class="n">cast_series_to_kind</span>
+
+<span class="c1"># Read the data</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/e-dyn/gloria/main/scripts/data/real/AirPassengers.csv&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+
+<span class="c1"># Rename columns for convenience</span>
+<span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">&quot;Month&quot;</span><span class="p">:</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;#Passengers&quot;</span><span class="p">:</span> <span class="s2">&quot;passengers&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Convert to datetime</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">])</span>
+
+<span class="c1"># Make a new monthly column with equidistant spacing</span>
+<span class="n">freq</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="mf">365.25</span><span class="o">/</span><span class="mi">12</span><span class="si">}</span><span class="s2">d&quot;</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span>
+        <span class="n">start</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">periods</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]),</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Cast to unsigned data type so it is digestible by count models</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;passengers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast_series_to_kind</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;passengers&quot;</span><span class="p">],</span> <span class="s2">&quot;u&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set up the model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;poisson&quot;</span><span class="p">,</span>
+    <span class="n">metric_name</span><span class="o">=</span><span class="s2">&quot;passengers&quot;</span><span class="p">,</span>
+    <span class="n">timestamp_name</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">,</span>
+    <span class="n">sampling_period</span><span class="o">=</span><span class="n">freq</span><span class="p">,</span>
+    <span class="n">n_changepoints</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Add observed seasonalities</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="s2">&quot;yearly&quot;</span><span class="p">,</span> <span class="s2">&quot;365.25 d&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># Fit the model to the data</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Plot</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(),</span> <span class="n">include_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/decomposition_types_fig01.png"><img alt="Fitting the air passengers data with a multiplicative decomposition model" class="align-center" src="../_images/decomposition_types_fig01.png" style="width: 700px;" />
+</a>
+</section>
+<section id="saturation-growth">
+<h2>Saturation Growth<a class="headerlink" href="#saturation-growth" title="Link to this heading">#</a></h2>
+<p>Prophet provides not only piecewise-linear trends but also a logistic trend model, which produces saturating growth, that is a trend which approaches a maximum capacity over time. The example below illustrates how to use Prophet’s logistic trend:</p>
+<ul class="simple">
+<li><p>Add a <code class="docutils literal notranslate"><span class="pre">cap</span></code> column to both the training and prediction DataFrames to specify the saturating capacity of the system.</p></li>
+<li><p>When creating the model, set <code class="docutils literal notranslate"><span class="pre">growth=&quot;logistic&quot;</span></code>.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Prophet</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prophet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prophet</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/refs/heads/main/examples/example_wp_log_R.csv&quot;</span>
+<span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;cap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">8.5</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Prophet</span><span class="p">(</span><span class="n">growth</span><span class="o">=</span><span class="s2">&quot;logistic&quot;</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1826</span><span class="p">)</span>
+<span class="n">future</span><span class="p">[</span><span class="s2">&quot;cap&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">8.5</span>
+<span class="n">fcst</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fcst</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/prophet_migration_saturation_forecast_prophet.png"><img alt="Using Prophet's logistic trend model to obtain saturating growth behaviour." class="align-center" src="../_images/prophet_migration_saturation_forecast_prophet.png" style="width: 700px;" />
+</a>
+<p>In the resulting forecast, the trend smoothly approaches the specified capacity of <code class="docutils literal notranslate"><span class="pre">8.5</span></code>. Note, however, that the capacity applies <strong>only</strong> to the trend component: seasonal effects are still allowed to exceed the upper limit.</p>
+<p>In Gloria, saturation arises naturally in all models with <strong>explicit lower or upper bounds</strong>, so no special logistic trend mode is required. The example below uses the <em>beta distribution model</em>, which supports bounded real-valued data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The beta distribution currently requires data to lie within the fixed interval <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code>. The example therefore normalizes the observations before fitting. A future Gloria release will allow all bounded models to specify custom lower and upper limits directly (see issue <a class="reference external" href="https://github.com/e-dyn/gloria/issues/61">#61</a>).</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Gloria</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gloria</span><span class="w"> </span><span class="kn">import</span> <span class="n">Gloria</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/facebook/prophet/refs/heads/main/examples/example_wp_log_R.csv&quot;</span>
+<span class="p">)</span>
+
+<span class="n">capacity</span> <span class="o">=</span> <span class="mf">8.5</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">capacity</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">capacity</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;ds&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">Gloria</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">n_changepoints</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;weekly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;7 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_seasonality</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;yearly&quot;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="s2">&quot;365.25 d&quot;</span><span class="p">,</span> <span class="n">fourier_order</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">make_future_dataframe</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">1826</span><span class="p">)</span>
+<span class="n">fcst</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fcst</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/prophet_migration_saturation_forecast_gloria.png"><img alt="Using Gloria's beta distribution model to obtain saturating growth behaviour." class="align-center" src="../_images/prophet_migration_saturation_forecast_gloria.png" style="width: 700px;" />
+</a>
+<p>As shown above, Gloria produces the same kind of nonlinear saturating trend. In addition, both seasonal amplitudes and confidence intervals shrink as the forecast approaches the upper bound, ensuring that predictions remain within the valid range at all times.</p>
+<p>For more details on saturating behaviour in Gloria, see the <a class="reference internal" href="saturation.html#ref-saturation"><span class="std std-ref">Saturation</span></a> tutorial.</p>
+</section>
+<section id="data-variability">
+<h2>Data Variability<a class="headerlink" href="#data-variability" title="Link to this heading">#</a></h2>
+<p>Prophet’s predict method produces a data frame including <code class="docutils literal notranslate"><span class="pre">yhat_upper</span></code> and <code class="docutils literal notranslate"><span class="pre">yhat_lower</span></code> columns besides <code class="docutils literal notranslate"><span class="pre">yhat</span></code>. These upper and lower bounds add and interval of observed noise on top of <code class="docutils literal notranslate"><span class="pre">yhat</span></code>, corresponding to the variance learned from the data during the fit.</p>
+<p>Gloria calls these <em>data variability</em> columns <code class="docutils literal notranslate"><span class="pre">observed_upper</span></code> and <code class="docutils literal notranslate"><span class="pre">observed_ower</span></code>. In contrast, the columns <code class="docutils literal notranslate"><span class="pre">yhat_upper</span></code> and <code class="docutils literal notranslate"><span class="pre">yhat_lower</span></code> are used to describe confidence intervals of the model itself, ie. the model expects the true <span class="math notranslate nohighlight">\(\hat{y}\)</span> to be within these bounds with a confidence level given by the Gloria argument <code class="docutils literal notranslate"><span class="pre">interval_width</span></code>.</p>
+<p>The difference between confidence intervals and data variability are further discussed as part of the <a class="reference internal" href="predictions.html#ref-data-variability"><span class="std std-ref">Predictions</span></a> tutorial.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="basic_usage.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Basic Usage</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="seasonalities.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Seasonalities</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-workflow">Basic Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#events">Events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#country-holidays">Country Holidays</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#protocols">Protocols</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-selection">Model Selection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiplicative-seasonality">Multiplicative Seasonality</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saturation-growth">Saturation Growth</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-variability">Data Variability</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

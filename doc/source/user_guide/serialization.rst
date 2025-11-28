@@ -1,7 +1,6 @@
 .. _ref-serialization:
 .. currentmodule:: gloria
 
-
 Model Serialization
 ===================
 

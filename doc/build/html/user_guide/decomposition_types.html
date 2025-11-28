@@ -315,6 +315,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prophet_migration.html">Migrate from Prophet</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
 <ul class="nav bd-sidenav">
@@ -395,13 +396,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-</tbody>
-</table>
-</div>
-<section id="decomposition-types">
-<h1>Decomposition Types<a class="headerlink" href="#decomposition-types" title="Link to this heading">#</a></h1>
+  <section id="decomposition-types">
+<span id="ref-decomposition-types"></span><h1>Decomposition Types<a class="headerlink" href="#decomposition-types" title="Link to this heading">#</a></h1>
 <p>Gloria models are based on the well-known decomposition of time-series <span class="math notranslate nohighlight">\(Y(t)\)</span> as a function of time <span class="math notranslate nohighlight">\(t\)</span> into trend <span class="math notranslate nohighlight">\(T(t)\)</span>, seasonality <span class="math notranslate nohighlight">\(S(t)\)</span>, and a residual error term <span class="math notranslate nohighlight">\(E(t)\)</span>. There are two major ways to perform the decomposition:</p>
 <ul class="simple">
 <li><p><strong>Additive decomposition</strong>: <span class="math notranslate nohighlight">\(Y(t) = T(t) + S(t) + E(t)\)</span></p></li>

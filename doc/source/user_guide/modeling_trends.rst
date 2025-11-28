@@ -1,8 +1,5 @@
 .. _ref-modeling-trends:
 .. currentmodule:: gloria
-.. autosummary::
-   :template: autosummary/small_class.rst
-   :toctree: get_started/
    
 Modeling Trends
 ===============

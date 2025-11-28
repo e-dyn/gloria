@@ -314,6 +314,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prophet_migration.html">Migrate from Prophet</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
 <ul class="current nav bd-sidenav">
@@ -394,13 +395,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-</tbody>
-</table>
-</div>
-<section id="model-selection">
-<h1>Model Selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h1>
+  <section id="model-selection">
+<span id="ref-model-selection"></span><h1>Model Selection<a class="headerlink" href="#model-selection" title="Link to this heading">#</a></h1>
 <p>Choosing the right statistical model is a key step in time series analysis. Different datasets come with different distributional characteristics - some are continuous, others are discrete; some are symmetric, others skewed or bounded. Gloria supports a range of probabilistic models to allow flexible, context-aware fitting and forecasting.</p>
 <p>By default, Gloria uses the <strong>Normal distribution</strong>. This is suitable for many common use cases involving continuous data with symmetric noise. However, depending on the <strong>data type</strong> (e.g., counts, proportions, durations) and the <strong>behavior</strong> of the series (e.g., skewness, overdispersion, boundedness), more specialized models may yield significantly better results.</p>
 <p>This section shows how model selection can improve both the <strong>numerical performance</strong> and the <strong>interpretability</strong> of your forecasts. We illustrate this using count data and the <strong>Negative Binomial</strong> model, but the same principle applies across a variety of models available in Gloria.</p>

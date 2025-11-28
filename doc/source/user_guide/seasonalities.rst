@@ -1,7 +1,6 @@
 .. _ref-seasonalities:
 .. currentmodule:: gloria
 
-
 Seasonalities
 =============
 

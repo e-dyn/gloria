@@ -27,11 +27,12 @@ df = model.load_data()
 # Fit model using TOML options saved in model._config
 model.fit(df, use_laplace=False)
 
-serialized = model.to_json(indent=2)
-print(serialized[:290] + "\n...")
+serialized = model.to_dict(indent=2)
 
-# # Make prediction using TOML options saved in model._config
-# result = model.predict()
+model_copy = Gloria.from_json(serialized)
 
-# # Plot results
-# model.plot(result)
+# Make prediction using the deserialized model
+result = model_copy.predict()
+
+# Plot results
+model_copy.plot(result)

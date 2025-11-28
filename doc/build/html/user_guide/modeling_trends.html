@@ -314,6 +314,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prophet_migration.html">Migrate from Prophet</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
 <ul class="current nav bd-sidenav">
@@ -394,13 +395,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-</tbody>
-</table>
-</div>
-<section id="modeling-trends">
-<h1>Modeling Trends<a class="headerlink" href="#modeling-trends" title="Link to this heading">#</a></h1>
+  <section id="modeling-trends">
+<span id="ref-modeling-trends"></span><h1>Modeling Trends<a class="headerlink" href="#modeling-trends" title="Link to this heading">#</a></h1>
 <p>The <em>trend</em> is the component of your data that desribes its local mean value, around which the seasonalities oscillate. Typically, trends are not constant, but evolve upwards or downwards and are subject to sudden changes. Gloria assumes a continuous linear trend model, that is, it models a piecewise-linear trend function whose rate is allowed to change at specified <em>changepoints</em> without introducing discontinuities.</p>
 <p>In our introductory example <a class="reference internal" href="basic_usage.html#ref-basic-usage"><span class="std std-ref">Basic Usage</span></a>, we deliberately chose a section of the power-consumption data set, which does not exhibit trend changes. By setting <code class="docutils literal notranslate"><span class="pre">n_changepoints=0</span></code> we forced the Gloria model to fit a simple linear trend. Now let’s look at a different part of the same data set, several days further back in time.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>             <span class="c1"># For loading and processing</span>

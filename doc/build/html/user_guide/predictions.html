@@ -314,6 +314,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prophet_migration.html">Migrate from Prophet</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Model Construction</span></p>
 <ul class="nav bd-sidenav">
@@ -460,7 +461,7 @@
 <p>Some of these columns need further explanation, which is given in the following.</p>
 </section>
 <section id="confidence-bands-vs-data-variability">
-<h2>Confidence Bands vs Data Variability<a class="headerlink" href="#confidence-bands-vs-data-variability" title="Link to this heading">#</a></h2>
+<span id="ref-data-variability"></span><h2>Confidence Bands vs Data Variability<a class="headerlink" href="#confidence-bands-vs-data-variability" title="Link to this heading">#</a></h2>
 <p>By default, Gloria’s <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> method yields a point estimate of all model parameters by performing a maximum a posteriori estimation. As a consequence, the prediction <code class="docutils literal notranslate"><span class="pre">yhat</span></code> is also just a point estimate and does not by itself include uncertainty. To add a confidence band around <code class="docutils literal notranslate"><span class="pre">yhat</span></code> you can use <a class="reference external" href="https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html">Laplace sampling</a>. This method draws samples from a normal approximation centered at the optimized mode. To trigger Laplace sampling, set the <code class="docutils literal notranslate"><span class="pre">use_laplace=True</span></code> flag while calling <a class="reference internal" href="../api/api/gloria.Gloria.fit.html#gloria.Gloria.fit" title="gloria.Gloria.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a>. When running the fit, Gloria’s logger will inform you about the steps being taken:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">09:49:57 - gloria - INFO - Starting optimization.</span>
 <span class="go">09:49:57 - gloria - INFO - Starting Laplace sampling.</span>
