@@ -414,10 +414,12 @@ class ModelBackendBase(ABC):
         cmdstan_path = models_path / f"cmdstan-{_CMDSTAN_VERSION}"
         set_cmdstan_path(str(cmdstan_path))
         # Initialize the Stan model
-        self.model = CmdStanModel(
-            stan_file=self.stan_file,  # Keep explicit stan_file for dev
-            exe_file=self.stan_file.with_suffix(".exe"),
-        )
+        exe_file = self.stan_file.with_suffix(".exe")
+        if exe_file.exists():
+            self.model = CmdStanModel(exe_file=exe_file)
+        else:
+            # for dev deleting the exe file triggers compiliation
+            self.model = CmdStanModel(stan_file=self.stan_file)
         # Silence cmdstanpy logger
         stan_logger = logging.getLogger("cmdstanpy")
         stan_logger.setLevel(logging.CRITICAL)
