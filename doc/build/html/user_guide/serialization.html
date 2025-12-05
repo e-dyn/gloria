@@ -397,7 +397,7 @@
                   
   <section id="model-serialization">
 <span id="ref-serialization"></span><h1>Model Serialization<a class="headerlink" href="#model-serialization" title="Link to this heading">#</a></h1>
-<p>While unfitted models can be created from <a class="reference internal" href="toml_config.html#ref-toml-config"><span class="std std-ref">TOML configuration files</span></a>, Gloria also provides built-in helper methods to serialize and deserialize fitted models. A deserialized model retains all the information needed to generate forecasts based on its previous fit. This is useful in various scenarios, such as resuming work in a later session, transferring a model between machines, or passing it between stages of a processing pipeline.</p>
+<p>Once a Gloria model has been trained you may want to store it for reuse without retraining. This is useful in various scenarios, such as resuming work in a later session, transferring a model between machines, or passing it between stages of a processing pipeline. On that account, Gloria provides built-in helper methods to serialize and deserialize fitted models. A deserialized model retains all the information needed to generate forecasts based on its previous fit.</p>
 <section id="serialize-to-json">
 <h2>Serialize to JSON<a class="headerlink" href="#serialize-to-json" title="Link to this heading">#</a></h2>
 <p>The main method for serializing a model is <a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a>, which converts a fitted model into a JSON-formatted string:</p>

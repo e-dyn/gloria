@@ -4,7 +4,7 @@
 Configuration Files
 ===================
 
-Working with Gloria often means adjusting many parameters to control how models behave. When experiments span multiple scripts or environments, keeping these settings consistent can quickly become an error-prone chore. To make this easier, Gloria supports configuration files in the `TOML <https://toml.io/en/>`_ format. In the following we show how to use these files and explain how Gloria resolves conflicts between multiply defined parameters.
+Working with Gloria often means adjusting many parameters to control how models behave. When experiments span multiple scripts or environments, keeping these settings consistent can quickly become an error-prone chore. To make this easier, Gloria supports configuration files in the `TOML <https://toml.io/en/>`_ format. In the following, we show how to use these files and explain how Gloria resolves conflicts between multiply defined parameters.
 
 Configuring Models with TOML
 ----------------------------

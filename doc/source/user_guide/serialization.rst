@@ -4,7 +4,7 @@
 Model Serialization
 ===================
 
-While unfitted models can be created from :ref:`TOML configuration files <ref-toml-config>`, Gloria also provides built-in helper methods to serialize and deserialize fitted models. A deserialized model retains all the information needed to generate forecasts based on its previous fit. This is useful in various scenarios, such as resuming work in a later session, transferring a model between machines, or passing it between stages of a processing pipeline.
+Once a Gloria model has been trained you may want to store it for reuse without retraining. This is useful in various scenarios, such as resuming work in a later session, transferring a model between machines, or passing it between stages of a processing pipeline. On that account, Gloria provides built-in helper methods to serialize and deserialize fitted models. A deserialized model retains all the information needed to generate forecasts based on its previous fit. 
 
 Serialize to JSON
 -----------------

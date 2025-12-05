@@ -5,7 +5,7 @@
 Migrate from Prophet
 ====================
 
-Gloria was inspired by `Prophet <https://facebook.github.io/prophet/>`_, yet it is an independent framework with substantial improvements in modeling flexibility. Gloria honors its heritage by retaining much of Prophet's interface, parameters, workflow and even internal mechanisms. This tutorial is intended for Prophet users who wish to explore Gloria. It highlights the key similarities and differences between the two libraries and points out common pitfalls along the way.
+Gloria was inspired by `Prophet <https://facebook.github.io/prophet/>`_, yet it is an independent framework with substantial improvements in modeling flexibility. Gloria honors its heritage by retaining much of Prophet's interface, parameters, workflow, and even internal mechanisms. This tutorial is intended for Prophet users who wish to explore Gloria. It highlights the key similarities and differences between the two libraries and points out common pitfalls along the way.
 
 .. note::
     The migration guide borrows most examples from the Prophet documentation and modifies them to work with Gloria in the same fashion.
@@ -98,9 +98,9 @@ Gloria uses :ref:`Events <ref-events-tutorial>` for the same purpose. Events are
         t_list=superbowls
     )
     
-An event in Gloria consists of a temporal ``profile`` and one or more anchor times at which the profile is applied. In our example, the anchor times are the list of superbowl dates. The chosen ``regressor_type`` :class:`IntermittentEvent` is designed for such lists of discrete occurences. The *1-day-width* :class:`BoxCar` function used as the event profile is equivalent to Prophet's event effect, which applies only on the day of the event. Further explanations about the different event and profile types can be found in the :ref:`Events <ref-events-tutorial>` tutorial.
+An event in Gloria consists of a temporal ``profile`` and one or more anchor times at which the profile is applied. In our example, the anchor times are the list of superbowl dates. The chosen ``regressor_type`` :class:`IntermittentEvent` is designed for such lists of discrete occurrences. The *1-day-width* :class:`BoxCar` function used as the event profile is equivalent to Prophet's event effect, which applies only on the day of the event. Further explanations about the different event and profile types can be found in the :ref:`Events <ref-events-tutorial>` tutorial.
 
-It is important to note that Gloria's events do not support ``lower_window`` and ``upper_window`` directly. In Prophet, each day within the event window receives its own regressor parameter. To reproduce this behavior in Gloria, you would need to add one event per day, for instance:
+Gloria's events do not directly support ``lower_window`` and ``upper_window``. In Prophet, each day within the event window receives its own regressor parameter. To reproduce this behavior in Gloria, you would need to add one event per day, for instance:
 
 .. code-block:: python
 
@@ -436,11 +436,20 @@ As shown above, Gloria produces the same kind of nonlinear saturating trend. In 
 
 For more details on saturating behaviour in Gloria, see the :ref:`Saturation <ref-saturation>` tutorial.
 
+.. _ref-prophet-migration-data-variability:
+
 Data Variability
 ----------------
 
-Prophet's predict method produces a data frame including ``yhat_upper`` and ``yhat_lower`` columns besides ``yhat``. These upper and lower bounds add and interval of observed noise on top of ``yhat``, corresponding to the variance learned from the data during the fit.
+Prophet's predict method produces a data frame including ``yhat_upper`` and ``yhat_lower`` columns besides ``yhat``. These upper and lower bounds add an interval of observed noise on top of ``yhat``, corresponding to the variance learned from the data during the fit.
 
-Gloria calls these *data variability* columns ``observed_upper`` and ``observed_ower``. In contrast, the columns ``yhat_upper`` and ``yhat_lower`` are used to describe confidence intervals of the model itself, ie. the model expects the true :math:`\hat{y}` to be within these bounds with a confidence level given by the Gloria argument ``interval_width``. 
+Gloria calls these *data variability* columns ``observed_upper`` and ``observed_lower``. In contrast, the columns ``yhat_upper`` and ``yhat_lower`` are used to describe confidence intervals of the model itself. That is, the model expects the true :math:`\hat{y}` to be within these bounds with a confidence level given by the Gloria argument ``interval_width``. 
 
 The difference between confidence intervals and data variability are further discussed as part of the :ref:`Predictions <ref-data-variability>` tutorial.
+
+.. tip::
+    Use the *data variability* intervals (``observed_upper`` / ``observed_lower``) when comparing the model to the observed data. For example, to visually check whether the model error is consistent with the noise in the data.
+
+    Use the *model uncertainty* intervals (``yhat_upper`` / ``yhat_lower``) when evaluating the model`s **forecast uncertainty**. For example, when asking how sure the model is about future values or counterfactual scenarios.
+    
+    
