@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-#include utilities.stan
+#include utilities/functions.stan
 
 data {
   int<lower=0> T;               // Number of time periods
@@ -22,29 +22,15 @@ data {
 }
 
 transformed data {
-  matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
-  real eps = 1e-9;
+  #include utilities/transformed_data.stan
   
-  // Find regressor-wise scales
-  vector[K] reg_scales;
-  for (j in 1:K) {
-    reg_scales[j] = max(X[, j]) - min(X[, j]);
-  }
-  
-  // Scaling factor for beta-prior to guarantee that it drops to 1% of its
-  // maximum value at beta_max = 1/reg_scales for sigma = 3
-  vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
-  
-  // Calculate prior scales
-  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
-  // drops to 1% of its maximum value for delta_max = 1
-  real<lower=0> delta_scale = 0.072*tau;
-  vector[K] beta_scale = f_beta.*sigmas;
+  // Calculate dispersion prior scales
   // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
   // kappa=0.5 for the default prior scale gamma=3.
   real<lower=0> gamma_scale = gamma / 6;
   
   // Parameters for dispersion scale
+  real eps = 1e-9;
   vector[T] y_real = to_vector(y);                    // Convert y to vector of real values
   real mu_mean = mean(y_real);                        // An estimate for the mean expectation value
   real kappa_max = fmin(mu_mean * (1-mu_mean) / variance_max -eps, 2.);
