@@ -41,7 +41,9 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend = linear_trend(k, m, delta, t, A, t_change);
+  // Transformer parameters shared by all models
+  #include utilities/transformed_parameters.stan
+  
   // Scale parameter for distribution
   real scale = mu_mean * (1-mu_mean) / (variance_max * kappa^2)-1;
   // Expectation value of Beta-distribution
@@ -53,13 +55,10 @@ transformed parameters {
 }
 
 model {
-  // Priors
-  k ~ normal(0,0.5);
-  m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, delta_scale);
-  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
-  // drops to 1% of its maximum value for delta_max = 1
-  beta ~ normal(0, beta_scale);
+  // Priors shared by all models
+  #include utilities/priors.stan
+  
+  // Model specific priors
   kappa ~ exponential(gamma_scale);
   
   // Likelihood

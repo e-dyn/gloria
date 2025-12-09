@@ -35,19 +35,17 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend = linear_trend(
-      k, m, delta,
-      t, A, t_change
-  );
+  // Transformer parameters shared by all models
+  #include utilities/transformed_parameters.stan
+  
   real scale = sqrt(variance_max) * kappa; // Scale parameter for distribution
 }
 
 model {
-  // Priors
-  k ~ normal(0,0.5);
-  m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, delta_scale);
-  beta ~ normal(0, beta_scale);
+  // Priors shared by all models
+  #include utilities/priors.stan
+  
+  // Model specific priors
   kappa ~ exponential(gamma_scale);
   
   // Likelihood

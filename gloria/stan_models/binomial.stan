@@ -25,20 +25,13 @@ parameters {
 }
 
 transformed parameters {
-  vector[T] trend = linear_trend(
-      k, m, delta,
-      t, A, t_change
-  );
+  // Transformer parameters shared by all models
+  #include utilities/transformed_parameters.stan
 }
 
 model {
-  // Priors
-  k ~ normal(0,0.5);
-  m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, delta_scale);
-  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
-  // drops to 1% of its maximum value for delta_max = 1
-  beta ~ normal(0, beta_scale);
+  // Priors shared by all models
+  #include utilities/priors.stan
   
   // Likelihood
   y ~ binomial_logit_glm(
