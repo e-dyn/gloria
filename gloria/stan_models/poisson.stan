@@ -6,6 +6,7 @@
 #include utilities/functions.stan
 
 data {
+  // Input data shared by all models
   #include utilities/data.stan
 
   // Model specific input data
@@ -13,20 +14,13 @@ data {
 }
 
 transformed data {
+  // Data transformations shared by all models
   #include utilities/transformed_data.stan
 }
 
 parameters {
-  real<lower=-0.5, upper=0.5> k;            // Base trend growth rate
-  real<lower=0, upper=1> m;                 // Trend offset
-  vector<lower=-1, upper=1>[S] delta;       // Trend rate adjustments
-  vector<                                   // Regressor coefficients
-    lower=-1/reg_scales,
-    upper=1/reg_scales
-  >[K] beta;  
-  // Note: lower and upper bounds 1/reg_scales are chosen such that each 
-  // regressor is able to bridge the entire range of the normalized linear 
-  // model range [0,1]
+  // Model parameters shared by all models
+  #include utilities/parameters.stan
 }
 
 transformed parameters {
