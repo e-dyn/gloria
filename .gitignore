@@ -1,6 +1,5 @@
-gloria/stan_models/*
-!gloria/stan_models/*.stan
-!gloria/stan_models/utilities/*.stan
+gloria/stan_models/cmdstan*
+gloria/stan_models/*.exe
 **/__pycache__
 **/logfiles/
 **/models
