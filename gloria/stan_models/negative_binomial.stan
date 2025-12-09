@@ -64,3 +64,5 @@ model {
   // Note neg_binomial_2_log_glm tends to overestimate the scale.
   // neg_binomial_2_log works better in this regards.
 }
+
+#include utilities/generated_quantities.stan

@@ -66,3 +66,5 @@ model {
     y[n] ~ beta_proportion(mu[n], scale);
   }
 }
+
+#include utilities/generated_quantities.stan

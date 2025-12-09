@@ -56,3 +56,5 @@ model {
     scale
   );
 }
+
+#include utilities/generated_quantities.stan

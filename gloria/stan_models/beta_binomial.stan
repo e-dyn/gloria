@@ -65,3 +65,5 @@ model {
     y[n] ~ beta_binomial(capacity[n], a[n], b[n]);
   }
 }
+
+#include utilities/generated_quantities.stan

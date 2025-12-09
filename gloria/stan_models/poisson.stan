@@ -39,3 +39,5 @@ model {
     linked_scale * beta                      // Denormalized regression coefficients
   );
 }
+
+#include utilities/generated_quantities.stan

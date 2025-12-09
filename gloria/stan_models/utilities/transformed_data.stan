@@ -6,7 +6,15 @@
 
 // Data transformations shared by all models
 
-matrix[T, S] A = get_changepoint_matrix(t, t_change, T, S);
+real t_center = mean(t);
+real t_scale  = fmax(sd(t), 1e-6);
+// standardized time
+vector[T] t_std = (t - t_center) / t_scale;
+// standardized changepoints
+vector[S] t_change_std;
+for (s in 1:S) t_change_std[s] = (t_change[s] - t_center) / t_scale;
+
+matrix[T, S] A = get_changepoint_matrix(t_std, t_change_std, T, S);
 
 // Find regressor-wise scales
 vector[K] reg_scales;

@@ -62,3 +62,5 @@ model {
     y[n] ~ gamma(eta[n], scale);
   }
 }
+
+#include utilities/generated_quantities.stan

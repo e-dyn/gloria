@@ -4,7 +4,11 @@
 // LICENSE file in the root directory of this source tree.
 
 // Transformer parameters shared by all models
+
+// Rescaled intercept using standardized time
+real m_std = m + (k_std * t_center) / t_scale;
+
 vector[T] trend = linear_trend(
-    k, m, delta,
-    t, A, t_change
+    k_std, m_std, delta_std,
+    t_std, A, t_change_std
 );
