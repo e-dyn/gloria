@@ -6,18 +6,11 @@
 #include utilities/functions.stan
 
 data {
-  int<lower=0> T;               // Number of time periods
-  int<lower=0> S;               // Number of changepoints
-  int<lower=0> K;               // Number of regressors
-  real<lower=0> tau;            // Scale on changepoints prior
-  array[T] int<lower=0> y;      // Time series
-  vector[T] t;                  // Time as integer vector
-  vector[S] t_change;           // Times of trend changepoints as integers
-  matrix[T,K] X;                // Regressors
-  vector[K] sigmas;             // Scale on seasonality prior
+  #include utilities/data.stan
+
+  // Model specific input data
+  array[T] int<lower=0> y;      // Time series  
   array[T] int capacity;        // Capacity
-  real linked_offset;           // Offset of linear model
-  real linked_scale;            // Scale of linear model
 }
 
 transformed data {

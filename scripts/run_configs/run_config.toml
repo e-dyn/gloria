@@ -1,5 +1,5 @@
 [model]
-model = "poisson"
+model = "negative binomial"
 sampling_period = "1d"
 timestamp_name = "ds"
 metric_name = "y"
