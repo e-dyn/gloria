@@ -33,6 +33,15 @@ transformed data {
   // Scaling factor for beta-prior to guarantee that it drops to 1% of its
   // maximum value at beta_max = 1/reg_scales for sigma = 3
   vector[K] f_beta = inv_sqrt(-2*log(0.01)*reg_scales^2) / 3;
+  
+  // Calculate prior scales
+  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
+  // drops to 1% of its maximum value for delta_max = 1
+  real<lower=0> delta_scale = 0.072*tau;
+  vector[K] beta_scale = f_beta.*sigmas;
+  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
+  // kappa=0.5 for the default prior scale gamma=3.
+  real<lower=0> gamma_scale = gamma / 6;
 }
 
 parameters {
@@ -61,13 +70,9 @@ model {
   // Priors
   k ~ normal(0,0.5);
   m ~ normal(0.5,0.5);
-  delta ~ double_exponential(0, 0.072*tau);
-  // Note: Factor 0.072 is chosen such that with tau=3 the double_exponential
-  // drops to 1% of its maximum value for delta_max = 1
-  beta ~ normal(0, f_beta.*sigmas);
-  // Note: Factor 1/6 is chosen such that the Prior is sensitive around 
-  // kappa=0.5 for the default prior scale gamma=3.
-  kappa ~ exponential(gamma / 6);
+  delta ~ double_exponential(0, delta_scale);
+  beta ~ normal(0, beta_scale);
+  kappa ~ exponential(gamma_scale);
   
   // Likelihood
   y ~ normal_id_glm(

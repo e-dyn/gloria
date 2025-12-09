@@ -8,6 +8,12 @@ Bugfixes
 --------
 - Some missing attributes were added to Gloria's serialization module that caused :meth:`Gloria.to_dict`, :meth:`Gloria.from_dict`, :meth:`Gloria.to_json`, and :meth:`Gloria.from_json` to fail (`#88 <https://github.com/e-dyn/gloria/issues/88>`_).
 
+Stan Backend
+------------
+A number of changes to all models have been implemented to all Stan models to enhance robustness and maintainability of the Stan backend. All changes are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_
+
+- All functions defined in the ``functions`` block were moved to ``utilities.stan`` and imported back to the model files using the ``#include`` directive (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
+
 Documentation
 -------------
 - Added :ref:`Migrate from Prophet <ref-prophet-migration>` tutorial highlighting differences and similarities between `Prophet <https://facebook.github.io/prophet/>`_ and Gloria (`#46 <https://github.com/e-dyn/gloria/issues/46>`_)

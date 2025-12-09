@@ -381,6 +381,13 @@
 <li><p>Some missing attributes were added to Gloria’s serialization module that caused <a class="reference internal" href="../api/api/gloria.Gloria.to_dict.html#gloria.Gloria.to_dict" title="gloria.Gloria.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_dict()</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gloria.from_dict.html#gloria.Gloria.from_dict" title="gloria.Gloria.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_dict()</span></code></a>, <a class="reference internal" href="../api/api/gloria.Gloria.to_json.html#gloria.Gloria.to_json" title="gloria.Gloria.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.to_json()</span></code></a>, and <a class="reference internal" href="../api/api/gloria.Gloria.from_json.html#gloria.Gloria.from_json" title="gloria.Gloria.from_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.from_json()</span></code></a> to fail (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/88">#88</a>).</p></li>
 </ul>
 </section>
+<section id="stan-backend">
+<h2>Stan Backend<a class="headerlink" href="#stan-backend" title="Link to this heading">#</a></h2>
+<p>A number of changes to all models have been implemented to all Stan models to enhance robustness and maintainability of the Stan backend. All changes are related to issue <a class="reference external" href="https://github.com/e-dyn/gloria/issues/84">#84</a></p>
+<ul class="simple">
+<li><p>All functions defined in the <code class="docutils literal notranslate"><span class="pre">functions</span></code> block were moved to <code class="docutils literal notranslate"><span class="pre">utilities.stan</span></code> and imported back to the model files using the <code class="docutils literal notranslate"><span class="pre">#include</span></code> directive (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/99">#99</a>)</p></li>
+</ul>
+</section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -446,6 +453,7 @@
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bugfixes">Bugfixes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stan-backend">Stan Backend</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributors">Contributors</a></li>
 </ul>

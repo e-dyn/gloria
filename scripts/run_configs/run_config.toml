@@ -11,7 +11,7 @@ dtype_kind = "u"
 
 [fit]
 optimize_mode = "MAP"
-use_laplace = true
+use_laplace = false
 
 [predict]
 periods = 30
