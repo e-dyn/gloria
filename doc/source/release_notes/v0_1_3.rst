@@ -10,9 +10,11 @@ Bugfixes
 
 Stan Backend
 ------------
-A number of changes to all models have been implemented to all Stan models to enhance robustness and maintainability of the Stan backend. All changes are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_
+A number of changes to all Stan models have been implemented which enhance robustness and maintainability of the Stan backend. All changes are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_:
 
-- All functions defined in the ``functions`` block were moved to ``utilities.stan`` and imported back to the model files using the ``#include`` directive (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
+- Bounds on the regressor coefficient parameter :math:`\beta` were removed, preventing the optimizer to get stuck at the bounds (`#98 <https://github.com/e-dyn/gloria/issues/98>`_)
+- Code shared by all Stan models was moved to separate ``.stan`` files and imported back to the models using the ``#include`` directive (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
+- The calculation of prior scales was moved from the ``models`` to the ``transformed data`` block (`#100 <https://github.com/e-dyn/gloria/issues/100>`_)
 
 Documentation
 -------------
