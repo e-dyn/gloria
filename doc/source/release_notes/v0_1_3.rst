@@ -6,22 +6,24 @@ Version 0.1.3
 
 Bugfixes
 --------
-- Some missing attributes were added to Gloria's serialization module that caused :meth:`Gloria.to_dict`, :meth:`Gloria.from_dict`, :meth:`Gloria.to_json`, and :meth:`Gloria.from_json` to fail (`#88 <https://github.com/e-dyn/gloria/issues/88>`_).
+- Resolved an issue where missing attributes in Gloria's serialization module caused :meth:`Gloria.to_dict`, :meth:`Gloria.from_dict`, :meth:`Gloria.to_json`, and :meth:`Gloria.from_json` to fail (`#88 <https://github.com/e-dyn/gloria/issues/88>`_).
 
-Stan Backend
-------------
-A number of changes to all Stan models have been implemented which enhance robustness and maintainability of the Stan backend. All changes are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_:
+Stan Backend Improvements
+-------------------------
+Several updates have been applied across all Stan models to improve robustness, stability, and maintainability of the Stan backend. These changes significantly reduce fallback to Newton optimization and help avoid overshooting in trend estimates. All improvements are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_:
 
-- Bounds on the regressor coefficient parameter :math:`\beta` were removed, preventing the optimizer to get stuck at the bounds (`#98 <https://github.com/e-dyn/gloria/issues/98>`_)
-- Code shared by all Stan models was moved to separate ``.stan`` files and imported back to the models using the ``#include`` directive (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
-- The calculation of prior scales was moved from the ``models`` to the ``transformed data`` block (`#100 <https://github.com/e-dyn/gloria/issues/100>`_)
+- Added normalization of the time vector to reduce sensitivity to small changes in trend rates (`#95 <https://github.com/e-dyn/gloria/issues/95>`_)
+- Updated the prior for trend rate change coefficients :math:`\delta` from a Lasso-like to an elastic-net–like formulation. The additional Gaussian component reduces large, abrupt trend shifts (`#96 <https://github.com/e-dyn/gloria/issues/96>`_)
+- Removed bounds on the regressor coefficient parameter :math:`\beta` to prevent the optimizer from getting stuck at parameter limits (`#98 <https://github.com/e-dyn/gloria/issues/98>`_)
+- Consolidated shared Stan code into separate ``.stan`` files and included them via ``#include`` to simplify maintenance (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
+- Moved prior scale calculations from the ``model`` block to the ``transformed data`` block for improved performance (`#100 <https://github.com/e-dyn/gloria/issues/100>`_)
 
 Documentation
 -------------
-- Added :ref:`Migrate from Prophet <ref-prophet-migration>` tutorial highlighting differences and similarities between `Prophet <https://facebook.github.io/prophet/>`_ and Gloria (`#46 <https://github.com/e-dyn/gloria/issues/46>`_)
-- Added :ref:`Predictions <ref-predictions>` tutorial describing details on the :meth:`~Gloria.predict` output data frame (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).
-- Added :ref:`Model Serialization <ref-serialization>` tutorial showcasing how to serialize fitted Gloria models for later use (`#50 <https://github.com/e-dyn/gloria/issues/50>`_).
-- Added :ref:`Configuration Files <ref-toml-config>` tutorial on using TOML configuration files to set up Gloria models and its methods (`#51 <https://github.com/e-dyn/gloria/issues/51>`_).
+- Added :ref:`Migrate from Prophet <ref-prophet-migration>` tutorial highlighting key differences and similarities between `Prophet <https://facebook.github.io/prophet/>`_ and Gloria (`#46 <https://github.com/e-dyn/gloria/issues/46>`_)
+- Added :ref:`Predictions <ref-predictions>` tutorial explaining the structure and interpretation of :meth:`~Gloria.predict` output (`#45 <https://github.com/e-dyn/gloria/issues/45>`_).
+- Added :ref:`Model Serialization <ref-serialization>` tutorial on how to store and reuse fitted Gloria models (`#50 <https://github.com/e-dyn/gloria/issues/50>`_).
+- Added :ref:`Configuration Files <ref-toml-config>` tutorial demonstrating how to configure Gloria models and methods using TOML files (`#51 <https://github.com/e-dyn/gloria/issues/51>`_).
 
 Contributors
 ------------
