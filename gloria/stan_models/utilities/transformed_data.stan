@@ -6,6 +6,18 @@
 
 // Data transformations shared by all models
 
+// Normalize the regressors
+matrix[T,K] X_n;                // normalized Regressors
+vector[K] x_mean;
+vector[K] x_std;
+
+for (k in 1:K) {
+  x_mean[k]    = mean(col(X, k));
+  x_std[k] = sd(col(X, k));
+  X_n[, k] = (X[, k] - x_mean[k]) / x_std[k];
+}
+
+
 real t_center = mean(t);
 real t_scale  = fmax(sd(t), 1e-6);
 // standardized time
@@ -19,7 +31,7 @@ matrix[T, S] A = get_changepoint_matrix(t_std, t_change_std, T, S);
 // Find regressor-wise scales
 vector[K] reg_scales;
 for (j in 1:K) {
-  reg_scales[j] = max(X[, j]) - min(X[, j]);
+  reg_scales[j] = max(X_n[, j]) - min(X_n[, j]);
 }
 
 // Scaling factor for beta-prior to guarantee that it drops to 1% of its

@@ -6,7 +6,7 @@
 
 // Priors shared by all models
 k_std ~ normal(0,0.5 * t_scale);
-m ~ normal(0.5,0.5);
+m_n ~ normal(0.5,0.5);
 delta_std ~ double_exponential(0, delta_scale * t_scale);
 delta_std ~ normal(0, 7e-4 * t_scale);
-beta ~ normal(0, beta_scale);
+beta_n ~ normal(0, beta_scale);

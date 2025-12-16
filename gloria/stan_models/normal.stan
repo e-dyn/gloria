@@ -50,9 +50,9 @@ model {
   
   // Likelihood
   y ~ normal_id_glm(
-    X,
+    X_n,
     linked_offset + linked_scale * trend,    // Denormalized trend
-    linked_scale * beta,                     // Denormalized regression coefficients
+    linked_scale * beta_n,                   // Denormalized regression coefficients
     scale
   );
 }

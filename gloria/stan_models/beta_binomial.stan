@@ -45,7 +45,7 @@ transformed parameters {
 
   vector[T] p = inv_logit(                      // Model success probability
       linked_offset 
-      + linked_scale*(trend + X * beta)
+      + linked_scale*(trend + X_n * beta_n)
   );
   p = fmin(fmax(p, eps), 1 - eps);              // ensure p is inside (0,1)
   // Relate p and scale to standard parameters for Beta-Binomial

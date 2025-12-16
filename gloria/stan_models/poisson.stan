@@ -34,9 +34,9 @@ model {
   
   // Likelihood
   y ~ poisson_log_glm(
-    X,
-    linked_offset + linked_scale * trend,    // Denormalized trend
-    linked_scale * beta                      // Denormalized regression coefficients
+    X_n,
+    linked_offset + linked_scale * trend,      // Denormalized trend
+    linked_scale * beta_n                      // Denormalized regression coefficients
   );
 }
 

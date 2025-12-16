@@ -6,7 +6,7 @@
 // Transformer parameters shared by all models
 
 // Rescaled intercept using standardized time
-real m_std = m + (k_std * t_center) / t_scale;
+real m_std = m_n + (k_std * t_center) / t_scale;
 
 vector[T] trend = linear_trend(
     k_std, m_std, delta_std,

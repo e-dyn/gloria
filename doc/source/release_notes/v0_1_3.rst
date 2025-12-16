@@ -10,10 +10,12 @@ Bugfixes
 
 Stan Backend Improvements
 -------------------------
-Several updates have been applied across all Stan models to improve robustness, stability, and maintainability of the Stan backend. These changes significantly reduce fallback to Newton optimization and help avoid overshooting in trend estimates. All improvements are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_:
+Several updates have been applied across all Stan models to improve robustness, stability, and maintainability of the Stan backend. These changes significantly reduce fallback to Newton optimization, improve fit reproducibility and mitigate overshooting trend functions. All improvements are related to issue `#84 <https://github.com/e-dyn/gloria/issues/84>`_:
 
 - Added normalization of the time vector to reduce sensitivity to small changes in trend rates (`#95 <https://github.com/e-dyn/gloria/issues/95>`_)
-- Updated the prior for trend rate change coefficients :math:`\delta` from a Lasso-like to an elastic-net–like formulation. The additional Gaussian component reduces large, abrupt trend shifts (`#96 <https://github.com/e-dyn/gloria/issues/96>`_)
+- Moved regressor normalization from ``models.py`` to Stan backend and changed it to *Z-score normalization* (`#96 <https://github.com/e-dyn/gloria/issues/96>`_)
+- The initial parameter calculation in ``models.py`` was changed to work on the new time and response scales.
+- Updated the prior for trend rate change coefficients :math:`\delta` from a Lasso-like to an elastic-net–like formulation. The additional Gaussian component reduces large, abrupt trend shifts (`#97 <https://github.com/e-dyn/gloria/issues/97>`_)
 - Removed bounds on the regressor coefficient parameter :math:`\beta` to prevent the optimizer from getting stuck at parameter limits (`#98 <https://github.com/e-dyn/gloria/issues/98>`_)
 - Consolidated shared Stan code into separate ``.stan`` files and included them via ``#include`` to simplify maintenance (`#99 <https://github.com/e-dyn/gloria/issues/99>`_)
 - Moved prior scale calculations from the ``model`` block to the ``transformed data`` block for improved performance (`#100 <https://github.com/e-dyn/gloria/issues/100>`_)
@@ -27,4 +29,5 @@ Documentation
 
 Contributors
 ------------
-- Benjamin Kambs
+- `Benjamin Kambs <https://github.com/benkambs>`_
+- `Patrik Wollgarten <https://github.com/PWollgarten>`_

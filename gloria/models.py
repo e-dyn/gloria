@@ -216,6 +216,10 @@ class ModelParams(BaseModel):
     """
     A container for the fitting parameter of each model. Additional model-
     dependent parameters have to be added within the model
+
+    Note that all parameters exist in a unnormalized and normalized form. The
+    suffixes "std" and "n" refer to normalized time and amplitude scales,
+    respectively.
     """
 
     model_config = ConfigDict(
@@ -229,6 +233,11 @@ class ModelParams(BaseModel):
     m: float = 0  # Trend offset
     delta: np.ndarray = np.array([])  # Trend rate adjustments, length S
     beta: np.ndarray = np.array([])  # Slope for y, length K
+
+    k_std: float = 0  # Base trend growth rate
+    m_n: float = 0  # Trend offset
+    delta_std: np.ndarray = np.array([])  # Trend rate adjustments, length S
+    beta_n: np.ndarray = np.array([])  # Slope for y, length K
 
 
 class ModelInputData(BaseModel):
@@ -628,7 +637,17 @@ class ModelBackendBase(ABC):
         # additionally pre-fitted using the pre-optimize flag in the interface
         # fit method. In that case the model backend fit method will use a
         # MAP estimate.
-        return ModelParams(m=m, k=k, delta=delta, beta=np.zeros(stan_data.K))
+        t_scale = max(np.std(t), 1e-6)
+        return ModelParams(
+            m=m,
+            k=k,
+            delta=delta,
+            beta=np.zeros(stan_data.K),
+            m_n=m,
+            k_std=k * t_scale,
+            delta_std=delta * t_scale,
+            beta_n=np.zeros(stan_data.K),
+        )
 
     def estimate_variance(
         self: Self, stan_data: ModelInputData, trend_params: ModelParams
@@ -736,19 +755,6 @@ class ModelBackendBase(ABC):
             vectorized=vectorized,
         )
 
-        # Scale regressors. The goal is to give each regressor a similar impact
-        # on the model
-        if stan_data.X.size:
-            # Calculate the regressor strength as somewhat equivalent to a
-            # physical field strength (sqrt of a signal's delivered power)
-            reg_strength = np.sqrt((stan_data.X**2).sum(axis=0))
-            # Normalization of the strength with respect to its median ensures
-            # that most regressors won't be rescaled but only the too weak or
-            # too strong.
-            q = reg_strength / np.median(reg_strength)
-
-            stan_data.X = stan_data.X / q
-
         # If the user wishes also initialize beta via an MAP estimation
         get_logger().debug(
             f"Optimizing model parameters using {optimize_mode}."
@@ -824,11 +830,6 @@ class ModelBackendBase(ABC):
             for k, v in self.stan_fit.stan_variables().items()
             if k != "trend"
         }
-
-        # Scale back both regressors and fit parameters
-        if stan_data.X.size:
-            self.stan_data.X *= q
-            self.fit_params["beta"] /= q
 
         return self.stan_fit
 

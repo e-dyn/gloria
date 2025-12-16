@@ -23,7 +23,6 @@ model = Gloria.from_toml(toml_path=toml_path)
 
 # Load data using TOML options saved in model._config
 df = model.load_data()
-# df.y /= 2 * df.y.max()
 
 # Fit model using TOML options saved in model._config
 model.fit(df)

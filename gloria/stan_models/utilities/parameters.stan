@@ -5,6 +5,6 @@
 
 // Model parameters shared by all models
 real k_std;            // Base trend growth rate
-real m;                // Trend offset
+real m_n;              // Normalized trend offset
 vector[S] delta_std;   // Trend rate adjustments
-vector[K] beta;        // Regressor coefficients
+vector[K] beta_n;      // Normalized regressor coefficients

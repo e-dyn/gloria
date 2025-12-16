@@ -49,7 +49,7 @@ transformed parameters {
   // Expectation value of Beta-distribution
   vector[T] mu = inv_logit(                // Denormalization if linear model
       linked_offset 
-      + linked_scale*(trend + X * beta)
+      + linked_scale*(trend + X_n * beta_n)
   );
   mu = fmin(fmax(mu, eps), 1 - eps); // ensure mu is inside (0,1)
 }

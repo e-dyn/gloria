@@ -46,7 +46,7 @@ transformed parameters {
 
   vector[T] eta = (                     // Denormalization if linear model
       linked_offset 
-      + linked_scale*(trend + X * beta)
+      + linked_scale*(trend + X_n * beta_n)
   );
 }
 

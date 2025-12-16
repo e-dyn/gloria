@@ -384,10 +384,12 @@
 </section>
 <section id="stan-backend-improvements">
 <h2>Stan Backend Improvements<a class="headerlink" href="#stan-backend-improvements" title="Link to this heading">#</a></h2>
-<p>Several updates have been applied across all Stan models to improve robustness, stability, and maintainability of the Stan backend. These changes significantly reduce fallback to Newton optimization and help avoid overshooting in trend estimates. All improvements are related to issue <a class="reference external" href="https://github.com/e-dyn/gloria/issues/84">#84</a>:</p>
+<p>Several updates have been applied across all Stan models to improve robustness, stability, and maintainability of the Stan backend. These changes significantly reduce fallback to Newton optimization, improve fit reproducibility and mitigate overshooting trend functions. All improvements are related to issue <a class="reference external" href="https://github.com/e-dyn/gloria/issues/84">#84</a>:</p>
 <ul class="simple">
 <li><p>Added normalization of the time vector to reduce sensitivity to small changes in trend rates (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/95">#95</a>)</p></li>
-<li><p>Updated the prior for trend rate change coefficients <span class="math notranslate nohighlight">\(\delta\)</span> from a Lasso-like to an elastic-net–like formulation. The additional Gaussian component reduces large, abrupt trend shifts (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/96">#96</a>)</p></li>
+<li><p>Moved regressor normalization from <code class="docutils literal notranslate"><span class="pre">models.py</span></code> to Stan backend and changed it to <em>Z-score normalization</em> (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/96">#96</a>)</p></li>
+<li><p>The initial parameter calculation in <code class="docutils literal notranslate"><span class="pre">models.py</span></code> was changed to work on the new time and response scales.</p></li>
+<li><p>Updated the prior for trend rate change coefficients <span class="math notranslate nohighlight">\(\delta\)</span> from a Lasso-like to an elastic-net–like formulation. The additional Gaussian component reduces large, abrupt trend shifts (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/97">#97</a>)</p></li>
 <li><p>Removed bounds on the regressor coefficient parameter <span class="math notranslate nohighlight">\(\beta\)</span> to prevent the optimizer from getting stuck at parameter limits (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/98">#98</a>)</p></li>
 <li><p>Consolidated shared Stan code into separate <code class="docutils literal notranslate"><span class="pre">.stan</span></code> files and included them via <code class="docutils literal notranslate"><span class="pre">#include</span></code> to simplify maintenance (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/99">#99</a>)</p></li>
 <li><p>Moved prior scale calculations from the <code class="docutils literal notranslate"><span class="pre">model</span></code> block to the <code class="docutils literal notranslate"><span class="pre">transformed</span> <span class="pre">data</span></code> block for improved performance (<a class="reference external" href="https://github.com/e-dyn/gloria/issues/100">#100</a>)</p></li>
@@ -405,7 +407,8 @@
 <section id="contributors">
 <h2>Contributors<a class="headerlink" href="#contributors" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>Benjamin Kambs</p></li>
+<li><p><a class="reference external" href="https://github.com/benkambs">Benjamin Kambs</a></p></li>
+<li><p><a class="reference external" href="https://github.com/PWollgarten">Patrik Wollgarten</a></p></li>
 </ul>
 </section>
 </section>
