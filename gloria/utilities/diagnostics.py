@@ -296,7 +296,7 @@ def cross_validation(
     ]
 
     # Add yhat confidence interval when Laplace sampling was performed
-    if model.fit_kwargs["sample"]:
+    if model.fit_kwargs["use_laplace"]:
         predict_columns.extend(["yhat_lower", "yhat_upper"])
 
     # Add any additional columns the user requested
