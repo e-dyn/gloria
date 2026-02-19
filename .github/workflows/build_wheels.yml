@@ -27,6 +27,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT: >
             GLORIA_REPACKAGE_CMDSTAN=TRUE
+            LDFLAGS="-Wl,-headerpad_max_install_names"
 
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BUILD: cp39-* cp310-* cp311-* cp312-*

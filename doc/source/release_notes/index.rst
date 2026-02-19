@@ -9,5 +9,6 @@ This list is an archive of all release notes since Version 0.1.2. The full histo
 .. toctree::
    :maxdepth: 1
    
+   v0_1_4
    v0_1_3
    v0_1_2
