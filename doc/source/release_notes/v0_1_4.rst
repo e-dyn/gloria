@@ -1,0 +1,14 @@
+
+.. currentmodule:: gloria
+
+Version 0.1.4
+=============
+
+Bugfixes
+--------
+- Fixed an issue where :func:`cross_validation` failed to execute as it tried to access the internally stored, outdated keyword argument ``sample`` from :meth:`Gloria.fit` instead of the newer ``use_laplace`` (`#108 <https://github.com/e-dyn/gloria/issues/108>`_).
+
+
+Contributors
+------------
+- `Patrik Wollgarten <https://github.com/PWollgarten>`_
