@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>gloria.Seasonality &#8212; Gloria 0.1.3 documentation</title>
+    <title>gloria.Seasonality &#8212; Gloria 0.1.4 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=547efaed"></script>
+    <script src="../../_static/documentation_options.js?v=9ff76a20"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/tabs.js?v=3ee01567"></script>
@@ -57,7 +57,7 @@
     <link rel="prev" title="gloria.ExternalRegressor" href="gloria.ExternalRegressor.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.3" />
+  <meta name="docsearch:version" content="0.1.4" />
   </head>
   
   
@@ -123,8 +123,8 @@
       
     
     
-    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.3 documentation - Home"/>
-    <img src="../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.3 documentation - Home"/>
+    <img src="../../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.4 documentation - Home"/>
+    <img src="../../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.4 documentation - Home"/>
   
   
 </a></div>
@@ -478,7 +478,7 @@ regressors. Must be larger or equal to 1.</p></li>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>In a future version of Gloria, <code class="docutils literal notranslate"><span class="pre">period</span></code> will become a
-<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such. Where possible
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such. Where possible
 use <a class="reference internal" href="gloria.Gloria.add_seasonality.html#gloria.Gloria.add_seasonality" title="gloria.Gloria.add_seasonality"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_seasonality()</span></code></a> instead of <a class="reference internal" href="#gloria.Seasonality" title="gloria.Seasonality"><code class="xref py py-class docutils literal notranslate"><span class="pre">Seasonality</span></code></a>
 to avoid conflict.</p>
 </div>
@@ -487,7 +487,7 @@ to avoid conflict.</p>
 <dt class="sig sig-object py" id="gloria.Seasonality.fourier_series">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fourier_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fourier_order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/gloria/regressors.html#Seasonality.fourier_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gloria.Seasonality.fourier_series" title="Link to this definition">#</a></dt>
 <dd><p>Creates an array of even and odd Fourier terms.</p>
-<p>The <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> output array has the following structure:</p>
+<p>The <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> output array has the following structure:</p>
 <ul class="simple">
 <li><p><strong>Columns</strong>: alternatingely odd and even Fourier terms up to the
 given maximum <code class="docutils literal notranslate"><span class="pre">fourier_order</span></code>, resulting in <span class="math notranslate nohighlight">\(2\times\)</span>
@@ -514,8 +514,8 @@ created. Must be larger or equal 1.</p></li>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>In a future version of Gloria, <code class="docutils literal notranslate"><span class="pre">period</span></code> will become a
-<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such and <code class="docutils literal notranslate"><span class="pre">t</span></code>
-will be a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of timestamps.</p>
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such and <code class="docutils literal notranslate"><span class="pre">t</span></code>
+will be a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of timestamps.</p>
 </div>
 </dd></dl>
 
@@ -563,14 +563,14 @@ feature matrix unchanged. Only has effect for
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><em>DataFrame</em></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<em>DataFrame</em>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
 </dd>
 </dl>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>In a future version of Gloria, <code class="docutils literal notranslate"><span class="pre">period</span></code> will become a
-<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such and <code class="docutils literal notranslate"><span class="pre">t</span></code>
-will be a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of timestamps.</p>
+<a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timestamp.html#pandas.Timestamp" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></a> or <code class="docutils literal notranslate"><span class="pre">str</span></code> representing such and <code class="docutils literal notranslate"><span class="pre">t</span></code>
+will be a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of timestamps.</p>
 </div>
 </dd></dl>
 
