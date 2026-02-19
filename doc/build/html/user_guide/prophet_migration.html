@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Migrate from Prophet &#8212; Gloria 0.1.3 documentation</title>
+    <title>Migrate from Prophet &#8212; Gloria 0.1.4 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=547efaed"></script>
+    <script src="../_static/documentation_options.js?v=9ff76a20"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/tabs.js?v=3ee01567"></script>
@@ -57,7 +57,7 @@
     <link rel="prev" title="Basic Usage" href="basic_usage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.3" />
+  <meta name="docsearch:version" content="0.1.4" />
   </head>
   
   
@@ -123,8 +123,8 @@
       
     
     
-    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.3 documentation - Home"/>
-    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.3 documentation - Home"/>
+    <img src="../_static/glorialogo.png" class="logo__image only-light" alt="Gloria 0.1.4 documentation - Home"/>
+    <img src="../_static/glorialogo_white.png" class="logo__image only-dark pst-js-only" alt="Gloria 0.1.4 documentation - Home"/>
   
   
 </a></div>
@@ -446,9 +446,9 @@
 </div>
 <p>There are three key differences to note, each stemming from Gloria’s guiding principle: to provide greater flexibility by imposing fewer assumptions about the data and model structure, while transferring more ownership and responsibility to the user:</p>
 <ol class="arabic simple">
-<li><p>The datetime column <code class="docutils literal notranslate"><span class="pre">df[&quot;ds&quot;]</span></code> must be explicitly converted to a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of datetimes.</p></li>
+<li><p>The datetime column <code class="docutils literal notranslate"><span class="pre">df[&quot;ds&quot;]</span></code> must be explicitly converted to a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a> of datetimes.</p></li>
 <li><p>Gloria models are initialized without predefined features. All seasonalities, including <em>weekly</em> and <em>yearly</em>, need to be added manually using <a class="reference internal" href="../api/api/gloria.Gloria.add_seasonality.html#gloria.Gloria.add_seasonality" title="gloria.Gloria.add_seasonality"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Gloria.add_seasonality()</span></code></a>.</p></li>
-<li><p>Prophet’s <code class="docutils literal notranslate"><span class="pre">add_seasonality()</span></code> method expects the <code class="docutils literal notranslate"><span class="pre">period</span></code> argument as a numeric value, silently assuming <em>days</em> as unit, whereas Gloria accepts timedelta-like strings as parsed by <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v2.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a>, making the intended period more explicit.</p></li>
+<li><p>Prophet’s <code class="docutils literal notranslate"><span class="pre">add_seasonality()</span></code> method expects the <code class="docutils literal notranslate"><span class="pre">period</span></code> argument as a numeric value, silently assuming <em>days</em> as unit, whereas Gloria accepts timedelta-like strings as parsed by <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Timedelta.html#pandas.Timedelta" title="(in pandas v3.0.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code></a>, making the intended period more explicit.</p></li>
 </ol>
 </section>
 <section id="events">
